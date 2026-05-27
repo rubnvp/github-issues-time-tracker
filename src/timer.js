@@ -10,7 +10,7 @@ const Timer = {
   // ── Formatting ──────────────────────────────────────────────────────────────
 
   formatMs(ms) {
-    if (ms < 1000) return '0s';
+    if (ms < 1000) return "0s";
     const totalSeconds = Math.floor(ms / 1000);
     const seconds = totalSeconds % 60;
     const totalMinutes = Math.floor(totalSeconds / 60);
@@ -36,13 +36,15 @@ const Timer = {
 
     const id = setInterval(() => {
       const el = document.querySelector(
-        `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`
+        `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`,
       );
       if (!el) {
         this.stop(boardCardId);
         return;
       }
-      el.textContent = this.formatMs(this.getCurrentMs(Storage.load(boardCardId)));
+      el.textContent = this.formatMs(
+        this.getCurrentMs(Storage.load(boardCardId)),
+      );
     }, 1000);
 
     this._intervals.set(boardCardId, id);

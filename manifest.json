@@ -5,7 +5,9 @@
   "description": "Track time spent on GitHub Issues directly from GitHub Projects",
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
+      "matches": [
+        "https://github.com/*"
+      ],
       "js": [
         "src/storage.js",
         "src/timer.js",

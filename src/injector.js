@@ -4,7 +4,6 @@
 // Depends on: Storage, Timer
 
 const Injector = {
-
   // ── Issue ref extraction ───────────────────────────────────────────────────
   // Returns "owner/repo/issues/123" from the issue link inside the card.
   // Stored as metadata inside the state object — not used as a key.
@@ -12,7 +11,9 @@ const Injector = {
   _extractIssueRef(card) {
     const link = card.querySelector('a[href*="/issues/"]');
     if (link) {
-      const match = link.getAttribute('href').match(/github\.com\/(.+\/issues\/\d+)/);
+      const match = link
+        .getAttribute("href")
+        .match(/github\.com\/(.+\/issues\/\d+)/);
       if (match) return match[1];
     }
     return null;
@@ -21,18 +22,18 @@ const Injector = {
   // ── Widget builder ─────────────────────────────────────────────────────────
 
   _buildWidget(boardCardId) {
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-time-tracker', 'true');
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("data-time-tracker", "true");
     wrapper.style.cssText = `
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 8px 4px 8px;
+      padding: 10px 12px 0px;
       border-top: 1px solid var(--borderColor-muted, #e1e4e8);
       margin-top: 6px;
     `;
 
-    const btn = document.createElement('button');
+    const btn = document.createElement("button");
     btn.style.cssText = `
       display: inline-flex;
       align-items: center;
@@ -48,10 +49,14 @@ const Injector = {
       transition: transform 0.1s ease, opacity 0.1s ease;
     `;
 
-    btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.15)'; });
-    btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; });
+    btn.addEventListener("mouseenter", () => {
+      btn.style.transform = "scale(1.15)";
+    });
+    btn.addEventListener("mouseleave", () => {
+      btn.style.transform = "scale(1)";
+    });
 
-    const display = document.createElement('span');
+    const display = document.createElement("span");
     display.style.cssText = `
       font-size: 12px;
       font-family: monospace;
@@ -64,21 +69,21 @@ const Injector = {
       display.textContent = Timer.formatMs(Timer.getCurrentMs(state));
 
       if (state.running) {
-        btn.textContent = '⏸';
-        btn.title = 'Pause timer';
-        btn.style.background = 'var(--bgColor-danger-emphasis, #d1242f)';
-        btn.style.color = '#ffffff';
-        display.style.color = 'var(--fgColor-danger, #d1242f)';
+        btn.textContent = "⏸";
+        btn.title = "Pause timer";
+        btn.style.background = "var(--bgColor-danger-emphasis, #d1242f)";
+        btn.style.color = "#ffffff";
+        display.style.color = "var(--fgColor-danger, #d1242f)";
       } else {
-        btn.textContent = '▶';
-        btn.title = 'Start timer';
-        btn.style.background = 'var(--bgColor-success-emphasis, #1a7f37)';
-        btn.style.color = '#ffffff';
-        display.style.color = 'var(--fgColor-muted, #636c76)';
+        btn.textContent = "▶";
+        btn.title = "Start timer";
+        btn.style.background = "var(--bgColor-success-emphasis, #1a7f37)";
+        btn.style.color = "#ffffff";
+        display.style.color = "var(--fgColor-muted, #636c76)";
       }
     }
 
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation(); // prevent opening the issue detail panel
       e.preventDefault();
 
@@ -118,7 +123,7 @@ const Injector = {
     const fieldsList = card.querySelector('ul[aria-label="Fields"]');
     if (!fieldsList) return false;
 
-    fieldsList.insertAdjacentElement('afterend', wrapper);
+    fieldsList.insertAdjacentElement("afterend", wrapper);
     render();
 
     if (Storage.load(boardCardId).running) {
@@ -130,9 +135,9 @@ const Injector = {
   // ── Card injection ─────────────────────────────────────────────────────────
 
   injectCard(card) {
-    if (card.querySelector('[data-time-tracker]')) return; // already injected
+    if (card.querySelector("[data-time-tracker]")) return; // already injected
 
-    const boardCardId = card.getAttribute('data-board-card-id');
+    const boardCardId = card.getAttribute("data-board-card-id");
     if (!boardCardId) return;
 
     // Store issueRef as metadata the first time we see this card
@@ -150,7 +155,7 @@ const Injector = {
     // Card was added to the DOM but its internal content isn't rendered yet.
     // Wait for ul[aria-label="Fields"] to appear before mounting.
     const cardObserver = new MutationObserver(() => {
-      if (card.querySelector('[data-time-tracker]')) {
+      if (card.querySelector("[data-time-tracker]")) {
         cardObserver.disconnect();
         return;
       }
@@ -163,8 +168,8 @@ const Injector = {
   },
 
   injectAllCards() {
-    document.querySelectorAll('[data-board-card-id]').forEach(
-      (card) => this.injectCard(card)
-    );
+    document
+      .querySelectorAll("[data-board-card-id]")
+      .forEach((card) => this.injectCard(card));
   },
 };

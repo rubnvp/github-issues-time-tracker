@@ -15,12 +15,12 @@ const Observer = {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
-          if (node.hasAttribute('data-board-card-id')) {
+          if (node.hasAttribute("data-board-card-id")) {
             Injector.injectCard(node);
           } else {
-            node.querySelectorAll('[data-board-card-id]').forEach(
-              (card) => Injector.injectCard(card)
-            );
+            node
+              .querySelectorAll("[data-board-card-id]")
+              .forEach((card) => Injector.injectCard(card));
           }
         }
       }

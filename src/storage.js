@@ -11,14 +11,23 @@
 // }
 
 const Storage = {
-  PREFIX: 'time_tracker_',
+  PREFIX: "time_tracker_",
 
-  _defaultState: (issueRef) => ({ issueRef, totalMs: 0, lastStart: null, running: false }),
+  _defaultState: (issueRef) => ({
+    issueRef,
+    totalMs: 0,
+    lastStart: null,
+    running: false,
+  }),
 
   load(boardCardId) {
     const raw = localStorage.getItem(this.PREFIX + boardCardId);
     if (!raw) return this._defaultState(null);
-    try { return JSON.parse(raw); } catch { return this._defaultState(null); }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return this._defaultState(null);
+    }
   },
 
   save(boardCardId, state) {
