@@ -23,7 +23,12 @@ const Storage = {
   load(boardCardId) {
     const raw = localStorage.getItem(this.PREFIX + boardCardId);
     if (!raw) return this._defaultState();
-    try { return JSON.parse(raw); } catch { return this._defaultState(); }
+    try {
+      const parsed = JSON.parse(raw);
+      // Migrate old format (totalMs/running/lastStart) to sessions[]
+      if (!Array.isArray(parsed.sessions)) parsed.sessions = [];
+      return parsed;
+    } catch { return this._defaultState(); }
   },
 
   save(boardCardId, state) {
