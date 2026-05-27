@@ -48,16 +48,7 @@ const FloatingBar = (() => {
     pauseBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!activeBoardCardId) return;
-
-      const state = Storage.load(activeBoardCardId);
-      if (!state.running) return;
-
-      Storage.save(activeBoardCardId, {
-        ...state,
-        totalMs: state.totalMs + (Date.now() - state.lastStart),
-        lastStart: null,
-        running: false,
-      });
+      if (!Storage.isRunning(Storage.load(activeBoardCardId))) return;
       Timer.stop(activeBoardCardId);
     });
 
@@ -74,7 +65,7 @@ const FloatingBar = (() => {
   function tick() {
     if (!activeBoardCardId) return;
     const state = Storage.load(activeBoardCardId);
-    timeEl.textContent = Timer.formatMs(Timer.getCurrentMs(state));
+    timeEl.textContent = Timer.formatMs(Storage.totalMs(state));
   }
 
   // ── Public API ──────────────────────────────────────────────────────────────

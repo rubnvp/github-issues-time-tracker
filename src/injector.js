@@ -38,12 +38,13 @@ const Injector = {
 
     function render() {
       const state = Storage.load(boardCardId);
-      const ms = Timer.getCurrentMs(state);
+      const ms = Storage.totalMs(state);
+      const running = Storage.isRunning(state);
       const hasTime = ms > 0;
 
       display.textContent = Timer.formatMs(ms);
 
-      if (state.running) {
+      if (running) {
         btn.textContent = '⏸\uFE0E';
         btn.title = 'Pause timer';
         btn.className = 'gitt-card-widget__btn gitt-card-widget__btn--pause';
@@ -65,22 +66,9 @@ const Injector = {
       e.stopPropagation();
       e.preventDefault();
 
-      const state = Storage.load(boardCardId);
-
-      if (state.running) {
-        Storage.save(boardCardId, {
-          ...state,
-          totalMs: state.totalMs + (Date.now() - state.lastStart),
-          lastStart: null,
-          running: false,
-        });
+      if (Storage.isRunning(Storage.load(boardCardId))) {
         Timer.stop(boardCardId);
       } else {
-        Storage.save(boardCardId, {
-          ...state,
-          lastStart: Date.now(),
-          running: true,
-        });
         Timer.start(boardCardId);
       }
 
@@ -104,7 +92,7 @@ const Injector = {
     fieldsList.insertAdjacentElement('afterend', wrapper);
     render();
 
-    if (Storage.load(boardCardId).running) {
+    if (Storage.isRunning(Storage.load(boardCardId))) {
       Timer.start(boardCardId);
     }
     return true;

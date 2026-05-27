@@ -1,5 +1,5 @@
 // ─── Timer ────────────────────────────────────────────────────────────────────
-// Handles time formatting, elapsed time calculation, and interval management.
+// Handles time formatting, interval management, and single-timer enforcement.
 //
 // Depends on: Storage, FloatingBar
 
@@ -17,7 +17,7 @@ const Timer = {
   // ── Formatting ──────────────────────────────────────────────────────────────
 
   formatMs(ms) {
-    if (ms < 1000) return "0s";
+    if (ms < 1000) return '0s';
     const totalSeconds = Math.floor(ms / 1000);
     const seconds = totalSeconds % 60;
     const totalMinutes = Math.floor(totalSeconds / 60);
@@ -29,43 +29,28 @@ const Timer = {
     return `${seconds}s`;
   },
 
-  // ── Elapsed ─────────────────────────────────────────────────────────────────
-
-  getCurrentMs(state) {
-    if (!state.running || !state.lastStart) return state.totalMs;
-    return state.totalMs + (Date.now() - state.lastStart);
-  },
-
   // ── Interval management ─────────────────────────────────────────────────────
 
   // Stops any currently active timer before starting the new one.
   start(boardCardId) {
     if (this._intervals.has(boardCardId)) return;
 
-    // Stop whichever other timer is running and persist its elapsed time
+    // Stop any other running timer first
     for (const [activeId] of this._intervals) {
-      if (activeId === boardCardId) continue;
-      const activeState = Storage.load(activeId);
-      if (activeState.running) {
-        Storage.save(activeId, {
-          ...activeState,
-          totalMs: activeState.totalMs + (Date.now() - activeState.lastStart),
-          lastStart: null,
-          running: false,
-        });
-      }
-      this.stop(activeId);
+      if (activeId !== boardCardId) this.stop(activeId);
     }
+
+    Storage.startSession(boardCardId);
 
     const id = setInterval(() => {
       const el = document.querySelector(
-        `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`,
+        `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`
       );
       if (!el) {
         this.stop(boardCardId);
         return;
       }
-      el.textContent = this.formatMs(this.getCurrentMs(Storage.load(boardCardId)));
+      el.textContent = this.formatMs(Storage.totalMs(Storage.load(boardCardId)));
     }, 1000);
 
     this._intervals.set(boardCardId, id);
@@ -78,13 +63,12 @@ const Timer = {
       clearInterval(id);
       this._intervals.delete(boardCardId);
     }
-    // Re-render the card so button reflects the stopped state
+
+    Storage.stopSession(boardCardId);
+
     const render = this._renderers.get(boardCardId);
     if (render) render();
 
-    // Hide the floating bar only if no other timer is running
-    if (this._intervals.size === 0) {
-      FloatingBar.hide();
-    }
+    if (this._intervals.size === 0) FloatingBar.hide();
   },
 };
