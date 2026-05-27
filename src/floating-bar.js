@@ -31,8 +31,7 @@ const FloatingBar = (() => {
         animation: tt-slidein 0.2s ease;
       }
       #tt-floating-bar .tt-pause-btn:hover {
-        background: rgba(255,255,255,0.18) !important;
-        transform: scale(1.1);
+        transform: scale(1.15);
       }
     `;
     document.head.appendChild(style);
@@ -133,23 +132,23 @@ const FloatingBar = (() => {
     // ── Pause button ─────────────────────────────────────────────────────────
 
     pauseBtn = document.createElement('button');
-    pauseBtn.textContent = '⏸';
+    pauseBtn.textContent = '⏸\uFE0E';
     pauseBtn.title = 'Pause timer';
     pauseBtn.className = 'tt-pause-btn';
     pauseBtn.style.cssText = `
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       border: none;
-      background: rgba(255,255,255,0.1);
+      background: var(--bgColor-danger-emphasis, #d1242f);
       color: #ffffff;
-      font-size: 14px;
+      font-size: 15px;
       cursor: pointer;
       flex-shrink: 0;
-      transition: background 0.15s ease, transform 0.15s ease;
+      transition: transform 0.1s ease;
     `;
 
     pauseBtn.addEventListener('click', (e) => {

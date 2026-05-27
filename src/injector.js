@@ -72,7 +72,7 @@ const Injector = {
       display.textContent = Timer.formatMs(ms);
 
       if (state.running) {
-        btn.textContent = '⏸';
+        btn.textContent = '⏸\uFE0E';
         btn.title = 'Pause timer';
         btn.style.background = 'var(--bgColor-danger-emphasis, #d1242f)';
         btn.style.color = '#ffffff';
