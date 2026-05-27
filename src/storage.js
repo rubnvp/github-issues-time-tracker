@@ -1,17 +1,27 @@
 // ─── Storage ──────────────────────────────────────────────────────────────────
 // Persists and loads timer state via localStorage.
-// Key format: "time_tracker_owner/repo/issues/123"
+// Key format: "time_tracker_<boardCardId>"
+//
+// State shape:
+// {
+//   issueRef: "owner/repo/issues/123",  // informational, for future use
+//   totalMs: 0,
+//   lastStart: null,
+//   running: false,
+// }
 
 const Storage = {
   PREFIX: 'time_tracker_',
 
-  load(issueId) {
-    const raw = localStorage.getItem(this.PREFIX + issueId);
-    if (!raw) return { totalMs: 0, lastStart: null, running: false };
-    try { return JSON.parse(raw); } catch { return { totalMs: 0, lastStart: null, running: false }; }
+  _defaultState: (issueRef) => ({ issueRef, totalMs: 0, lastStart: null, running: false }),
+
+  load(boardCardId) {
+    const raw = localStorage.getItem(this.PREFIX + boardCardId);
+    if (!raw) return this._defaultState(null);
+    try { return JSON.parse(raw); } catch { return this._defaultState(null); }
   },
 
-  save(issueId, state) {
-    localStorage.setItem(this.PREFIX + issueId, JSON.stringify(state));
+  save(boardCardId, state) {
+    localStorage.setItem(this.PREFIX + boardCardId, JSON.stringify(state));
   },
 };

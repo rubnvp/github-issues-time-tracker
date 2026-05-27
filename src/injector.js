@@ -5,22 +5,22 @@
 
 const Injector = {
 
-  // ── Issue ID extraction ────────────────────────────────────────────────────
+  // ── Issue ref extraction ───────────────────────────────────────────────────
   // Returns "owner/repo/issues/123" from the issue link inside the card.
-  // Falls back to data-board-card-id if no issue link is found.
+  // Stored as metadata inside the state object — not used as a key.
 
-  _extractIssueId(card) {
+  _extractIssueRef(card) {
     const link = card.querySelector('a[href*="/issues/"]');
     if (link) {
       const match = link.getAttribute('href').match(/github\.com\/(.+\/issues\/\d+)/);
       if (match) return match[1];
     }
-    return card.getAttribute('data-board-card-id');
+    return null;
   },
 
   // ── Widget builder ─────────────────────────────────────────────────────────
 
-  _buildWidget(issueId, boardCardId) {
+  _buildWidget(boardCardId) {
     const wrapper = document.createElement('div');
     wrapper.setAttribute('data-time-tracker', 'true');
     wrapper.style.cssText = `
@@ -52,7 +52,7 @@ const Injector = {
     `;
 
     function render() {
-      const state = Storage.load(issueId);
+      const state = Storage.load(boardCardId);
       display.textContent = Timer.formatMs(Timer.getCurrentMs(state));
       btn.textContent = state.running ? '⏸' : '▶';
       btn.title = state.running ? 'Pause timer' : 'Start timer';
@@ -65,22 +65,23 @@ const Injector = {
       e.stopPropagation(); // prevent opening the issue detail panel
       e.preventDefault();
 
-      const state = Storage.load(issueId);
+      const state = Storage.load(boardCardId);
 
       if (state.running) {
-        Storage.save(issueId, {
+        Storage.save(boardCardId, {
+          ...state,
           totalMs: state.totalMs + (Date.now() - state.lastStart),
           lastStart: null,
           running: false,
         });
-        Timer.stop(issueId);
+        Timer.stop(boardCardId);
       } else {
-        Storage.save(issueId, {
-          totalMs: state.totalMs,
+        Storage.save(boardCardId, {
+          ...state,
           lastStart: Date.now(),
           running: true,
         });
-        Timer.start(issueId, boardCardId);
+        Timer.start(boardCardId);
       }
 
       render();
@@ -92,20 +93,24 @@ const Injector = {
     return { wrapper, render };
   },
 
-  // ── Card injection ─────────────────────────────────────────────────────────
+  // ── Mount ──────────────────────────────────────────────────────────────────
+  // Inserts the widget after ul[aria-label="Fields"].
+  // Returns true if mounted, false if the fields list isn't ready yet.
 
-  _mountWidget(card, boardCardId, issueId, wrapper, render) {
+  _mountWidget(card, boardCardId, wrapper, render) {
     const fieldsList = card.querySelector('ul[aria-label="Fields"]');
-    if (fieldsList) {
-      fieldsList.insertAdjacentElement('afterend', wrapper);
-      render();
-      if (Storage.load(issueId).running) {
-        Timer.start(issueId, boardCardId);
-      }
-      return true;
+    if (!fieldsList) return false;
+
+    fieldsList.insertAdjacentElement('afterend', wrapper);
+    render();
+
+    if (Storage.load(boardCardId).running) {
+      Timer.start(boardCardId);
     }
-    return false;
+    return true;
   },
+
+  // ── Card injection ─────────────────────────────────────────────────────────
 
   injectCard(card) {
     if (card.querySelector('[data-time-tracker]')) return; // already injected
@@ -113,11 +118,17 @@ const Injector = {
     const boardCardId = card.getAttribute('data-board-card-id');
     if (!boardCardId) return;
 
-    const issueId = this._extractIssueId(card);
-    const { wrapper, render } = this._buildWidget(issueId, boardCardId);
+    // Store issueRef as metadata the first time we see this card
+    const state = Storage.load(boardCardId);
+    if (!state.issueRef) {
+      const issueRef = this._extractIssueRef(card);
+      if (issueRef) Storage.save(boardCardId, { ...state, issueRef });
+    }
+
+    const { wrapper, render } = this._buildWidget(boardCardId);
 
     // Try to mount immediately if the card content is already in the DOM
-    if (this._mountWidget(card, boardCardId, issueId, wrapper, render)) return;
+    if (this._mountWidget(card, boardCardId, wrapper, render)) return;
 
     // Card was added to the DOM but its internal content isn't rendered yet.
     // Wait for ul[aria-label="Fields"] to appear before mounting.
@@ -126,7 +137,7 @@ const Injector = {
         cardObserver.disconnect();
         return;
       }
-      if (this._mountWidget(card, boardCardId, issueId, wrapper, render)) {
+      if (this._mountWidget(card, boardCardId, wrapper, render)) {
         cardObserver.disconnect();
       }
     });

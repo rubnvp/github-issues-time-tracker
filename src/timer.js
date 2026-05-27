@@ -4,7 +4,7 @@
 // Depends on: Storage
 
 const Timer = {
-  // issueId → intervalId
+  // boardCardId → intervalId
   _intervals: new Map(),
 
   // ── Formatting ──────────────────────────────────────────────────────────────
@@ -30,31 +30,29 @@ const Timer = {
   },
 
   // ── Interval management ─────────────────────────────────────────────────────
-  // boardCardId is used only for DOM lookup during the tick — it is stable
-  // within the page lifetime while issueId is the canonical identifier.
 
-  start(issueId, boardCardId) {
-    if (this._intervals.has(issueId)) return;
+  start(boardCardId) {
+    if (this._intervals.has(boardCardId)) return;
 
     const id = setInterval(() => {
       const el = document.querySelector(
         `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`
       );
       if (!el) {
-        this.stop(issueId);
+        this.stop(boardCardId);
         return;
       }
-      el.textContent = this.formatMs(this.getCurrentMs(Storage.load(issueId)));
+      el.textContent = this.formatMs(this.getCurrentMs(Storage.load(boardCardId)));
     }, 1000);
 
-    this._intervals.set(issueId, id);
+    this._intervals.set(boardCardId, id);
   },
 
-  stop(issueId) {
-    const id = this._intervals.get(issueId);
+  stop(boardCardId) {
+    const id = this._intervals.get(boardCardId);
     if (id !== undefined) {
       clearInterval(id);
-      this._intervals.delete(issueId);
+      this._intervals.delete(boardCardId);
     }
   },
 };
