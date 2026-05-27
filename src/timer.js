@@ -54,6 +54,7 @@ const Timer = {
     }, 1000);
 
     this._intervals.set(boardCardId, id);
+    chrome.runtime.sendMessage({ type: 'BADGE_START' });
     FloatingBar.show(boardCardId);
   },
 
@@ -69,6 +70,9 @@ const Timer = {
     const render = this._renderers.get(boardCardId);
     if (render) render();
 
-    if (this._intervals.size === 0) FloatingBar.hide();
+    if (this._intervals.size === 0) {
+      chrome.runtime.sendMessage({ type: 'BADGE_STOP' });
+      FloatingBar.hide();
+    }
   },
 };
