@@ -84,6 +84,92 @@
   color: var(--fgColor-muted, #636c76);
 }
 
+/* ── Element: sessions button ──────────────────────────────────────────────── */
+
+.gitt-card-widget__sessions-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fgColor-muted, #636c76);
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.gitt-card-widget__sessions-btn:hover {
+  background: var(--bgColor-neutral-muted, #eaeef2);
+  color: var(--fgColor-default, #1f2328);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BLOCK: gitt-sessions-popover
+   Popover listing all sessions for a card.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.gitt-sessions-popover {
+  position: fixed;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--borderColor-default, #d0d7de);
+  background: var(--bgColor-default, #ffffff);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.gitt-sessions-popover__title {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fgColor-muted, #636c76);
+}
+
+.gitt-sessions-popover__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gitt-sessions-popover__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--borderColor-muted, #eaeef2);
+}
+
+.gitt-sessions-popover__item:last-child {
+  border-bottom: none;
+}
+
+.gitt-sessions-popover__range {
+  color: var(--fgColor-default, #1f2328);
+}
+
+.gitt-sessions-popover__duration {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fgColor-default, #1f2328);
+  white-space: nowrap;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    BLOCK: gitt-floating-bar
    Top-center pill showing the active issue and live timer.

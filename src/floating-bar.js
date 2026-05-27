@@ -11,6 +11,8 @@ const FloatingBar = (() => {
   let pauseBtn = null;
   let tickId = null;
   let activeBoardCardId = null;
+  let originalTitle = null;
+  let activeIssueTitle = null;
 
   // ── Build DOM (once) ────────────────────────────────────────────────────────
 
@@ -65,7 +67,9 @@ const FloatingBar = (() => {
   function tick() {
     if (!activeBoardCardId) return;
     const state = Storage.load(activeBoardCardId);
-    timeEl.textContent = Timer.formatMs(Storage.totalMs(state));
+    const formatted = Timer.formatMs(Storage.totalMs(state));
+    timeEl.textContent = formatted;
+    document.title = `${formatted} — ${activeIssueTitle}`;
   }
 
   // ── Public API ──────────────────────────────────────────────────────────────
@@ -78,7 +82,10 @@ const FloatingBar = (() => {
 
       const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
       const titleNode = card && card.querySelector('h3 span');
-      titleEl.textContent = titleNode ? titleNode.textContent : 'Issue';
+      activeIssueTitle = titleNode ? titleNode.textContent : 'Issue';
+      titleEl.textContent = activeIssueTitle;
+
+      originalTitle = document.title;
 
       tick();
       el.style.display = 'flex';
@@ -93,6 +100,11 @@ const FloatingBar = (() => {
       clearInterval(tickId);
       tickId = null;
       activeBoardCardId = null;
+      activeIssueTitle = null;
+      if (originalTitle !== null) {
+        document.title = originalTitle;
+        originalTitle = null;
+      }
     },
   };
 })();

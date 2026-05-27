@@ -8,6 +8,15 @@
 //
 // Depends on: Storage, Timer
 
+function _formatDate(ts) {
+  const d = new Date(ts);
+  const day = d.getDate();
+  const month = d.toLocaleString('default', { month: 'short' });
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${month} ${hh}:${mm}`;
+}
+
 const Injector = {
 
   // ── Issue ref extraction ───────────────────────────────────────────────────
@@ -36,13 +45,67 @@ const Injector = {
     const display = document.createElement('span');
     display.className = 'gitt-card-widget__display';
 
+    // ── Sessions popover ──────────────────────────────────────────────────────
+    const popoverId = `gitt-sessions-${boardCardId}`;
+
+    const sessionsBtn = document.createElement('button');
+    sessionsBtn.className = 'gitt-card-widget__sessions-btn';
+    sessionsBtn.setAttribute('popovertarget', popoverId);
+    sessionsBtn.title = 'View sessions';
+    sessionsBtn.textContent = '☰';
+
+    const popover = document.createElement('div');
+    popover.id = popoverId;
+
+    // Position popover near the button when it opens
+    popover.addEventListener('toggle', (e) => {
+      if (e.newState !== 'open') return;
+      const rect = sessionsBtn.getBoundingClientRect();
+      const popoverWidth = 280;
+      let left = rect.right - popoverWidth;
+      if (left < 8) left = 8;
+      popover.style.top = `${rect.bottom + 6}px`;
+      popover.style.left = `${left}px`;
+    });
+    popover.setAttribute('popover', '');
+    popover.className = 'gitt-sessions-popover';
+    document.body.appendChild(popover);
+
+    function renderPopover(sessions) {
+      popover.innerHTML = '';
+      const title = document.createElement('p');
+      title.className = 'gitt-sessions-popover__title';
+      title.textContent = 'Sessions';
+      popover.appendChild(title);
+
+      const list = document.createElement('ul');
+      list.className = 'gitt-sessions-popover__list';
+
+      sessions.slice().reverse().forEach((s) => {
+        const duration = Timer.formatMs((s.end ?? Date.now()) - s.start);
+        const start = _formatDate(s.start);
+        const end = s.end ? _formatDate(s.end) : 'ongoing';
+
+        const li = document.createElement('li');
+        li.className = 'gitt-sessions-popover__item';
+        li.innerHTML =
+          `<span class="gitt-sessions-popover__range">${start} — ${end}</span>` +
+          `<span class="gitt-sessions-popover__duration">${duration}</span>`;
+        list.appendChild(li);
+      });
+
+      popover.appendChild(list);
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+
     function render() {
       const state = Storage.load(boardCardId);
       const ms = Storage.totalMs(state);
       const running = Storage.isRunning(state);
       const hasTime = ms > 0;
 
-      display.textContent = Timer.formatMs(ms);
+      display.textContent = hasTime ? Timer.formatMs(ms) : '';
 
       if (running) {
         btn.textContent = '⏸\uFE0E';
@@ -59,6 +122,13 @@ const Injector = {
         btn.title = 'Start timer';
         btn.className = 'gitt-card-widget__btn gitt-card-widget__btn--idle';
         display.className = 'gitt-card-widget__display gitt-card-widget__display--stopped';
+      }
+
+      if (hasTime) {
+        sessionsBtn.style.display = '';
+        renderPopover(state.sessions);
+      } else {
+        sessionsBtn.style.display = 'none';
       }
     }
 
@@ -77,6 +147,7 @@ const Injector = {
 
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
+    wrapper.appendChild(sessionsBtn);
 
     Timer.registerRenderer(boardCardId, render);
 
