@@ -10,6 +10,7 @@
       ],
       "js": [
         "src/storage.js",
+        "src/floating-bar.js",
         "src/timer.js",
         "src/injector.js",
         "src/observer.js",

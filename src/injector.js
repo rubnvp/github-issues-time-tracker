@@ -66,20 +66,30 @@ const Injector = {
 
     function render() {
       const state = Storage.load(boardCardId);
-      display.textContent = Timer.formatMs(Timer.getCurrentMs(state));
+      const ms = Timer.getCurrentMs(state);
+      const hasTime = ms > 0;
+
+      display.textContent = Timer.formatMs(ms);
 
       if (state.running) {
-        btn.textContent = "⏸";
-        btn.title = "Pause timer";
-        btn.style.background = "var(--bgColor-danger-emphasis, #d1242f)";
-        btn.style.color = "#ffffff";
-        display.style.color = "var(--fgColor-danger, #d1242f)";
+        btn.textContent = '⏸';
+        btn.title = 'Pause timer';
+        btn.style.background = 'var(--bgColor-danger-emphasis, #d1242f)';
+        btn.style.color = '#ffffff';
+        display.style.color = 'var(--fgColor-danger, #d1242f)';
+      } else if (hasTime) {
+        btn.textContent = '▶';
+        btn.title = 'Start timer';
+        btn.style.background = 'var(--bgColor-success-emphasis, #1a7f37)';
+        btn.style.color = '#ffffff';
+        display.style.color = 'var(--fgColor-muted, #636c76)';
       } else {
-        btn.textContent = "▶";
-        btn.title = "Start timer";
-        btn.style.background = "var(--bgColor-success-emphasis, #1a7f37)";
-        btn.style.color = "#ffffff";
-        display.style.color = "var(--fgColor-muted, #636c76)";
+        // No time yet — camouflaged
+        btn.textContent = '▶';
+        btn.title = 'Start timer';
+        btn.style.background = 'var(--bgColor-neutral-muted, #818b981f)';
+        btn.style.color = 'var(--fgColor-muted, #636c76)';
+        display.style.color = 'var(--fgColor-muted, #636c76)';
       }
     }
 
@@ -111,6 +121,9 @@ const Injector = {
 
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
+
+    // Register render so Timer can update this card when stopped externally
+    Timer.registerRenderer(boardCardId, render);
 
     return { wrapper, render };
   },
