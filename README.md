@@ -1,0 +1,114 @@
+# GitHub Issues Time Tracker
+
+A Chrome extension that lets you track time spent on GitHub issues directly from your **GitHub Projects board** — no external tools, no context switching.
+
+---
+
+## Features
+
+### ▶ Per-card timer
+Every card on your GitHub Projects board gets a small timer widget at the bottom. Click the play button to start tracking, click pause to stop. Simple as that.
+
+- **Grey** — no time recorded yet
+- **Green** — time recorded, timer stopped
+- **Red** — timer is currently running
+
+Only one timer can be active at a time. Starting a new one automatically pauses the previous.
+
+---
+
+### 📋 Session history
+Tracked time is stored as individual sessions (start + end timestamp), not just a total. Click the **☰** icon on any card that has time recorded to see a breakdown of all sessions:
+
+- Start and end time for each session
+- Duration per session
+- Active session shown as "ongoing"
+- Sessions ordered from most to least recent
+
+---
+
+### 🔴 Floating bar
+While a timer is running, a pill-shaped bar appears at the top center of the page showing:
+
+- The issue title being tracked
+- Live elapsed time
+- A **pause button** to stop the timer
+- A **⧉ button** to open the Picture-in-Picture window
+
+---
+
+### 🖥 Picture-in-Picture window
+Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
+
+- Shows a pulsing red dot + live timer
+- Expand the window to also show the issue title
+- Includes a **pause button** so you can stop the timer without going back to the browser
+- Automatically closes when the timer is stopped
+
+---
+
+### 🏷 Tab title
+While tracking, the browser tab title updates in real time to show the elapsed time and issue name:
+
+```
+5m 30s — Fix login redirect
+```
+
+The original title is restored when the timer stops.
+
+---
+
+### 🔔 Extension badge
+The extension icon in the Chrome toolbar shows a live badge with the elapsed time while a timer is running. Useful when GitHub is in a background tab.
+
+---
+
+### ⏹ Extension popup
+Click the extension icon in the toolbar to open a small popup. If a timer is running, it shows:
+
+- The issue title
+- Live elapsed time
+- A **Stop timer** button
+
+If no timer is running, it simply says so.
+
+---
+
+## Installation
+
+This extension is not published to the Chrome Web Store. Install it manually in developer mode:
+
+1. Clone or download this repository
+2. Open Chrome and go to `chrome://extensions`
+3. Enable **Developer mode** (top right toggle)
+4. Click **Load unpacked**
+5. Select the root folder of this repository
+
+---
+
+## How time is stored
+
+Time is saved in `localStorage` under keys prefixed with `gitt:` followed by the card's internal GitHub board ID.
+
+Each entry stores an array of sessions:
+
+```json
+{
+  "issueRef": "owner/repo/issues/42",
+  "sessions": [
+    { "start": 1748000000000, "end": 1748003600000 },
+    { "start": 1748010000000, "end": null }
+  ]
+}
+```
+
+- `end: null` means the session is currently active
+- Total time and running state are derived from the sessions array — never stored separately
+- Entries are only created when you first press play on a card
+
+---
+
+## Compatibility
+
+- Chrome 116+ (required for Document Picture-in-Picture API)
+- Works on `github.com` project boards (GitHub Projects v2)
