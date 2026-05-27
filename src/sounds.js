@@ -11,6 +11,11 @@ const Sounds = (() => {
 
   function playTone(frequencies, duration = 0.08, gain = 0.15) {
     const ac = getCtx();
+    const resume = ac.state === 'suspended' ? ac.resume() : Promise.resolve();
+    resume.then(() => _scheduleTones(ac, frequencies, duration, gain));
+  }
+
+  function _scheduleTones(ac, frequencies, duration, gain) {
     const now = ac.currentTime;
 
     frequencies.forEach(({ freq, time }) => {
