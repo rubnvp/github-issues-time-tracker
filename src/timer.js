@@ -63,6 +63,8 @@ const Timer = {
 
     this._intervals.set(boardCardId, id);
 
+    Sounds.play();
+
     const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
     const title = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
     chrome.runtime.sendMessage({
@@ -88,6 +90,7 @@ const Timer = {
     if (render) render();
 
     if (this._intervals.size === 0) {
+      Sounds.stop();
       chrome.runtime.sendMessage({ type: 'TIMER_STOP' });
       PiP.close();
       FloatingBar.hide();
