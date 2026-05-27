@@ -6,7 +6,13 @@
   "content_scripts": [
     {
       "matches": ["https://github.com/*"],
-      "js": ["content.js"],
+      "js": [
+        "src/storage.js",
+        "src/timer.js",
+        "src/injector.js",
+        "src/observer.js",
+        "src/main.js"
+      ],
       "run_at": "document_idle"
     }
   ],
