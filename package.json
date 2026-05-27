@@ -1,0 +1,28 @@
+{
+  "name": "github-issues-time-tracker",
+  "version": "1.0.0",
+  "description": "A Chrome extension that lets you track time spent on GitHub issues directly from your **GitHub Projects board** — no external tools, no context switching.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test tests/github-adapter.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubnvp/github-issues-time-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/rubnvp/github-issues-time-tracker/issues"
+  },
+  "homepage": "https://github.com/rubnvp/github-issues-time-tracker#readme",
+  "devDependencies": {
+    "cheerio": "^1.2.0",
+    "node-html-parser": "^7.1.0"
+  }
+}

@@ -7,6 +7,7 @@ A Chrome extension that lets you track time spent on GitHub issues directly from
 ## Features
 
 ### ▶ Per-card timer
+
 Every card on your GitHub Projects board gets a small timer widget at the bottom. Click the play button to start tracking, click pause to stop. Simple as that.
 
 - **Grey** — no time recorded yet
@@ -18,6 +19,7 @@ Only one timer can be active at a time. Starting a new one automatically pauses 
 ---
 
 ### 📋 Session history
+
 Tracked time is stored as individual sessions (start + end timestamp), not just a total. Click the **☰** icon on any card that has time recorded to see a breakdown of all sessions:
 
 - Start and end time for each session
@@ -28,6 +30,7 @@ Tracked time is stored as individual sessions (start + end timestamp), not just 
 ---
 
 ### 🔴 Floating bar
+
 While a timer is running, a pill-shaped bar appears at the top center of the page showing:
 
 - The issue title being tracked
@@ -38,6 +41,7 @@ While a timer is running, a pill-shaped bar appears at the top center of the pag
 ---
 
 ### 🖥 Picture-in-Picture window
+
 Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
 
 - Shows a pulsing red dot + live timer
@@ -48,6 +52,7 @@ Click **⧉** in the floating bar to open an always-on-top mini window that floa
 ---
 
 ### 🏷 Tab title
+
 While tracking, the browser tab title updates in real time to show the elapsed time and issue name:
 
 ```
@@ -59,11 +64,13 @@ The original title is restored when the timer stops.
 ---
 
 ### 🔔 Extension badge
+
 The extension icon in the Chrome toolbar shows a live badge with the elapsed time while a timer is running. Useful when GitHub is in a background tab.
 
 ---
 
 ### ⏹ Extension popup
+
 Click the extension icon in the toolbar to open a small popup. If a timer is running, it shows:
 
 - The issue title
@@ -112,3 +119,25 @@ Each entry stores an array of sessions:
 
 - Chrome 116+ (required for Document Picture-in-Picture API)
 - Works on `github.com` project boards (GitHub Projects v2)
+
+---
+
+## Selector tests
+
+The extension relies on specific GitHub DOM selectors. If GitHub changes its markup, these tests will tell you exactly which selector broke and what to fix.
+
+### Setup (required once, and whenever GitHub updates its markup)
+
+1. Open a GitHub Projects board in Chrome
+2. Open DevTools → Elements tab
+3. Right-click on `<html>` → **Copy** → **Copy outerHTML**
+4. Paste the content into `tests/fixtures/board.html`
+
+> `board.html` is git-ignored — it must be generated locally.
+
+### Run
+
+```
+npm install
+npm test
+```
