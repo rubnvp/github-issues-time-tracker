@@ -1,6 +1,6 @@
 // ─── Storage ──────────────────────────────────────────────────────────────────
 // Persists and loads timer state via localStorage.
-// Key format: "time_tracker_<boardCardId>"
+// Key format: "gitt:<boardCardId>"
 //
 // State shape:
 // {
@@ -11,7 +11,7 @@
 // }
 
 const Storage = {
-  PREFIX: "time_tracker_",
+  PREFIX: 'gitt:',
 
   _defaultState: (issueRef) => ({
     issueRef,

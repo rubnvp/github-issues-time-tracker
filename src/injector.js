@@ -1,9 +1,15 @@
 // ─── Injector ─────────────────────────────────────────────────────────────────
 // Builds and injects the timer widget into each GitHub Projects card.
 //
+// Visibility rules:
+//   - No time recorded → button shown in idle style (grey, camouflaged)
+//   - Time recorded, stopped → button in play style (green)
+//   - Running → button in pause style (red)
+//
 // Depends on: Storage, Timer
 
 const Injector = {
+
   // ── Issue ref extraction ───────────────────────────────────────────────────
   // Returns "owner/repo/issues/123" from the issue link inside the card.
   // Stored as metadata inside the state object — not used as a key.
@@ -11,9 +17,7 @@ const Injector = {
   _extractIssueRef(card) {
     const link = card.querySelector('a[href*="/issues/"]');
     if (link) {
-      const match = link
-        .getAttribute("href")
-        .match(/github\.com\/(.+\/issues\/\d+)/);
+      const match = link.getAttribute('href').match(/github\.com\/(.+\/issues\/\d+)/);
       if (match) return match[1];
     }
     return null;
@@ -22,47 +26,15 @@ const Injector = {
   // ── Widget builder ─────────────────────────────────────────────────────────
 
   _buildWidget(boardCardId) {
-    const wrapper = document.createElement("div");
-    wrapper.setAttribute("data-time-tracker", "true");
-    wrapper.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px 0px;
-      border-top: 1px solid var(--borderColor-muted, #e1e4e8);
-      margin-top: 6px;
-    `;
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-time-tracker', 'true');
+    wrapper.className = 'gitt-card-widget';
 
-    const btn = document.createElement("button");
-    btn.style.cssText = `
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      line-height: 1;
-      flex-shrink: 0;
-      transition: transform 0.1s ease, opacity 0.1s ease;
-    `;
+    const btn = document.createElement('button');
+    btn.className = 'gitt-card-widget__btn';
 
-    btn.addEventListener("mouseenter", () => {
-      btn.style.transform = "scale(1.15)";
-    });
-    btn.addEventListener("mouseleave", () => {
-      btn.style.transform = "scale(1)";
-    });
-
-    const display = document.createElement("span");
-    display.style.cssText = `
-      font-size: 12px;
-      font-family: monospace;
-      font-weight: 500;
-      min-width: 44px;
-    `;
+    const display = document.createElement('span');
+    display.className = 'gitt-card-widget__display';
 
     function render() {
       const state = Storage.load(boardCardId);
@@ -74,27 +46,23 @@ const Injector = {
       if (state.running) {
         btn.textContent = '⏸\uFE0E';
         btn.title = 'Pause timer';
-        btn.style.background = 'var(--bgColor-danger-emphasis, #d1242f)';
-        btn.style.color = '#ffffff';
-        display.style.color = 'var(--fgColor-danger, #d1242f)';
+        btn.className = 'gitt-card-widget__btn gitt-card-widget__btn--pause';
+        display.className = 'gitt-card-widget__display gitt-card-widget__display--running';
       } else if (hasTime) {
         btn.textContent = '▶';
         btn.title = 'Start timer';
-        btn.style.background = 'var(--bgColor-success-emphasis, #1a7f37)';
-        btn.style.color = '#ffffff';
-        display.style.color = 'var(--fgColor-muted, #636c76)';
+        btn.className = 'gitt-card-widget__btn gitt-card-widget__btn--play';
+        display.className = 'gitt-card-widget__display gitt-card-widget__display--stopped';
       } else {
-        // No time yet — camouflaged
         btn.textContent = '▶';
         btn.title = 'Start timer';
-        btn.style.background = 'var(--bgColor-neutral-muted, #818b981f)';
-        btn.style.color = 'var(--fgColor-muted, #636c76)';
-        display.style.color = 'var(--fgColor-muted, #636c76)';
+        btn.className = 'gitt-card-widget__btn gitt-card-widget__btn--idle';
+        display.className = 'gitt-card-widget__display gitt-card-widget__display--stopped';
       }
     }
 
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation(); // prevent opening the issue detail panel
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       e.preventDefault();
 
       const state = Storage.load(boardCardId);
@@ -122,21 +90,18 @@ const Injector = {
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
 
-    // Register render so Timer can update this card when stopped externally
     Timer.registerRenderer(boardCardId, render);
 
     return { wrapper, render };
   },
 
   // ── Mount ──────────────────────────────────────────────────────────────────
-  // Inserts the widget after ul[aria-label="Fields"].
-  // Returns true if mounted, false if the fields list isn't ready yet.
 
   _mountWidget(card, boardCardId, wrapper, render) {
     const fieldsList = card.querySelector('ul[aria-label="Fields"]');
     if (!fieldsList) return false;
 
-    fieldsList.insertAdjacentElement("afterend", wrapper);
+    fieldsList.insertAdjacentElement('afterend', wrapper);
     render();
 
     if (Storage.load(boardCardId).running) {
@@ -148,12 +113,11 @@ const Injector = {
   // ── Card injection ─────────────────────────────────────────────────────────
 
   injectCard(card) {
-    if (card.querySelector("[data-time-tracker]")) return; // already injected
+    if (card.querySelector('[data-time-tracker]')) return;
 
-    const boardCardId = card.getAttribute("data-board-card-id");
+    const boardCardId = card.getAttribute('data-board-card-id');
     if (!boardCardId) return;
 
-    // Store issueRef as metadata the first time we see this card
     const state = Storage.load(boardCardId);
     if (!state.issueRef) {
       const issueRef = this._extractIssueRef(card);
@@ -162,13 +126,10 @@ const Injector = {
 
     const { wrapper, render } = this._buildWidget(boardCardId);
 
-    // Try to mount immediately if the card content is already in the DOM
     if (this._mountWidget(card, boardCardId, wrapper, render)) return;
 
-    // Card was added to the DOM but its internal content isn't rendered yet.
-    // Wait for ul[aria-label="Fields"] to appear before mounting.
     const cardObserver = new MutationObserver(() => {
-      if (card.querySelector("[data-time-tracker]")) {
+      if (card.querySelector('[data-time-tracker]')) {
         cardObserver.disconnect();
         return;
       }
@@ -181,8 +142,8 @@ const Injector = {
   },
 
   injectAllCards() {
-    document
-      .querySelectorAll("[data-board-card-id]")
-      .forEach((card) => this.injectCard(card));
+    document.querySelectorAll('[data-board-card-id]').forEach(
+      (card) => this.injectCard(card)
+    );
   },
 };
