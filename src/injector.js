@@ -94,6 +94,19 @@ const Injector = {
 
   // ── Card injection ─────────────────────────────────────────────────────────
 
+  _mountWidget(card, boardCardId, issueId, wrapper, render) {
+    const fieldsList = card.querySelector('ul[aria-label="Fields"]');
+    if (fieldsList) {
+      fieldsList.insertAdjacentElement('afterend', wrapper);
+      render();
+      if (Storage.load(issueId).running) {
+        Timer.start(issueId, boardCardId);
+      }
+      return true;
+    }
+    return false;
+  },
+
   injectCard(card) {
     if (card.querySelector('[data-time-tracker]')) return; // already injected
 
@@ -103,21 +116,22 @@ const Injector = {
     const issueId = this._extractIssueId(card);
     const { wrapper, render } = this._buildWidget(issueId, boardCardId);
 
-    // Insert right after <ul aria-label="Fields">
-    const fieldsList = card.querySelector('ul[aria-label="Fields"]');
-    if (fieldsList) {
-      fieldsList.insertAdjacentElement('afterend', wrapper);
-    } else {
-      const container = card.querySelector('.card-internal-content-module__Box__wLqy7');
-      (container || card).appendChild(wrapper);
-    }
+    // Try to mount immediately if the card content is already in the DOM
+    if (this._mountWidget(card, boardCardId, issueId, wrapper, render)) return;
 
-    render();
+    // Card was added to the DOM but its internal content isn't rendered yet.
+    // Wait for ul[aria-label="Fields"] to appear before mounting.
+    const cardObserver = new MutationObserver(() => {
+      if (card.querySelector('[data-time-tracker]')) {
+        cardObserver.disconnect();
+        return;
+      }
+      if (this._mountWidget(card, boardCardId, issueId, wrapper, render)) {
+        cardObserver.disconnect();
+      }
+    });
 
-    // Resume interval if timer was already running before page reload
-    if (Storage.load(issueId).running) {
-      Timer.start(issueId, boardCardId);
-    }
+    cardObserver.observe(card, { childList: true, subtree: true });
   },
 
   injectAllCards() {
