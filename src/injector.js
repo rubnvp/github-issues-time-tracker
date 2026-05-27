@@ -76,15 +76,16 @@ const Injector = {
       list.className = 'gitt-sessions-popover__list';
 
       sessions.slice().reverse().forEach((s) => {
-        const duration = Timer.formatMs((s.end ?? Date.now()) - s.start);
         const start = _formatDate(s.start);
-        const end = s.end ? _formatDate(s.end) : 'ongoing';
+        const isOngoing = !s.end;
+        const end = isOngoing ? 'ongoing' : _formatDate(s.end);
+        const duration = isOngoing ? '' : Timer.formatMs(s.end - s.start);
 
         const li = document.createElement('li');
         li.className = 'gitt-sessions-popover__item';
         li.innerHTML =
           `<span class="gitt-sessions-popover__range">${start} — ${end}</span>` +
-          `<span class="gitt-sessions-popover__duration">${duration}</span>`;
+          (duration ? `<span class="gitt-sessions-popover__duration">${duration}</span>` : '');
         list.appendChild(li);
       });
 
