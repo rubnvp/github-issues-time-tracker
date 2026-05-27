@@ -1,7 +1,7 @@
 // ─── Timer ────────────────────────────────────────────────────────────────────
 // Handles time formatting, interval management, and single-timer enforcement.
 //
-// Depends on: Storage, FloatingBar
+// Depends on: Storage, FloatingBar, GitHubAdapter
 
 const Timer = {
   // boardCardId → intervalId
@@ -54,7 +54,16 @@ const Timer = {
     }, 1000);
 
     this._intervals.set(boardCardId, id);
-    chrome.runtime.sendMessage({ type: 'BADGE_START' });
+
+    const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
+    const title = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
+    chrome.runtime.sendMessage({
+      type: 'TIMER_START',
+      boardCardId,
+      title,
+      tabId: null, // background resolves tabId from sender, see note below
+    });
+
     FloatingBar.show(boardCardId);
   },
 
@@ -71,8 +80,15 @@ const Timer = {
     if (render) render();
 
     if (this._intervals.size === 0) {
-      chrome.runtime.sendMessage({ type: 'BADGE_STOP' });
+      chrome.runtime.sendMessage({ type: 'TIMER_STOP' });
       FloatingBar.hide();
     }
   },
 };
+
+// ── Listen for stop commands from the popup (via background) ──────────────────
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'STOP_TIMER' && message.boardCardId) {
+    Timer.stop(message.boardCardId);
+  }
+});
