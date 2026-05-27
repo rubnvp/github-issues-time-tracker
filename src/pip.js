@@ -1,6 +1,6 @@
 // ─── PiP ──────────────────────────────────────────────────────────────────────
 // Manages the Document Picture-in-Picture window.
-// Responsive: shows dot + timer always; title appears when width allows it.
+// Responsive: shows dot + timer + pause always; title appears when width allows.
 //
 // IMPORTANT: open() must be called from a user gesture (e.g. a button click).
 
@@ -50,10 +50,28 @@ const PiP = (() => {
       white-space: nowrap;
       text-overflow: ellipsis;
       display: none;
+      flex: 1;
+      min-width: 0;
     }
     .title--visible {
       display: block;
     }
+    .pause-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: #d1242f;
+      color: #ffffff;
+      font-size: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s ease;
+    }
+    .pause-btn:hover { background: #a10e1a; }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(209,36,47,0.6); }
       50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(209,36,47,0.3); }
@@ -91,9 +109,16 @@ const PiP = (() => {
       titleEl.className = 'title';
       titleEl.textContent = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
 
+      const pauseBtn = doc.createElement('button');
+      pauseBtn.className = 'pause-btn';
+      pauseBtn.textContent = '⏸\uFE0E';
+      pauseBtn.title = 'Pause timer';
+      pauseBtn.addEventListener('click', () => Timer.stop(boardCardId));
+
       doc.body.appendChild(dot);
       doc.body.appendChild(timeEl);
       doc.body.appendChild(titleEl);
+      doc.body.appendChild(pauseBtn);
 
       // Show/hide title based on window width
       function updateLayout() {
