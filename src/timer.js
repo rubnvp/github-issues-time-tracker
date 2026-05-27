@@ -81,6 +81,7 @@ const Timer = {
 
     if (this._intervals.size === 0) {
       chrome.runtime.sendMessage({ type: 'TIMER_STOP' });
+      PiP.close();
       FloatingBar.hide();
     }
   },

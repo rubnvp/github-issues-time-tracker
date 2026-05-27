@@ -54,10 +54,21 @@ const FloatingBar = (() => {
       Timer.stop(activeBoardCardId);
     });
 
+    const pipBtn = document.createElement('button');
+    pipBtn.className = 'gitt-floating-bar__pip-btn';
+    pipBtn.textContent = '⧉';
+    pipBtn.title = 'Open Picture-in-Picture';
+    pipBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeBoardCardId) return;
+      PiP.open(activeBoardCardId);
+    });
+
     el.appendChild(dot);
     el.appendChild(info);
     el.appendChild(divider);
     el.appendChild(timeEl);
+    el.appendChild(pipBtn);
     el.appendChild(pauseBtn);
     document.body.appendChild(el);
   }

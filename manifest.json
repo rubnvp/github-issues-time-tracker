@@ -17,6 +17,7 @@
       "js": [
         "src/storage.js",
         "src/github-adapter.js",
+        "src/pip.js",
         "src/floating-bar.js",
         "src/timer.js",
         "src/injector.js",
