@@ -1,7 +1,7 @@
 // ─── Observer ─────────────────────────────────────────────────────────────────
 // Watches the GitHub Projects board for new cards and triggers injection.
 //
-// Depends on: Injector
+// Depends on: Injector, GitHubAdapter
 
 const Observer = {
   _boardObserver: null,
@@ -15,11 +15,12 @@ const Observer = {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (!(node instanceof HTMLElement)) continue;
-          if (node.hasAttribute("data-board-card-id")) {
+          // Node itself is a card
+          if (GitHubAdapter.getCardId(node)) {
             Injector.injectCard(node);
           } else {
-            node
-              .querySelectorAll("[data-board-card-id]")
+            // Node contains cards (e.g. a column batch render)
+            node.querySelectorAll('[data-board-card-id]')
               .forEach((card) => Injector.injectCard(card));
           }
         }

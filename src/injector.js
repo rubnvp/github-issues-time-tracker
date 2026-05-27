@@ -6,7 +6,7 @@
 //   - Time recorded, stopped → button in play style (green)
 //   - Running → button in pause style (red)
 //
-// Depends on: Storage, Timer
+// Depends on: Storage, Timer, GitHubAdapter
 
 function _formatDate(ts) {
   const d = new Date(ts);
@@ -20,16 +20,10 @@ function _formatDate(ts) {
 const Injector = {
 
   // ── Issue ref extraction ───────────────────────────────────────────────────
-  // Returns "owner/repo/issues/123" from the issue link inside the card.
-  // Stored as metadata inside the state object — not used as a key.
 
   _extractIssueRef(card) {
-    const link = card.querySelector('a[href*="/issues/"]');
-    if (link) {
-      const match = link.getAttribute('href').match(/github\.com\/(.+\/issues\/\d+)/);
-      if (match) return match[1];
-    }
-    return null;
+    const link = GitHubAdapter.getIssueLink(card);
+    return link ? GitHubAdapter.parseIssueRef(link.href) : null;
   },
 
   // ── Widget builder ─────────────────────────────────────────────────────────
@@ -157,7 +151,7 @@ const Injector = {
   // ── Mount ──────────────────────────────────────────────────────────────────
 
   _mountWidget(card, boardCardId, wrapper, render) {
-    const fieldsList = card.querySelector('ul[aria-label="Fields"]');
+    const fieldsList = GitHubAdapter.getFieldsAnchor(card);
     if (!fieldsList) return false;
 
     fieldsList.insertAdjacentElement('afterend', wrapper);
@@ -174,7 +168,7 @@ const Injector = {
   injectCard(card) {
     if (card.querySelector('[data-time-tracker]')) return;
 
-    const boardCardId = card.getAttribute('data-board-card-id');
+    const boardCardId = GitHubAdapter.getCardId(card);
     if (!boardCardId) return;
 
     const state = Storage.load(boardCardId);
@@ -201,8 +195,6 @@ const Injector = {
   },
 
   injectAllCards() {
-    document.querySelectorAll('[data-board-card-id]').forEach(
-      (card) => this.injectCard(card)
-    );
+    GitHubAdapter.getAllCards().forEach((card) => this.injectCard(card));
   },
 };
