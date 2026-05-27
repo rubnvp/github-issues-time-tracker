@@ -171,12 +171,6 @@ const Injector = {
     const boardCardId = GitHubAdapter.getCardId(card);
     if (!boardCardId) return;
 
-    const state = Storage.load(boardCardId);
-    if (!state.issueRef) {
-      const issueRef = this._extractIssueRef(card);
-      if (issueRef) Storage.save(boardCardId, { ...state, issueRef });
-    }
-
     const { wrapper, render } = this._buildWidget(boardCardId);
 
     if (this._mountWidget(card, boardCardId, wrapper, render)) return;

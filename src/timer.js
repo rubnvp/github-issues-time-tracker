@@ -42,6 +42,14 @@ const Timer = {
 
     Storage.startSession(boardCardId);
 
+    // Persist issueRef on first session if not already stored
+    const state = Storage.load(boardCardId);
+    if (!state.issueRef) {
+      const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
+      const issueRef = card ? Injector._extractIssueRef(card) : null;
+      if (issueRef) Storage.save(boardCardId, { ...state, issueRef });
+    }
+
     const id = setInterval(() => {
       const el = document.querySelector(
         `[data-board-card-id="${boardCardId}"] [data-time-tracker] span`
