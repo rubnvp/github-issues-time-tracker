@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Issues Time Tracker",
+  "version": "0.1.0",
+  "description": "Track time spent on GitHub Issues directly from GitHub Projects",
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
