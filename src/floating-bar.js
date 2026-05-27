@@ -28,7 +28,7 @@ const FloatingBar = (() => {
 
     const label = document.createElement('span');
     label.className = 'gitt-floating-bar__label';
-    label.textContent = 'TRACKING';
+    label.textContent = 'FOCUSING';
 
     titleEl = document.createElement('span');
     titleEl.className = 'gitt-floating-bar__title';

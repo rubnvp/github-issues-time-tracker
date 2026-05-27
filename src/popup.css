@@ -35,7 +35,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #d1242f;
+  background: #6366f1;
   animation: pulse 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -44,7 +44,7 @@ body {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #d1242f;
+  color: #6366f1;
 }
 
 .popup__title {
@@ -72,7 +72,7 @@ body {
   padding: 7px 0;
   border-radius: 6px;
   border: none;
-  background: #d1242f;
+  background: #6366f1;
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
@@ -81,7 +81,7 @@ body {
 }
 
 .popup__stop-btn:hover {
-  background: #a10e1a;
+  background: #4f46e5;
 }
 
 @keyframes pulse {

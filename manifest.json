@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Issues Time Tracker",
   "version": "0.1.0",
-  "description": "Track time spent on GitHub Issues directly from GitHub Projects",
+  "description": "Stay focused on one issue at a time. A lightweight focus companion for GitHub Projects that helps you track time invested in each issue.",
   "background": {
     "service_worker": "src/background.js"
   },

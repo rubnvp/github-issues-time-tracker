@@ -29,9 +29,9 @@ const PiP = (() => {
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: #d1242f;
+      background: #6366f1;
       flex-shrink: 0;
-      box-shadow: 0 0 8px 2px rgba(209, 36, 47, 0.6);
+      box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.6);
       animation: pulse 1.4s ease-in-out infinite;
     }
     .time {
@@ -61,7 +61,7 @@ const PiP = (() => {
       height: 22px;
       border-radius: 50%;
       border: none;
-      background: #d1242f;
+      background: #6366f1;
       color: #ffffff;
       font-size: 10px;
       cursor: pointer;
@@ -71,10 +71,10 @@ const PiP = (() => {
       justify-content: center;
       transition: background 0.1s ease;
     }
-    .pause-btn:hover { background: #a10e1a; }
+    .pause-btn:hover { background: #4f46e5; }
     @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(209,36,47,0.6); }
-      50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(209,36,47,0.3); }
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
+      50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(99,102,241,0.3); }
     }
   `;
 

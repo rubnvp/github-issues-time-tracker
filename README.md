@@ -1,6 +1,6 @@
 # GitHub Issues Time Tracker
 
-A Chrome extension that lets you track time spent on GitHub issues directly from your **GitHub Projects board** — no external tools, no context switching.
+A Chrome extension to help you stay focused on one issue at a time and easily track the time you invest in each one — directly from your **GitHub Projects board**, no external tools, no context switching.
 
 ---
 
@@ -8,11 +8,11 @@ A Chrome extension that lets you track time spent on GitHub issues directly from
 
 ### ▶ Per-card timer
 
-Every card on your GitHub Projects board gets a small timer widget at the bottom. Click the play button to start tracking, click pause to stop. Simple as that.
+Every card on your GitHub Projects board gets a small timer widget at the bottom. Click the play button to start focusing, click pause to stop. Simple as that.
 
 - **Grey** — no time recorded yet
 - **Green** — time recorded, timer stopped
-- **Red** — timer is currently running
+- **Indigo** — timer is currently running
 
 Only one timer can be active at a time. Starting a new one automatically pauses the previous.
 
@@ -29,11 +29,11 @@ Tracked time is stored as individual sessions (start + end timestamp), not just 
 
 ---
 
-### 🔴 Floating bar
+### 🟣 Floating bar
 
 While a timer is running, a pill-shaped bar appears at the top center of the page showing:
 
-- The issue title being tracked
+- The issue title being focused on
 - Live elapsed time
 - A **pause button** to stop the timer
 - A **⧉ button** to open the Picture-in-Picture window
@@ -44,7 +44,7 @@ While a timer is running, a pill-shaped bar appears at the top center of the pag
 
 Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
 
-- Shows a pulsing red dot + live timer
+- Shows a pulsing dot + live timer
 - Expand the window to also show the issue title
 - Includes a **pause button** so you can stop the timer without going back to the browser
 - Automatically closes when the timer is stopped
@@ -83,7 +83,7 @@ If no timer is running, it simply says so.
 
 ## Installation
 
-This extension is not published to the Chrome Web Store. Install it manually in developer mode:
+This extension is not published to the Chrome Web Store yet. Install it manually in developer mode:
 
 1. Clone or download this repository
 2. Open Chrome and go to `chrome://extensions`

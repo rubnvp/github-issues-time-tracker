@@ -23,7 +23,7 @@ function formatBadge(ms) {
 }
 
 function startBadge() {
-  chrome.action.setBadgeBackgroundColor({ color: '#d1242f' });
+  chrome.action.setBadgeBackgroundColor({ color: '#6366f1' });
   chrome.action.setBadgeText({ text: '0s' });
 
   clearInterval(tickInterval);
