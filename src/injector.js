@@ -26,39 +26,56 @@ const Injector = {
     wrapper.style.cssText = `
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 8px 2px 8px;
+      gap: 8px;
+      padding: 8px 8px 4px 8px;
       border-top: 1px solid var(--borderColor-muted, #e1e4e8);
-      margin-top: 4px;
+      margin-top: 6px;
     `;
 
     const btn = document.createElement('button');
     btn.style.cssText = `
-      background: none;
-      border: 1px solid var(--borderColor-default, #d0d7de);
-      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
       cursor: pointer;
-      font-size: 11px;
-      padding: 2px 6px;
-      line-height: 1.4;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: transform 0.1s ease, opacity 0.1s ease;
     `;
+
+    btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.15)'; });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; });
 
     const display = document.createElement('span');
     display.style.cssText = `
-      font-size: 11px;
+      font-size: 12px;
       font-family: monospace;
-      color: var(--fgColor-muted, #636c76);
-      min-width: 40px;
+      font-weight: 500;
+      min-width: 44px;
     `;
 
     function render() {
       const state = Storage.load(boardCardId);
       display.textContent = Timer.formatMs(Timer.getCurrentMs(state));
-      btn.textContent = state.running ? '⏸' : '▶';
-      btn.title = state.running ? 'Pause timer' : 'Start timer';
-      btn.style.color = state.running
-        ? 'var(--fgColor-danger, #d1242f)'
-        : 'var(--fgColor-default, #1f2328)';
+
+      if (state.running) {
+        btn.textContent = '⏸';
+        btn.title = 'Pause timer';
+        btn.style.background = 'var(--bgColor-danger-emphasis, #d1242f)';
+        btn.style.color = '#ffffff';
+        display.style.color = 'var(--fgColor-danger, #d1242f)';
+      } else {
+        btn.textContent = '▶';
+        btn.title = 'Start timer';
+        btn.style.background = 'var(--bgColor-success-emphasis, #1a7f37)';
+        btn.style.color = '#ffffff';
+        display.style.color = 'var(--fgColor-muted, #636c76)';
+      }
     }
 
     btn.addEventListener('click', (e) => {
