@@ -69,6 +69,12 @@ The extension icon in the Chrome toolbar shows a live badge with the elapsed tim
 
 ---
 
+### 🎉 Celebration
+
+Cards with tracked time show a **🎉** button next to the session history icon. Click it to fire a confetti burst and a short fanfare sound — a small reward for getting the work done.
+
+---
+
 ### ⏹ Extension popup
 
 Click the extension icon in the toolbar to open a small popup. If a timer is running, it shows:

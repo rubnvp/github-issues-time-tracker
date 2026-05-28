@@ -58,7 +58,7 @@
 }
 
 .gitt-card-widget__btn--pause {
-  background: var(--bgColor-accent-emphasis, #6366f1);
+  background: #6366f1;
   color: #ffffff;
 }
 
@@ -77,7 +77,7 @@
 }
 
 .gitt-card-widget__display--running {
-  color: var(--fgColor-accent, #6366f1);
+  color: #6366f1;
 }
 
 .gitt-card-widget__display--stopped {
@@ -90,7 +90,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
   width: 22px;
   height: 22px;
   border-radius: 4px;
@@ -106,6 +105,32 @@
 .gitt-card-widget__sessions-btn:hover {
   background: var(--bgColor-neutral-muted, #eaeef2);
   color: var(--fgColor-default, #1f2328);
+}
+
+.gitt-card-widget__celebrate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.gitt-card-widget:hover .gitt-card-widget__celebrate-btn {
+  opacity: 0.5;
+}
+
+.gitt-card-widget__celebrate-btn:hover {
+  opacity: 1;
+  transform: scale(1.25);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -4,7 +4,7 @@
 // Visibility rules:
 //   - No time recorded → button shown in idle style (grey, camouflaged)
 //   - Time recorded, stopped → button in play style (green)
-//   - Running → button in pause style (red)
+//   - Running → button in pause style (indigo)
 //
 // Depends on: Storage, Timer, GitHubAdapter
 
@@ -47,6 +47,19 @@ const Injector = {
     sessionsBtn.setAttribute('popovertarget', popoverId);
     sessionsBtn.title = 'View sessions';
     sessionsBtn.textContent = '☰';
+
+    const celebrateBtn = document.createElement('button');
+    celebrateBtn.className = 'gitt-card-widget__celebrate-btn';
+    celebrateBtn.title = 'Celebrate!';
+    celebrateBtn.textContent = '🎉';
+    celebrateBtn.style.display = 'none';
+
+    celebrateBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      Confetti.burst();
+      Sounds.celebrate();
+    });
 
     const popover = document.createElement('div');
     popover.id = popoverId;
@@ -121,9 +134,11 @@ const Injector = {
 
       if (hasTime) {
         sessionsBtn.style.display = '';
+        celebrateBtn.style.display = '';
         renderPopover(state.sessions);
       } else {
         sessionsBtn.style.display = 'none';
+        celebrateBtn.style.display = 'none';
       }
     }
 
@@ -134,7 +149,7 @@ const Injector = {
       if (Storage.isRunning(Storage.load(boardCardId))) {
         Timer.stop(boardCardId);
       } else {
-      Timer.start(boardCardId, { silent: true });
+        Timer.start(boardCardId);
       }
 
       render();
@@ -142,6 +157,7 @@ const Injector = {
 
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
+    wrapper.appendChild(celebrateBtn);
     wrapper.appendChild(sessionsBtn);
 
     Timer.registerRenderer(boardCardId, render);

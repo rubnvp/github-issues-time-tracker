@@ -53,5 +53,22 @@ const Sounds = (() => {
         { freq: 440, time: 0.1 },
       ]);
     },
+
+    // Fanfare — signals issue completed 🎉
+    celebrate() {
+      // Chord stabs + ascending run: C4-E4-G4-C5-E5-G5
+      const notes = [261.6, 329.6, 392, 523.3, 659.3, 784];
+      playTone(
+        notes.map((freq, i) => ({ freq, time: i * 0.1 })),
+        0.35,
+        0.22
+      );
+      // Second wave slightly delayed for fullness
+      playTone(
+        [523.3, 659.3, 784, 1046.5].map((freq, i) => ({ freq, time: 0.7 + i * 0.09 })),
+        0.28,
+        0.15
+      );
+    },
   };
 })();
