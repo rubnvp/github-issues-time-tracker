@@ -134,7 +134,7 @@ const Injector = {
       if (Storage.isRunning(Storage.load(boardCardId))) {
         Timer.stop(boardCardId);
       } else {
-        Timer.start(boardCardId);
+      Timer.start(boardCardId, { silent: true });
       }
 
       render();
@@ -159,7 +159,7 @@ const Injector = {
     render();
 
     if (Storage.isRunning(Storage.load(boardCardId))) {
-      Timer.start(boardCardId);
+      Timer.start(boardCardId, { silent: true });
     }
     return true;
   },

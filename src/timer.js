@@ -32,7 +32,7 @@ const Timer = {
   // ── Interval management ─────────────────────────────────────────────────────
 
   // Stops any currently active timer before starting the new one.
-  start(boardCardId) {
+  start(boardCardId, { silent = false } = {}) {
     if (this._intervals.has(boardCardId)) return;
 
     // Stop any other running timer first
@@ -63,7 +63,7 @@ const Timer = {
 
     this._intervals.set(boardCardId, id);
 
-    Sounds.play();
+    if (!silent) Sounds.play();
 
     const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
     const title = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';

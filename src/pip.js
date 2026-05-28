@@ -32,7 +32,7 @@ const PiP = (() => {
       background: #6366f1;
       flex-shrink: 0;
       box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.6);
-      animation: pulse 1.4s ease-in-out infinite;
+      animation: pulse 4.5s ease-in-out infinite;
     }
     .time {
       font-family: monospace;
