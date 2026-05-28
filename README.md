@@ -160,3 +160,12 @@ The extension relies on specific GitHub DOM selectors. If GitHub changes its mar
 npm install
 npm test
 ```
+
+---
+
+## Ideas for the future
+
+- **Timer on issue pages** — inject the widget directly on `/issues/123` pages, not just on the board, for people who work from the issue view
+- **Timer on pull requests** — track time spent reviewing PRs on `/pull/123` pages; code review is invisible work worth measuring
+- **Meeting timer in the popup** — a dedicated button to track time spent in meetings, separate from issue work, to understand the meeting vs. deep work ratio over time
+- **Daily history in the popup** — a view of everything you tracked today with total time per issue/PR, and the ability to navigate back and forward by day for retrospectives
