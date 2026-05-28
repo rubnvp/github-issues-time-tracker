@@ -263,7 +263,7 @@
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: var(--bgColor-accent-emphasis, #6366f1);
+  background: #6366f1;
   color: #ffffff;
   font-size: 15px;
   cursor: pointer;
@@ -272,6 +272,7 @@
 }
 
 .gitt-floating-bar__pause-btn:hover {
+  background: #4f46e5;
   transform: scale(1.15);
 }
 
