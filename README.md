@@ -16,11 +16,13 @@ Every card on your GitHub Projects board gets a small timer widget at the bottom
 
 Only one timer can be active at a time. Starting a new one automatically pauses the previous.
 
+A short sound plays when the timer starts and when it stops.
+
 ---
 
 ### 📋 Session history
 
-Tracked time is stored as individual sessions (start + end timestamp), not just a total. Click the **☰** icon on any card that has time recorded to see a breakdown of all sessions:
+Tracked time is stored as individual sessions (start + end timestamp), not just a total. Hover over a card widget and click the **☰** icon to see a breakdown of all sessions:
 
 - Start and end time for each session
 - Duration per session
@@ -33,27 +35,13 @@ Tracked time is stored as individual sessions (start + end timestamp), not just 
 
 While a timer is running, a pill-shaped bar appears at the top center of the page showing:
 
-- The issue title being focused on
+- **FOCUSING** label
+- The issue title
 - Live elapsed time
 - A **pause button** to stop the timer
 - A **⧉ button** to open the Picture-in-Picture window
 
----
-
-### 🖥 Picture-in-Picture window
-
-Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
-
-- Shows a pulsing dot + live timer
-- Expand the window to also show the issue title
-- Includes a **pause button** so you can stop the timer without going back to the browser
-- Automatically closes when the timer is stopped
-
----
-
-### 🏷 Tab title
-
-While tracking, the browser tab title updates in real time to show the elapsed time and issue name:
+The browser tab title also updates in real time:
 
 ```
 5m 30s — Fix login redirect
@@ -63,15 +51,22 @@ The original title is restored when the timer stops.
 
 ---
 
-### 🔔 Extension badge
+### 🖥 Picture-in-Picture window
 
-The extension icon in the Chrome toolbar shows a live badge with the elapsed time while a timer is running. Useful when GitHub is in a background tab.
+Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
+
+- Shows a slow-pulsing dot + live timer
+- Expand the window to also show the issue title
+- Includes a **pause button** so you can stop the timer without going back to the browser
+- Automatically closes when the timer is stopped
+
+> Requires Chrome 116+ and must be opened via a direct click (browser security requirement).
 
 ---
 
-### 🎉 Celebration
+### 🔔 Extension badge
 
-Cards with tracked time show a **🎉** button next to the session history icon. Click it to fire a confetti burst and a short fanfare sound — a small reward for getting the work done.
+The extension icon in the Chrome toolbar shows a live badge with the elapsed time while a timer is running. Useful when GitHub is in a background tab.
 
 ---
 
@@ -84,6 +79,12 @@ Click the extension icon in the toolbar to open a small popup. If a timer is run
 - A **Stop timer** button
 
 If no timer is running, it simply says so.
+
+---
+
+### 🎉 Celebration
+
+Hover over any card widget that has tracked time to reveal a **🎉** button. Click it to fire a confetti burst and a short fanfare — a small reward for getting the work done.
 
 ---
 
@@ -119,12 +120,22 @@ Each entry stores an array of sessions:
 - Total time and running state are derived from the sessions array — never stored separately
 - Entries are only created when you first press play on a card
 
+> **Note:** data is stored locally in the browser. It is not synced across devices or Chrome profiles.
+
 ---
 
 ## Compatibility
 
 - Chrome 116+ (required for Document Picture-in-Picture API)
 - Works on `github.com` project boards (GitHub Projects v2)
+
+---
+
+## Known limitations
+
+- **Local storage only** — session data lives in `localStorage` for the GitHub domain. Clearing browser data will erase all tracked time.
+- **One board at a time** — if you have multiple GitHub Projects tabs open, the active timer state may conflict between tabs.
+- **GitHub markup dependency** — the extension relies on GitHub's DOM structure. If GitHub updates its Projects UI, some selectors may need updating. The selector tests (see below) will catch breakage early.
 
 ---
 
