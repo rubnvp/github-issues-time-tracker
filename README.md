@@ -2,6 +2,8 @@
 
 A Chrome extension to help you stay focused on one issue at a time and easily track the time you invest in each one — directly from your **GitHub Projects board**, no external tools, no context switching.
 
+![Screenshot](docs/screenshot.png)
+
 ---
 
 ## Features
