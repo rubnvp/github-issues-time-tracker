@@ -78,7 +78,7 @@ const FloatingBar = (() => {
   function tick() {
     if (!activeBoardCardId) return;
     const state = Storage.load(activeBoardCardId);
-    const formatted = Timer.formatMs(Storage.totalMs(state));
+    const formatted = Timer.formatMs(Storage.currentSessionMs(state));
     timeEl.textContent = formatted;
     document.title = `${formatted} — ${activeIssueTitle}`;
   }

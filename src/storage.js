@@ -50,6 +50,12 @@ const Storage = {
     }, 0);
   },
 
+  // Ms elapsed in the current active session only (0 if not running)
+  currentSessionMs(state) {
+    if (!this.isRunning(state)) return 0;
+    return Date.now() - state.sessions[state.sessions.length - 1].start;
+  },
+
   // ── Session mutations ──────────────────────────────────────────────────────
 
   startSession(boardCardId) {

@@ -102,7 +102,7 @@ const PiP = (() => {
 
       const timeEl = doc.createElement('span');
       timeEl.className = 'time';
-      timeEl.textContent = Timer.formatMs(Storage.totalMs(Storage.load(boardCardId)));
+      timeEl.textContent = Timer.formatMs(Storage.currentSessionMs(Storage.load(boardCardId)));
 
       const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
       const titleEl = doc.createElement('span');
@@ -130,7 +130,7 @@ const PiP = (() => {
 
       const tickId = setInterval(() => {
         if (!activeBoardCardId) return;
-        timeEl.textContent = Timer.formatMs(Storage.totalMs(Storage.load(activeBoardCardId)));
+        timeEl.textContent = Timer.formatMs(Storage.currentSessionMs(Storage.load(activeBoardCardId)));
       }, 1000);
 
       pipWindow.addEventListener('pagehide', () => {
