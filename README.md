@@ -74,13 +74,19 @@ The extension icon in the Chrome toolbar shows a live badge with the elapsed tim
 
 ### ⏹ Extension popup
 
-Click the extension icon in the toolbar to open a small popup. If a timer is running, it shows:
+Click the extension icon in the toolbar to open a compact popup. It has two sections:
 
-- The issue title
-- Live elapsed time
-- A **Stop timer** button
+**Active timer row** — visible only when a timer is running:
+- Pulsing dot + issue title + live elapsed time
+- A **stop button** to end the session
 
-If no timer is running, it simply says so.
+**Daily history** — always visible below the timer row:
+- Lists every issue worked on that day, grouped by issue, ordered from most to least recent
+- Each group shows the issue title, total time for the day, and individual session ranges (e.g. `09:15 – 10:45`) with their duration
+- A **total focus time** for the day is displayed in the header
+- Use the **‹ ›** arrows to navigate to previous or future days
+
+If no timer is running, the top row simply shows a muted indicator.
 
 ---
 
@@ -111,6 +117,7 @@ Each entry stores an array of sessions:
 ```json
 {
   "issueRef": "owner/repo/issues/42",
+  "issueTitle": "Fix login redirect",
   "sessions": [
     { "start": 1748000000000, "end": 1748003600000 },
     { "start": 1748010000000, "end": null }
@@ -119,6 +126,7 @@ Each entry stores an array of sessions:
 ```
 
 - `end: null` means the session is currently active
+- `issueTitle` is saved the first time you press play on a card, so the popup history can display it even when the board is not open
 - Total time and running state are derived from the sessions array — never stored separately
 - Entries are only created when you first press play on a card
 
@@ -168,4 +176,3 @@ npm test
 - **Timer on issue pages** — inject the widget directly on `/issues/123` pages, not just on the board, for people who work from the issue view
 - **Timer on pull requests** — track time spent reviewing PRs on `/pull/123` pages; code review is invisible work worth measuring
 - **Meeting timer in the popup** — a dedicated button to track time spent in meetings, separate from issue work, to understand the meeting vs. deep work ratio over time
-- **Daily history in the popup** — a view of everything you tracked today with total time per issue/PR, and the ability to navigate back and forward by day for retrospectives
