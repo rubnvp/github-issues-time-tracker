@@ -8,6 +8,7 @@ const elapsedEl   = document.getElementById('popup-elapsed');
 const stopBtn     = document.getElementById('popup-stop-btn');
 const dailyList   = document.getElementById('daily-list');
 const dailyLabel  = document.getElementById('daily-label');
+const dailyTotal  = document.getElementById('daily-total');
 const prevDayBtn  = document.getElementById('prev-day');
 const nextDayBtn  = document.getElementById('next-day');
 
@@ -72,6 +73,9 @@ function showActive(state) {
 
 function renderHistory(groups) {
   dailyList.innerHTML = '';
+
+  const dayMs = (groups || []).reduce((acc, g) => acc + g.totalMs, 0);
+  dailyTotal.textContent = dayMs > 0 ? formatMs(dayMs) : '';
 
   if (!groups || groups.length === 0) {
     const empty = document.createElement('li');
