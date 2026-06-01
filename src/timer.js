@@ -40,12 +40,13 @@ const Timer = {
       if (activeId !== boardCardId) this.stop(activeId);
     }
 
-    Storage.startSession(boardCardId);
+    const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
+    const issueTitle = card ? GitHubAdapter.getIssueTitle(card) : null;
+    Storage.startSession(boardCardId, issueTitle);
 
     // Persist issueRef on first session if not already stored
     const state = Storage.load(boardCardId);
     if (!state.issueRef) {
-      const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
       const issueRef = card ? Injector._extractIssueRef(card) : null;
       if (issueRef) Storage.save(boardCardId, { ...state, issueRef });
     }
@@ -65,8 +66,7 @@ const Timer = {
 
     if (!silent) Sounds.play();
 
-    const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
-    const title = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
+    const title = issueTitle || 'Issue';
     chrome.runtime.sendMessage({
       type: 'TIMER_START',
       boardCardId,

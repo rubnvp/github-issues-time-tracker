@@ -32,3 +32,11 @@ function init() {
 }
 
 init();
+
+// ── Respond to popup requests for daily session history ───────────────────────
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'GET_DAILY_SESSIONS') {
+    sendResponse(Storage.getDailySessions(message.dateOffset ?? 0));
+    return true;
+  }
+});

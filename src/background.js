@@ -6,11 +6,13 @@
 //   { type: 'TIMER_STOP' }                              → clears badge + state
 //
 // Messages received from popup:
-//   { type: 'GET_STATE' }        → returns { active, title, elapsedMs, tabId }
-//   { type: 'POPUP_STOP' }       → forwards stop to the content script tab
+//   { type: 'GET_STATE' }                      → returns { active, title, elapsedMs, tabId }
+//   { type: 'POPUP_STOP' }                     → forwards stop to the content script tab
+//   { type: 'GET_DAILY_SESSIONS', dateOffset } → forwards to content script, returns groups
 
 let tickInterval = null;
-let activeTimer = null; // { boardCardId, title, tabId, startTime }
+let activeTimer = null;  // { boardCardId, title, tabId, startTime }
+let lastKnownTabId = null; // last tab that sent us any content-script message
 
 function formatBadge(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -41,6 +43,9 @@ function stopBadge() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Track the last tab that had our content script active
+  if (sender.tab?.id) lastKnownTabId = sender.tab.id;
+
   if (message.type === 'TIMER_START') {
     activeTimer = {
       boardCardId: message.boardCardId,
@@ -78,5 +83,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         boardCardId: activeTimer.boardCardId,
       });
     }
+  }
+
+  else if (message.type === 'GET_DAILY_SESSIONS') {
+    // Forward to a tab that has our content script loaded.
+    // Priority: active timer tab → last known tab → all github.com tabs (try each).
+    const dateOffset = message.dateOffset ?? 0;
+
+    const tryTab = (tabId, onFail) => {
+      chrome.tabs.sendMessage(
+        tabId,
+        { type: 'GET_DAILY_SESSIONS', dateOffset },
+        (groups) => {
+          if (chrome.runtime.lastError || groups === undefined) {
+            onFail();
+          } else {
+            sendResponse(groups || []);
+          }
+        }
+      );
+    };
+
+    const tryTabList = (tabIds) => {
+      if (tabIds.length === 0) { sendResponse([]); return; }
+      const [first, ...rest] = tabIds;
+      tryTab(first, () => tryTabList(rest));
+    };
+
+    // Build candidate list (deduplicated, preferred first)
+    chrome.tabs.query({ url: 'https://github.com/*' }, (tabs) => {
+      const allTabIds = tabs.map(t => t.id);
+      const preferred = [activeTimer?.tabId, lastKnownTabId].filter(Boolean);
+      const ordered = [
+        ...preferred,
+        ...allTabIds.filter(id => !preferred.includes(id)),
+      ];
+      tryTabList([...new Set(ordered)]);
+    });
+
+    return true; // async
   }
 });

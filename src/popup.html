@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
+  <!-- ── Active task row (shown when a timer is running) ── -->
   <div id="state-idle" class="popup__row" hidden>
     <span class="popup__dot popup__dot--idle"></span>
     <span class="popup__empty">No timer running</span>
@@ -17,6 +18,16 @@
     <span class="popup__divider"></span>
     <span id="popup-elapsed" class="popup__elapsed"></span>
     <button id="popup-stop-btn" class="popup__stop-btn" title="Stop timer">⏹&#xFE0E;</button>
+  </div>
+
+  <!-- ── Daily history ── -->
+  <div class="popup__history">
+    <div class="popup__history-header">
+      <button id="prev-day" class="popup__nav-btn" title="Previous day">&#x2039;</button>
+      <span id="daily-label" class="popup__daily-label">Today</span>
+      <button id="next-day" class="popup__nav-btn" title="Next day">&#x203a;</button>
+    </div>
+    <ul id="daily-list" class="popup__daily-list"></ul>
   </div>
 
   <script src="popup.js"></script>

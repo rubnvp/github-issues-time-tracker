@@ -4,7 +4,8 @@
 //
 // State shape:
 // {
-//   issueRef: "owner/repo/issues/123",  // informational, for future use
+//   issueRef:   "owner/repo/issues/123",  // informational, for future use
+//   issueTitle: "Fix login redirect",     // human-readable title, for popup history
 //   sessions: [
 //     { start: 1748000000000, end: 1748003600000 },  // completed session
 //     { start: 1748007200000, end: null },            // active session (end: null)
@@ -18,7 +19,7 @@
 const Storage = {
   PREFIX: 'gitt:',
 
-  _defaultState: (issueRef = null) => ({ issueRef, sessions: [] }),
+  _defaultState: (issueRef = null) => ({ issueRef, issueTitle: null, sessions: [] }),
 
   load(boardCardId) {
     const raw = localStorage.getItem(this.PREFIX + boardCardId);
@@ -58,9 +59,10 @@ const Storage = {
 
   // ── Session mutations ──────────────────────────────────────────────────────
 
-  startSession(boardCardId) {
+  startSession(boardCardId, issueTitle = null) {
     const state = this.load(boardCardId);
     if (this.isRunning(state)) return state; // already running
+    if (issueTitle) state.issueTitle = issueTitle;
     state.sessions.push({ start: Date.now(), end: null });
     this.save(boardCardId, state);
     return state;
@@ -72,5 +74,61 @@ const Storage = {
     state.sessions[state.sessions.length - 1].end = Date.now();
     this.save(boardCardId, state);
     return state;
+  },
+
+  // ── Daily history ──────────────────────────────────────────────────────────
+  // Returns all sessions that started on the given day, grouped by issue.
+  // dateOffset: 0 = today, -1 = yesterday, etc.
+  //
+  // Returns:
+  // [
+  //   {
+  //     boardCardId, issueTitle, issueRef,
+  //     totalMs,
+  //     sessions: [{ start, end }, ...]  ← only sessions for that day, asc order
+  //   },
+  //   ...
+  // ]
+  // Groups are ordered by the most recent session start desc.
+  getDailySessions(dateOffset = 0) {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dateOffset);
+    const dayStart = target.getTime();
+    const dayEnd   = dayStart + 86400000;
+
+    const groups = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(this.PREFIX)) continue;
+
+      const boardCardId = key.slice(this.PREFIX.length);
+      let state;
+      try { state = JSON.parse(localStorage.getItem(key)); } catch { continue; }
+      if (!state || !Array.isArray(state.sessions)) continue;
+
+      const daySessions = state.sessions.filter(s => s.start >= dayStart && s.start < dayEnd);
+      if (daySessions.length === 0) continue;
+
+      const totalMs = daySessions.reduce((acc, s) => {
+        return acc + ((s.end ?? Date.now()) - s.start);
+      }, 0);
+
+      const lastStart = Math.max(...daySessions.map(s => s.start));
+
+      groups.push({
+        boardCardId,
+        issueTitle: state.issueTitle || state.issueRef || boardCardId,
+        issueRef:   state.issueRef   || null,
+        totalMs,
+        lastStart,
+        sessions: daySessions,
+      });
+    }
+
+    // Most recently worked on first
+    groups.sort((a, b) => b.lastStart - a.lastStart);
+
+    return groups;
   },
 };
