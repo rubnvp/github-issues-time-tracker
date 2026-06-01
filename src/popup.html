@@ -6,18 +6,17 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="state-idle" class="popup__state" hidden>
-    <p class="popup__empty">No timer running.</p>
+  <div id="state-idle" class="popup__row" hidden>
+    <span class="popup__dot popup__dot--idle"></span>
+    <span class="popup__empty">No timer running</span>
   </div>
 
-  <div id="state-active" class="popup__state" hidden>
-    <div class="popup__header">
-      <span class="popup__dot"></span>
-      <span class="popup__label">FOCUSING</span>
-    </div>
-    <p id="popup-title" class="popup__title"></p>
-    <p id="popup-elapsed" class="popup__elapsed"></p>
-    <button id="popup-stop-btn" class="popup__stop-btn">Stop timer</button>
+  <div id="state-active" class="popup__row" hidden>
+    <span class="popup__dot"></span>
+    <span id="popup-title" class="popup__title"></span>
+    <span class="popup__divider"></span>
+    <span id="popup-elapsed" class="popup__elapsed"></span>
+    <button id="popup-stop-btn" class="popup__stop-btn" title="Stop timer">⏹&#xFE0E;</button>
   </div>
 
   <script src="popup.js"></script>
