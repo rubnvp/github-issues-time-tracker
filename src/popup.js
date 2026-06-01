@@ -1,22 +1,12 @@
 // ─── popup.js ─────────────────────────────────────────────────────────────────
-// Queries the background for active timer state and renders the popup UI.
+// Declarative popup UI built with preact + htm (no build step, no unsafe-eval).
+// htm uses tagged template literals — parsed natively by the JS engine.
 
-const stateIdle   = document.getElementById('state-idle');
-const stateActive = document.getElementById('state-active');
-const titleEl     = document.getElementById('popup-title');
-const elapsedEl   = document.getElementById('popup-elapsed');
-const stopBtn     = document.getElementById('popup-stop-btn');
-const dailyList   = document.getElementById('daily-list');
-const dailyLabel  = document.getElementById('daily-label');
-const dailyTotal  = document.getElementById('daily-total');
-const prevDayBtn  = document.getElementById('prev-day');
-const nextDayBtn  = document.getElementById('next-day');
+const { h, render, Fragment }         = preact;
+const { useState, useEffect, useRef } = preactHooks;
+const html                            = htm.bind(h);
 
-let tickId      = null;
-let elapsedMs   = 0;
-let dateOffset  = 0; // 0 = today, -1 = yesterday, …
-
-// ── Formatting ────────────────────────────────────────────────────────────────
+// ── Formatting helpers ────────────────────────────────────────────────────────
 
 function formatMs(ms) {
   if (ms < 1000) return '0s';
@@ -26,13 +16,13 @@ function formatMs(ms) {
   const minutes      = totalMinutes % 60;
   const hours        = Math.floor(totalMinutes / 60);
 
-  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (hours > 0)   return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m ${seconds}s`;
   return `${seconds}s`;
 }
 
 function formatTime(ts) {
-  const d = new Date(ts);
+  const d  = new Date(ts);
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${hh}:${mm}`;
@@ -46,126 +36,144 @@ function dayLabel(offset) {
   return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-// ── Active timer state ────────────────────────────────────────────────────────
-
-function showIdle() {
-  stateIdle.hidden   = false;
-  stateActive.hidden = true;
-  clearInterval(tickId);
+function sessionRange(session) {
+  return session.end
+    ? `${formatTime(session.start)} – ${formatTime(session.end)}`
+    : `${formatTime(session.start)} – now`;
 }
 
-function showActive(state) {
-  stateIdle.hidden   = true;
-  stateActive.hidden = false;
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-  titleEl.textContent = state.title;
-  elapsedMs           = state.elapsedMs;
-  elapsedEl.textContent = formatMs(elapsedMs);
+function SessionRow({ session }) {
+  const isOngoing = !session.end;
+  const duration  = formatMs(isOngoing ? Date.now() - session.start : session.end - session.start);
 
-  clearInterval(tickId);
-  tickId = setInterval(() => {
-    elapsedMs += 1000;
-    elapsedEl.textContent = formatMs(elapsedMs);
-  }, 1000);
+  return html`
+    <li class="popup__session-row">
+      <span class=${'popup__session-range' + (isOngoing ? ' popup__session-range--active' : '')}>
+        ${sessionRange(session)}
+      </span>
+      <span class="popup__session-duration">${duration}</span>
+    </li>
+  `;
 }
 
-// ── Daily history ─────────────────────────────────────────────────────────────
+function IssueGroup({ group }) {
+  return html`
+    <${Fragment}>
+      <li class="popup__issue-header">
+        <span class="popup__issue-title">${group.issueTitle}</span>
+        <span class="popup__issue-total">${formatMs(group.totalMs)}</span>
+      </li>
+      ${[...group.sessions].reverse().map(s => html`<${SessionRow} key=${s.start} session=${s} />`)}
+    </${Fragment}>
+  `;
+}
 
-function renderHistory(groups) {
-  dailyList.innerHTML = '';
+function DailyHistory({ groups, dayTotal, dateOffset, onPrev, onNext }) {
+  return html`
+    <div class="popup__history">
+      <div class="popup__history-header">
+        <button class="popup__nav-btn" onClick=${onPrev}>‹</button>
+        <div class="popup__daily-meta">
+          <span>${dayLabel(dateOffset)}</span>
+          <span>${dayTotal}</span>
+        </div>
+        <button class="popup__nav-btn" disabled=${dateOffset >= 0} onClick=${onNext}>›</button>
+      </div>
+      <ul class="popup__daily-list">
+        ${groups.length === 0
+          ? html`<li class="popup__daily-empty">No sessions</li>`
+          : groups.map(g => html`<${IssueGroup} key=${g.issueTitle} group=${g} />`)
+        }
+      </ul>
+    </div>
+  `;
+}
 
-  const dayMs = (groups || []).reduce((acc, g) => acc + g.totalMs, 0);
-  dailyTotal.textContent = dayMs > 0 ? formatMs(dayMs) : '';
+// ── Root component ────────────────────────────────────────────────────────────
 
-  if (!groups || groups.length === 0) {
-    const empty = document.createElement('li');
-    empty.className = 'popup__daily-empty';
-    empty.textContent = 'No sessions';
-    dailyList.appendChild(empty);
-    return;
+function App() {
+  const [active,     setActive]     = useState(false);
+  const [title,      setTitle]      = useState('');
+  const [elapsedMs,  setElapsedMs]  = useState(0);
+  const [dateOffset, setDateOffset] = useState(0);
+  const [groups,     setGroups]     = useState([]);
+  const [dayTotal,   setDayTotal]   = useState('');
+
+  const tickRef = useRef(null);
+
+  function startTick(initialMs) {
+    clearInterval(tickRef.current);
+    let ms = initialMs;
+    tickRef.current = setInterval(() => { ms += 1000; setElapsedMs(ms); }, 1000);
   }
 
-  groups.forEach((group) => {
-    // ── Issue header row ──────────────────────────────────────────────────────
-    const headerLi = document.createElement('li');
-    headerLi.className = 'popup__issue-header';
-
-    const issueTitle = document.createElement('span');
-    issueTitle.className = 'popup__issue-title';
-    issueTitle.textContent = group.issueTitle;
-
-    const issueTotal = document.createElement('span');
-    issueTotal.className = 'popup__issue-total';
-    issueTotal.textContent = formatMs(group.totalMs);
-
-    headerLi.appendChild(issueTitle);
-    headerLi.appendChild(issueTotal);
-    dailyList.appendChild(headerLi);
-
-    // ── Session rows (most recent first) ──────────────────────────────────────
-    group.sessions.slice().reverse().forEach((s) => {
-      const isOngoing = !s.end;
-      const duration  = isOngoing ? formatMs(Date.now() - s.start) : formatMs(s.end - s.start);
-      const range     = isOngoing
-        ? `${formatTime(s.start)} – now`
-        : `${formatTime(s.start)} – ${formatTime(s.end)}`;
-
-      const li = document.createElement('li');
-      li.className = 'popup__session-row';
-
-      const rangeEl = document.createElement('span');
-      rangeEl.className = 'popup__session-range' + (isOngoing ? ' popup__session-range--active' : '');
-      rangeEl.textContent = range;
-
-      const durationEl = document.createElement('span');
-      durationEl.className = 'popup__session-duration';
-      durationEl.textContent = duration;
-
-      li.appendChild(rangeEl);
-      li.appendChild(durationEl);
-      dailyList.appendChild(li);
+  function loadHistory(offset) {
+    chrome.runtime.sendMessage({ type: 'GET_DAILY_SESSIONS', dateOffset: offset }, (gs) => {
+      const list  = gs || [];
+      const total = list.reduce((acc, g) => acc + g.totalMs, 0);
+      setGroups(list);
+      setDayTotal(total > 0 ? formatMs(total) : '');
     });
-  });
+  }
+
+  useEffect(() => {
+    chrome.runtime.sendMessage({ type: 'GET_STATE' }, (state) => {
+      if (state?.active) {
+        setActive(true);
+        setTitle(state.title);
+        setElapsedMs(state.elapsedMs);
+        startTick(state.elapsedMs);
+      }
+    });
+    loadHistory(0);
+    return () => clearInterval(tickRef.current);
+  }, []);
+
+  function stop() {
+    chrome.runtime.sendMessage({ type: 'POPUP_STOP' });
+    setActive(false);
+    clearInterval(tickRef.current);
+  }
+
+  function prevDay() {
+    const next = dateOffset - 1;
+    setDateOffset(next);
+    loadHistory(next);
+  }
+
+  function nextDay() {
+    if (dateOffset >= 0) return;
+    const next = dateOffset + 1;
+    setDateOffset(next);
+    loadHistory(next);
+  }
+
+  return html`
+    <${Fragment}>
+      <div class="popup__row" hidden=${active}>
+        <span class="popup__dot popup__dot--idle"></span>
+        <span class="popup__empty">No timer running</span>
+      </div>
+
+      <div class="popup__row" hidden=${!active}>
+        <span class="popup__dot"></span>
+        <span class="popup__title">${title}</span>
+        <span class="popup__divider"></span>
+        <span class="popup__elapsed">${formatMs(elapsedMs)}</span>
+        <button class="popup__stop-btn" onClick=${stop}>⏹</button>
+      </div>
+
+      <${DailyHistory}
+        groups=${groups}
+        dayTotal=${dayTotal}
+        dateOffset=${dateOffset}
+        onPrev=${prevDay}
+        onNext=${nextDay}
+      />
+    </${Fragment}>
+  `;
 }
 
-function loadHistory() {
-  dailyLabel.textContent = dayLabel(dateOffset);
-  // Disable next-day button when at today
-  nextDayBtn.disabled = dateOffset >= 0;
-
-  chrome.runtime.sendMessage(
-    { type: 'GET_DAILY_SESSIONS', dateOffset },
-    (groups) => {
-      renderHistory(groups || []);
-    }
-  );
-}
-
-// ── Navigation ────────────────────────────────────────────────────────────────
-
-prevDayBtn.addEventListener('click', () => {
-  dateOffset -= 1;
-  loadHistory();
-});
-
-nextDayBtn.addEventListener('click', () => {
-  if (dateOffset >= 0) return;
-  dateOffset += 1;
-  loadHistory();
-});
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-
-chrome.runtime.sendMessage({ type: 'GET_STATE' }, (state) => {
-  if (state?.active) showActive(state);
-  else showIdle();
-});
-
-loadHistory();
-
-// ── Stop button ───────────────────────────────────────────────────────────────
-
-stopBtn.addEventListener('click', () => {
-  chrome.runtime.sendMessage({ type: 'POPUP_STOP' });
-  showIdle();
-});
+render(html`<${App} />`, document.getElementById('app'));

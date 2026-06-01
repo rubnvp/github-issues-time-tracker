@@ -2,37 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- ── Active task row (shown when a timer is running) ── -->
-  <div id="state-idle" class="popup__row" hidden>
-    <span class="popup__dot popup__dot--idle"></span>
-    <span class="popup__empty">No timer running</span>
-  </div>
+  <div id="app"></div>
 
-  <div id="state-active" class="popup__row" hidden>
-    <span class="popup__dot"></span>
-    <span id="popup-title" class="popup__title"></span>
-    <span class="popup__divider"></span>
-    <span id="popup-elapsed" class="popup__elapsed"></span>
-    <button id="popup-stop-btn" class="popup__stop-btn" title="Stop timer">⏹&#xFE0E;</button>
-  </div>
-
-  <!-- ── Daily history ── -->
-  <div class="popup__history">
-    <div class="popup__history-header">
-      <button id="prev-day" class="popup__nav-btn" title="Previous day">&#x2039;</button>
-      <div class="popup__daily-meta">
-        <span id="daily-label" class="popup__daily-label">Today</span>
-        <span id="daily-total" class="popup__daily-total"></span>
-      </div>
-      <button id="next-day" class="popup__nav-btn" title="Next day">&#x203a;</button>
-    </div>
-    <ul id="daily-list" class="popup__daily-list"></ul>
-  </div>
-
+  <script src="preact.min.js"></script>
+  <script src="preact-hooks.umd.js"></script>
+  <script src="htm.umd.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

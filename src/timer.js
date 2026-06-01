@@ -67,12 +67,14 @@ const Timer = {
     if (!silent) Sounds.play();
 
     const title = issueTitle || 'Issue';
-    chrome.runtime.sendMessage({
-      type: 'TIMER_START',
-      boardCardId,
-      title,
-      tabId: null, // background resolves tabId from sender, see note below
-    });
+    try {
+      chrome.runtime.sendMessage({
+        type: 'TIMER_START',
+        boardCardId,
+        title,
+        tabId: null, // background resolves tabId from sender, see note below
+      });
+    } catch (_) { /* extension context invalidated (e.g. after reload) */ }
 
     FloatingBar.show(boardCardId);
   },
@@ -91,7 +93,7 @@ const Timer = {
 
     if (this._intervals.size === 0) {
       Sounds.stop();
-      chrome.runtime.sendMessage({ type: 'TIMER_STOP' });
+      try { chrome.runtime.sendMessage({ type: 'TIMER_STOP' }); } catch (_) {}
       PiP.close();
       FloatingBar.hide();
     }
