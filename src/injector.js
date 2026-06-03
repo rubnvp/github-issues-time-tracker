@@ -64,15 +64,21 @@ const Injector = {
     const popover = document.createElement('div');
     popover.id = popoverId;
 
-    // Position popover near the button when it opens
-    popover.addEventListener('toggle', (e) => {
-      if (e.newState !== 'open') return;
+    // Position popover near the button when it opens.
+    // We capture the button's rect on click (guaranteed to be in the DOM and
+    // visible at that moment) and apply it in a rAF after the popover opens,
+    // avoiding the race where getBoundingClientRect() can return zeros inside
+    // the toggle event (e.g. after a React re-render re-mounts the widget).
+    sessionsBtn.addEventListener('click', () => {
       const rect = sessionsBtn.getBoundingClientRect();
+      if (!rect.width && !rect.height) return; // safety: element not rendered
       const popoverWidth = 280;
       let left = rect.right - popoverWidth;
       if (left < 8) left = 8;
-      popover.style.top = `${rect.bottom + 6}px`;
-      popover.style.left = `${left}px`;
+      requestAnimationFrame(() => {
+        popover.style.top = `${rect.bottom + 6}px`;
+        popover.style.left = `${left}px`;
+      });
     });
     popover.setAttribute('popover', '');
     popover.className = 'gitt-sessions-popover';
