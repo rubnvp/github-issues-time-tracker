@@ -15,6 +15,7 @@ function init() {
   if (board) {
     Injector.injectAllCards();
     Observer.watchBoard(board);
+    startHeartbeat();
     return;
   }
 
@@ -25,10 +26,18 @@ function init() {
       rootObserver.disconnect();
       Injector.injectAllCards();
       Observer.watchBoard(board);
+      startHeartbeat();
     }
   });
 
   rootObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+// Safety-net heartbeat: re-inject any cards that lost their widget due to
+// React re-renders not caught by the MutationObservers. injectCard() is
+// idempotent (guarded by [data-time-tracker]), so this is safe to run often.
+function startHeartbeat() {
+  setInterval(() => Injector.injectAllCards(), 3000);
 }
 
 init();

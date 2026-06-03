@@ -182,6 +182,21 @@ const Injector = {
 
   // ── Card injection ─────────────────────────────────────────────────────────
 
+  // Watch a card for two situations:
+  //   1. The fields anchor didn't exist yet at injection time — retry mounting.
+  //   2. The widget was removed by a React re-render — re-mount it.
+  _watchCard(card, boardCardId, wrapper, render) {
+    const cardObserver = new MutationObserver(() => {
+      const alreadyMounted = card.querySelector('[data-time-tracker]');
+      if (alreadyMounted) return; // still there, nothing to do
+
+      // Widget is gone (or was never mounted) — try to re-mount
+      this._mountWidget(card, boardCardId, wrapper, render);
+    });
+
+    cardObserver.observe(card, { childList: true, subtree: true });
+  },
+
   injectCard(card) {
     if (card.querySelector('[data-time-tracker]')) return;
 
@@ -190,19 +205,11 @@ const Injector = {
 
     const { wrapper, render } = this._buildWidget(boardCardId);
 
-    if (this._mountWidget(card, boardCardId, wrapper, render)) return;
+    // Attempt initial mount (may fail if fields anchor not yet in DOM)
+    this._mountWidget(card, boardCardId, wrapper, render);
 
-    const cardObserver = new MutationObserver(() => {
-      if (card.querySelector('[data-time-tracker]')) {
-        cardObserver.disconnect();
-        return;
-      }
-      if (this._mountWidget(card, boardCardId, wrapper, render)) {
-        cardObserver.disconnect();
-      }
-    });
-
-    cardObserver.observe(card, { childList: true, subtree: true });
+    // Always watch the card so we can re-mount if the widget disappears
+    this._watchCard(card, boardCardId, wrapper, render);
   },
 
   injectAllCards() {
