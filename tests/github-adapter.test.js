@@ -56,6 +56,7 @@ const Adapter = {
   getCardId:        (card) => $(card).attr('data-board-card-id'),
   getIssueLink:     (card) => $(card).find('a[href*="/issues/"]').get(0) ?? null,
   getIssueTitle:    (card) => $(card).find('h3 span').first().text().trim() || null,
+  getIssueTitleElement: (card) => $(card).find('h3').first().get(0) ?? null,
   getFieldsAnchor:  (card) => $(card).find('ul[aria-label="Fields"]').get(0) ?? null,
 };
 
@@ -149,6 +150,14 @@ describe('GitHubAdapter — DOM selectors', () => {
       assert.ok(
         title && title.length > 0,
         'Issue title is empty. GitHub may have changed the title element from <h3><span> inside cards.'
+      );
+    });
+
+    test('getIssueTitleElement: finds the title heading for adjacent personal notes', () => {
+      assert.ok(card, 'No card available to test.');
+      assert.ok(
+        Adapter.getIssueTitleElement(card),
+        'Issue title heading not found. GitHub may have changed the card title markup.'
       );
     });
 

@@ -12,6 +12,7 @@ function createStorage(entries) {
       get length() { return data.size; },
       key: index => [...data.keys()][index],
       getItem: key => data.get(key) ?? null,
+      setItem: (key, value) => data.set(key, value),
     },
   });
   vm.runInContext(source, context);
@@ -49,4 +50,47 @@ test('daily focus resets at local midnight even while a session continues', () =
 test('invalid timer state is not silently replaced with empty sessions', () => {
   const storage = createStorage({ 'gitt:issue': { totalMs: 1000 } });
   assert.throws(() => storage.load('issue'), /Invalid timer state/);
+});
+
+test('personal why is stored with timer state without changing its sessions', () => {
+  const storage = createStorage({
+    'gitt:issue': {
+      issueRef: 'owner/repo/issues/12',
+      sessions: [{ start: 100, end: 200 }],
+    },
+  });
+
+  storage.saveWhy('issue', '  Help users recover access  ');
+  assert.equal(storage.load('issue').why, 'Help users recover access');
+  assert.equal(storage.load('issue').sessions.length, 1);
+  storage.saveWhy('issue', '');
+  assert.equal(storage.load('issue').why, null);
+});
+
+test('first-start why suggestion is one-time and only for cards without session history', () => {
+  const storage = createStorage({
+    'gitt:worked': { sessions: [{ start: 100, end: 200 }] },
+    'gitt:has-why': { sessions: [], why: 'Help users', whyPrompted: false },
+    'gitt:already-prompted': { sessions: [], whyPrompted: true },
+  });
+
+  assert.equal(storage.shouldSuggestWhy('new'), true);
+  assert.equal(storage.shouldSuggestWhy('new'), false);
+  assert.equal(storage.shouldSuggestWhy('worked'), false);
+  assert.equal(storage.shouldSuggestWhy('has-why'), false);
+  assert.equal(storage.shouldSuggestWhy('already-prompted'), false);
+});
+
+test('daily history includes the personal why for each issue group', () => {
+  const storage = createStorage({
+    'gitt:issue': {
+      issueTitle: 'Improve keyboard navigation',
+      why: 'Make the board usable without a mouse',
+      sessions: [{ start: Date.now(), end: null }],
+    },
+  });
+
+  const [group] = storage.getDailySessions();
+  assert.equal(group.issueTitle, 'Improve keyboard navigation');
+  assert.equal(group.why, 'Make the board usable without a mouse');
 });

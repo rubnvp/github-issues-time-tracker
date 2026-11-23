@@ -16,6 +16,70 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   BLOCK: gitt-card-why
+   A personal purpose note above the unchanged GitHub issue title.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.gitt-card-why {
+  display: none;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: #8250df;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.gitt-card-why[data-has-why="true"],
+.gitt-card-why[data-editing="true"],
+[data-board-card-id]:hover .gitt-card-why {
+  display: flex;
+}
+
+.gitt-card-why__text {
+  overflow: hidden;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.gitt-card-why__edit {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0 3px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  opacity: 0;
+}
+
+[data-board-card-id]:hover .gitt-card-why__edit,
+.gitt-card-why:focus-within .gitt-card-why__edit {
+  opacity: 0.7;
+}
+
+.gitt-card-why__edit:hover {
+  opacity: 1;
+}
+
+.gitt-card-why__input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--borderColor-default, #d0d7de);
+  border-radius: 4px;
+  padding: 3px 6px;
+  color: var(--fgColor-default, #1f2328);
+  background: var(--bgColor-default, #ffffff);
+  font: inherit;
+}
+
+.gitt-card-why__hint {
+  flex-basis: 100%;
+  color: var(--fgColor-muted, #636c76);
+  font-size: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    BLOCK: gitt-card-widget
    The timer bar injected at the bottom of each GitHub Projects card.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -245,6 +309,15 @@
   letter-spacing: 0.1em;
   color: #6366f1;
   line-height: 1;
+}
+
+.gitt-floating-bar__why {
+  max-width: 380px;
+  overflow: hidden;
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
 }
 
 .gitt-floating-bar__title {

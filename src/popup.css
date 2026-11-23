@@ -200,10 +200,27 @@ body {
 
 .popup__issue-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 8px 14px 3px;
+}
+
+.popup__issue-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.popup__issue-why {
+  overflow: hidden;
+  color: #a78bfa;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .popup__issue-title {
@@ -213,8 +230,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
-  min-width: 0;
 }
 
 .popup__issue-total {

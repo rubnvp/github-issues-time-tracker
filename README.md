@@ -22,6 +22,8 @@ Each board card has a play/pause button and a time display. Only one timer can r
 
 Hover over the card timer and click **☰** to see its sessions, or **🎉** for a confetti celebration. While running, the floating bar shows the issue, elapsed time and controls; the browser tab title and extension badge also show the timer.
 
+Cards also support a short personal **why** note above the GitHub issue title. Add or edit it inline from the card; on a card's first timer start, an optional prompt appears without delaying the timer. The note stays local to that board card and appears in the floating bar, PiP and popup history.
+
 Open the extension popup to stop the active timer, browse daily history by issue and access **Settings**.
 
 ### Picture-in-Picture
@@ -68,7 +70,7 @@ Changing the interval restarts the wait. Resuming focus, getting back on pace, d
 
 ## Data and limitations
 
-Sessions are stored in the GitHub domain's `localStorage` under `gitt:<boardCardId>`, with start/end timestamps and issue information. Running state and totals are derived from those sessions. Clearing browser data erases tracked time.
+Sessions and personal why notes are stored in the GitHub domain's `localStorage` under `gitt:<boardCardId>`, with start/end timestamps and issue information. Running state and totals are derived from those sessions. The notes never update GitHub issues. Clearing browser data erases tracked time and notes.
 
 Preferences are stored separately in `chrome.storage.local`. Neither sessions nor preferences sync across devices or Chrome profiles.
 

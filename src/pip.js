@@ -86,6 +86,23 @@ const PiP = (() => {
       flex: 0 1 25vw;
       min-width: 0;
     }
+    .issue-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 0 1 25vw;
+      min-width: 0;
+    }
+    .issue-info .title { flex: initial; }
+    .why {
+      overflow: hidden;
+      color: #c4b5fd;
+      font-size: 11px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .why[hidden] { display: none; }
     .progress-stack {
       display: grid;
       grid-template-columns: minmax(20px, 1fr) auto;
@@ -183,7 +200,9 @@ const PiP = (() => {
     }
     .pause-btn:hover { background: #4f46e5; }
     @media (max-width: 480px) {
-      .title { display: none; }
+      .issue-info { flex-basis: 20vw; }
+      .issue-info .title { font-size: 10px; }
+      .why { font-size: 9px; }
     }
     @keyframes mascot-breathe {
       0%, 100% { transform: scale(1); }
@@ -293,7 +312,7 @@ const PiP = (() => {
 
       const nextWindow = await documentPictureInPicture.requestWindow({
         width: Math.max(window.screen.availWidth, 240),
-        height: 52,
+        height: 64,
         disallowReturnToOpener: true,
       });
 
@@ -314,8 +333,14 @@ const PiP = (() => {
 
       const timeEl = doc.createElement('span');
       timeEl.className = 'time';
+      const issueInfo = doc.createElement('div');
+      issueInfo.className = 'issue-info';
+      const whyEl = doc.createElement('span');
+      whyEl.className = 'why';
+      whyEl.hidden = true;
       const titleEl = doc.createElement('span');
       titleEl.className = 'title';
+      issueInfo.append(whyEl, titleEl);
 
       const progressEl = doc.createElement('div');
       progressEl.className = 'progress';
@@ -400,7 +425,7 @@ const PiP = (() => {
 
       doc.body.appendChild(mascot);
       doc.body.appendChild(timeEl);
-      doc.body.appendChild(titleEl);
+      doc.body.appendChild(issueInfo);
       doc.body.appendChild(progressStack);
       doc.body.appendChild(pauseBtn);
 
@@ -512,6 +537,8 @@ const PiP = (() => {
         timeEl.textContent = running ? Timer.formatMs(Storage.currentSessionMs(state)) : 'Paused';
         const card = document.querySelector(`[data-board-card-id="${activeBoardCardId}"]`);
         titleEl.textContent = state.issueTitle || (card ? GitHubAdapter.getIssueTitle(card) : 'Issue');
+        whyEl.textContent = state.why || '';
+        whyEl.hidden = !state.why;
         pauseBtn.textContent = running ? '⏸\uFE0E' : '▶';
         pauseBtn.title = running ? 'Pause timer' : 'Resume timer';
         pauseBtn.setAttribute('aria-label', pauseBtn.title);

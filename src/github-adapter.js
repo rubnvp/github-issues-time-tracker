@@ -43,6 +43,10 @@ const GitHubAdapter = {
     return card.querySelector('h3 span')?.textContent?.trim() ?? 'Issue';
   },
 
+  getIssueTitleElement(card) {
+    return card.querySelector('h3');
+  },
+
   getFieldsAnchor(card) {
     return card.querySelector('ul[aria-label="Fields"]');
   },

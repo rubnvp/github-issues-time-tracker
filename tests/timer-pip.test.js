@@ -179,7 +179,13 @@ test('kept PiP follows a different issue and its controls act on the new timer',
   h.timer.start('second');
 
   const { body } = h.windows[0].document;
-  assert.equal(body.children.find(el => el.className === 'title').textContent, 'Second issue');
+  const issueInfo = body.children.find(el => el.className === 'issue-info');
+  assert.equal(issueInfo.children.find(el => el.className === 'title').textContent, 'Second issue');
+  h.storage.saveWhy('second', 'Help users finish setup');
+  h.pip.refresh();
+  const why = issueInfo.children.find(el => el.className === 'why');
+  assert.equal(why.textContent, 'Help users finish setup');
+  assert.equal(why.hidden, false);
   const click = body.children.find(el => el.className === 'pause-btn').listeners.get('click');
   click();
   assert.equal(h.storage.isRunning(h.storage.load('second')), false);

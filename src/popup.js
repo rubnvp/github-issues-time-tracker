@@ -62,7 +62,10 @@ function IssueGroup({ group }) {
   return html`
     <${Fragment}>
       <li class="popup__issue-header">
-        <span class="popup__issue-title">${group.issueTitle}</span>
+        <div class="popup__issue-copy">
+          ${group.why && html`<span class="popup__issue-why">${group.why}</span>`}
+          <span class="popup__issue-title">${group.issueTitle}</span>
+        </div>
         <span class="popup__issue-total">${formatMs(group.totalMs)}</span>
       </li>
       ${[...group.sessions].reverse().map(s => html`<${SessionRow} key=${s.start} session=${s} />`)}

@@ -28,7 +28,7 @@ const Injector = {
 
   // ── Widget builder ─────────────────────────────────────────────────────────
 
-  _buildWidget(boardCardId) {
+  _buildWidget(boardCardId, beforeFirstStart, afterFirstStart) {
     const wrapper = document.createElement('div');
     wrapper.setAttribute('data-time-tracker', 'true');
     wrapper.className = 'gitt-card-widget';
@@ -155,7 +155,9 @@ const Injector = {
       if (Storage.isRunning(Storage.load(boardCardId))) {
         Timer.stop(boardCardId);
       } else {
+        const suggestWhy = beforeFirstStart();
         Timer.start(boardCardId);
+        if (suggestWhy) afterFirstStart();
         if (Settings.shouldOpenPip() && !PiP.isOpen()) PiP.open(boardCardId);
       }
 
@@ -172,19 +174,117 @@ const Injector = {
     return { wrapper, render };
   },
 
+  _buildWhyNote(boardCardId) {
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-time-tracker-why', 'true');
+    wrapper.className = 'gitt-card-why';
+
+    const text = document.createElement('span');
+    text.className = 'gitt-card-why__text';
+
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'gitt-card-why__edit';
+    editButton.setAttribute('aria-label', 'Editar porqué personal');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 160;
+    input.className = 'gitt-card-why__input';
+    input.placeholder = '¿Por qué importa esta tarea?';
+    input.setAttribute('aria-label', 'Porqué personal');
+    input.hidden = true;
+
+    const hint = document.createElement('span');
+    hint.className = 'gitt-card-why__hint';
+    hint.hidden = true;
+    wrapper.append(text, editButton, input, hint);
+
+    let editing = false;
+    let suggestion = false;
+
+    function render() {
+      const why = Storage.load(boardCardId).why || '';
+      wrapper.dataset.hasWhy = String(Boolean(why));
+      wrapper.dataset.editing = String(editing);
+      text.textContent = why;
+      text.hidden = editing || !why;
+      editButton.textContent = why ? '✎' : '+';
+      editButton.title = why ? 'Editar porqué personal' : 'Añadir porqué personal';
+      editButton.hidden = editing;
+      input.hidden = !editing;
+      hint.hidden = !editing;
+      hint.textContent = suggestion
+        ? 'Recordatorio opcional · Enter para guardar · Esc para descartar'
+        : 'Enter para guardar · Esc para cancelar';
+    }
+
+    function beginEdit(isSuggestion = false) {
+      editing = true;
+      suggestion = isSuggestion;
+      input.value = Storage.load(boardCardId).why || '';
+      render();
+      input.focus();
+    }
+
+    function finishEdit(save) {
+      if (!editing) return;
+      if (save) {
+        Storage.saveWhy(boardCardId, input.value);
+        PiP.refresh();
+        FloatingBar.refresh();
+      }
+      editing = false;
+      suggestion = false;
+      render();
+    }
+
+    wrapper.addEventListener('pointerdown', (event) => event.stopPropagation());
+    wrapper.addEventListener('mousedown', (event) => event.stopPropagation());
+    wrapper.addEventListener('dragstart', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    editButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      beginEdit();
+    });
+    input.addEventListener('keydown', (event) => {
+      event.stopPropagation();
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        finishEdit(true);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        finishEdit(false);
+      }
+    });
+    input.addEventListener('blur', () => finishEdit(true));
+
+    render();
+    return { wrapper, render, suggest: () => beginEdit(true) };
+  },
+
   // ── Mount ──────────────────────────────────────────────────────────────────
 
-  _mountWidget(card, boardCardId, wrapper, render) {
+  _mountCardElements(card, boardCardId, wrapper, render, whyNote, renderWhy) {
     const fieldsList = GitHubAdapter.getFieldsAnchor(card);
-    if (!fieldsList) return false;
+    if (fieldsList && wrapper && !card.contains(wrapper)) {
+      fieldsList.insertAdjacentElement('afterend', wrapper);
+      render();
+    }
 
-    fieldsList.insertAdjacentElement('afterend', wrapper);
-    render();
+    const titleElement = GitHubAdapter.getIssueTitleElement(card);
+    if (titleElement && whyNote && !card.contains(whyNote)) {
+      titleElement.insertAdjacentElement('beforebegin', whyNote);
+      renderWhy();
+    }
 
-    if (Storage.isRunning(Storage.load(boardCardId))) {
+    if (wrapper && card.contains(wrapper) && Storage.isRunning(Storage.load(boardCardId))) {
       Timer.start(boardCardId, { silent: true });
     }
-    return true;
+    return Boolean(wrapper && card.contains(wrapper));
   },
 
   // ── Card injection ─────────────────────────────────────────────────────────
@@ -192,31 +292,40 @@ const Injector = {
   // Watch a card for two situations:
   //   1. The fields anchor didn't exist yet at injection time — retry mounting.
   //   2. The widget was removed by a React re-render — re-mount it.
-  _watchCard(card, boardCardId, wrapper, render) {
+  _watchCard(card, boardCardId, wrapper, render, whyNote, renderWhy) {
     const cardObserver = new MutationObserver(() => {
-      const alreadyMounted = card.querySelector('[data-time-tracker]');
-      if (alreadyMounted) return; // still there, nothing to do
-
-      // Widget is gone (or was never mounted) — try to re-mount
-      this._mountWidget(card, boardCardId, wrapper, render);
+      if (!card.contains(wrapper) || !card.contains(whyNote)) {
+        this._mountCardElements(card, boardCardId, wrapper, render, whyNote, renderWhy);
+      }
     });
 
     cardObserver.observe(card, { childList: true, subtree: true });
   },
 
   injectCard(card) {
-    if (card.querySelector('[data-time-tracker]')) return;
-
     const boardCardId = GitHubAdapter.getCardId(card);
     if (!boardCardId) return;
 
-    const { wrapper, render } = this._buildWidget(boardCardId);
+    const existingWidget = card.querySelector('[data-time-tracker]');
+    const existingWhy = card.querySelector('[data-time-tracker-why]');
+    if (existingWidget && existingWhy) return;
+
+    const why = existingWhy ? null : this._buildWhyNote(boardCardId);
+    const widget = existingWidget ? null : this._buildWidget(
+      boardCardId,
+      () => Boolean(why && Storage.shouldSuggestWhy(boardCardId)),
+      () => why?.suggest()
+    );
+    const wrapper = widget?.wrapper || existingWidget;
+    const render = widget?.render || (() => {});
+    const whyNote = why?.wrapper || existingWhy;
+    const renderWhy = why?.render || (() => {});
 
     // Attempt initial mount (may fail if fields anchor not yet in DOM)
-    this._mountWidget(card, boardCardId, wrapper, render);
+    this._mountCardElements(card, boardCardId, wrapper, render, whyNote, renderWhy);
 
     // Always watch the card so we can re-mount if the widget disappears
-    this._watchCard(card, boardCardId, wrapper, render);
+    this._watchCard(card, boardCardId, wrapper, render, whyNote, renderWhy);
   },
 
   injectAllCards() {

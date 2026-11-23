@@ -6,6 +6,8 @@
 // {
 //   issueRef:   "owner/repo/issues/123",  // informational, for future use
 //   issueTitle: "Fix login redirect",     // human-readable title, for popup history
+//   why:         "Help users recover access", // personal reminder, local only
+//   whyPrompted: true,                        // first-start suggestion was shown
 //   sessions: [
 //     { start: 1748000000000, end: 1748003600000 },  // completed session
 //     { start: 1748007200000, end: null },            // active session (end: null)
@@ -19,7 +21,9 @@
 const Storage = {
   PREFIX: 'gitt:',
 
-  _defaultState: (issueRef = null) => ({ issueRef, issueTitle: null, sessions: [] }),
+  _defaultState: (issueRef = null) => ({
+    issueRef, issueTitle: null, why: null, whyPrompted: false, sessions: [],
+  }),
 
   load(boardCardId) {
     const raw = localStorage.getItem(this.PREFIX + boardCardId);
@@ -27,11 +31,26 @@ const Storage = {
     let parsed;
     try { parsed = JSON.parse(raw); } catch { return this._defaultState(); }
     if (!Array.isArray(parsed?.sessions)) throw new Error('Invalid timer state: sessions are missing.');
-    return parsed;
+    return { ...this._defaultState(), ...parsed };
   },
 
   save(boardCardId, state) {
     localStorage.setItem(this.PREFIX + boardCardId, JSON.stringify(state));
+  },
+
+  saveWhy(boardCardId, why) {
+    const state = this.load(boardCardId);
+    state.why = why.trim() || null;
+    this.save(boardCardId, state);
+    return state;
+  },
+
+  shouldSuggestWhy(boardCardId) {
+    const state = this.load(boardCardId);
+    if (state.sessions.length > 0 || state.why || state.whyPrompted) return false;
+    state.whyPrompted = true;
+    this.save(boardCardId, state);
+    return true;
   },
 
   // ── Derived helpers ────────────────────────────────────────────────────────
@@ -139,6 +158,7 @@ const Storage = {
         boardCardId,
         issueTitle: state.issueTitle || state.issueRef || boardCardId,
         issueRef:   state.issueRef   || null,
+        why:        state.why        || null,
         totalMs,
         lastStart,
         sessions: daySessions,

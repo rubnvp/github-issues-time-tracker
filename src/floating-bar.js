@@ -6,6 +6,7 @@
 
 const FloatingBar = (() => {
   let el = null;
+  let whyEl = null;
   let titleEl = null;
   let timeEl = null;
   let pauseBtn = null;
@@ -30,10 +31,15 @@ const FloatingBar = (() => {
     label.className = 'gitt-floating-bar__label';
     label.textContent = 'FOCUSING';
 
+    whyEl = document.createElement('span');
+    whyEl.className = 'gitt-floating-bar__why';
+    whyEl.hidden = true;
+
     titleEl = document.createElement('span');
     titleEl.className = 'gitt-floating-bar__title';
 
     info.appendChild(label);
+    info.appendChild(whyEl);
     info.appendChild(titleEl);
 
     const divider = document.createElement('span');
@@ -80,6 +86,8 @@ const FloatingBar = (() => {
     const state = Storage.load(activeBoardCardId);
     const formatted = Timer.formatMs(Storage.currentSessionMs(state));
     timeEl.textContent = formatted;
+    whyEl.textContent = state.why || '';
+    whyEl.hidden = !state.why;
     document.title = `${formatted} — ${activeIssueTitle}`;
   }
 
@@ -103,6 +111,10 @@ const FloatingBar = (() => {
 
       clearInterval(tickId);
       tickId = setInterval(tick, 1000);
+    },
+
+    refresh() {
+      if (activeBoardCardId) tick();
     },
 
     hide() {
