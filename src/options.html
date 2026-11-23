@@ -9,39 +9,38 @@
 <body>
   <main class="options">
     <h1>Settings</h1>
-    <p class="options__intro">Choose how you track your time.</p>
+    <p class="options__intro">Choose a section to customize your settings.</p>
 
     <fieldset id="settings-controls" class="options__controls" disabled>
       <section class="options__section">
-        <h2 id="usage-level-heading">Usage level</h2>
-        <p class="options__description">Each level includes the features of the previous one.</p>
-        <fieldset id="usage-profile" class="options__profiles" aria-labelledby="usage-level-heading">
+        <h2 id="settings-section-heading">Settings sections</h2>
+        <fieldset id="settings-section" class="options__profiles" aria-labelledby="settings-section-heading">
           <label class="options__profile">
-            <input type="radio" name="usage-profile" value="basic">
+            <input type="radio" name="settings-section" value="basic" checked>
             <span class="options__profile-copy">
               <span class="options__profile-title">Basic</span>
-              <span class="options__profile-description">Time tracking and history</span>
+              <span class="options__profile-description">Timer and PiP settings</span>
             </span>
           </label>
           <label class="options__profile">
-            <input type="radio" name="usage-profile" value="support">
+            <input type="radio" name="settings-section" value="support">
             <span class="options__profile-copy">
               <span class="options__profile-title">With support</span>
-              <span class="options__profile-description">Add a daily focus goal</span>
+              <span class="options__profile-description">Daily focus goal</span>
             </span>
           </label>
           <label class="options__profile">
-            <input type="radio" name="usage-profile" value="tracking">
+            <input type="radio" name="settings-section" value="tracking">
             <span class="options__profile-copy">
               <span class="options__profile-title">Tracking</span>
-              <span class="options__profile-description">Add schedule, pace and reminders</span>
+              <span class="options__profile-description">Work schedule and reminders</span>
             </span>
           </label>
         </fieldset>
-        <p class="options__goal-help">Higher-level features pause when you switch to a lower level. Your settings and recorded time are kept.</p>
+        <p class="options__goal-help">Switching sections doesn't change your settings.</p>
       </section>
 
-      <section class="options__section">
+      <section id="pip-section" class="options__section">
         <h2>Picture-in-Picture</h2>
         <label class="options__setting">
           <input id="auto-pip" type="checkbox">
@@ -81,7 +80,7 @@
         <p class="options__goal-help">
           The goal is the same every day. Reduced-motion settings disable the bar animation.
         </p>
-        <p id="focus-pace-help" class="options__goal-help" hidden>
+        <p class="options__goal-help">
           With work hours set, the white marker shows your expected pace. When paused, green means on track; amber means behind.
         </p>
       </section>

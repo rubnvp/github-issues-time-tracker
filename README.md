@@ -95,19 +95,17 @@ Open **Settings** from the popup to configure PiP, your daily focus goal, remind
 
 ### ⚙ Settings
 
-Settings open in a separate tab and save automatically. The sections follow this order:
+Settings open in a separate tab and save automatically.
 
-#### Usage level
+#### Settings sections
 
-Choose a progressive level without an onboarding flow:
+Choose a card to view one group of settings:
 
-- **Basic:** per-card time tracking and history.
-- **With support:** adds the daily focus goal and its PiP progress bar.
-- **Tracking:** adds the work schedule, day progress, pace comparison, and focus reminders.
+- **Basic:** Picture-in-Picture options.
+- **With support:** the daily focus goal.
+- **Tracking:** the work schedule and focus reminders.
 
-New installations start in Basic. Existing installations without a level retain their previous behavior in Tracking, including the visual reminder. PiP settings remain available at every level, including manual opening, automatic opening, and keeping it open when paused. Automatic PiP and both reminder types are off by default for new installations; choosing a level does not turn them on.
-
-Lowering the level hides and deactivates its higher-level features without deleting their settings or recorded sessions. For example, With support does not use a saved schedule to show a day bar, pace comparison, or reminders; returning to Tracking restores them. Changing levels takes effect in an already-open PiP.
+Switching sections only changes what's visible in Settings; enabled features continue working. Settings and recorded sessions are preserved. Previously saved options that were inactive because of a lower usage level are active again. Automatic PiP and both reminder types are off by default for new installations.
 
 #### Picture-in-Picture
 

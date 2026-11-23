@@ -1,8 +1,7 @@
 const controls = document.getElementById('settings-controls');
-const usageProfileGroup = document.getElementById('usage-profile');
-const usageProfileInputs = usageProfileGroup.querySelectorAll('input[name="usage-profile"]');
+const settingsSectionGroup = document.getElementById('settings-section');
+const pipSection = document.getElementById('pip-section');
 const focusGoalSection = document.getElementById('focus-goal-section');
-const focusPaceHelp = document.getElementById('focus-pace-help');
 const focusRemindersSection = document.getElementById('focus-reminders-section');
 const workScheduleSection = document.getElementById('work-schedule-section');
 const autoPipInput = document.getElementById('auto-pip');
@@ -23,34 +22,15 @@ function setStatus(message) {
   saveStatus.textContent = message;
 }
 
-function updateProfile() {
-  const profile = Settings.getUsageProfile();
-  usageProfileInputs.forEach(input => { input.checked = input.value === profile; });
-  focusGoalSection.hidden = profile === 'basic';
-  focusPaceHelp.hidden = profile !== 'tracking';
-  focusRemindersSection.hidden = profile !== 'tracking';
-  workScheduleSection.hidden = profile !== 'tracking';
+function showSettingsSection(section) {
+  pipSection.hidden = section !== 'basic';
+  focusGoalSection.hidden = section !== 'support';
+  focusRemindersSection.hidden = section !== 'tracking';
+  workScheduleSection.hidden = section !== 'tracking';
 }
 
-usageProfileGroup.addEventListener('change', async (event) => {
-  const profile = event.target.value;
-  usageProfileGroup.disabled = true;
-  setStatus('Saving…');
-  try {
-    await Settings.setUsageProfile(profile);
-    updateProfile();
-    setStatus('Saved');
-  } catch (error) {
-    console.error('Unable to save usage level', error);
-    updateProfile();
-    setStatus('Unable to save usage level.');
-  } finally {
-    usageProfileGroup.disabled = false;
-  }
-});
-
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'local' && changes.usageProfile) updateProfile();
+settingsSectionGroup.addEventListener('change', (event) => {
+  showSettingsSection(event.target.value);
 });
 
 function addDayOptions(select, includeEmpty) {
@@ -386,7 +366,7 @@ focusGoalHours.addEventListener('change', saveFocusGoal);
 
 Settings.ready
   .then(() => {
-    updateProfile();
+    showSettingsSection('basic');
     autoPipInput.checked = Settings.shouldOpenPip();
     keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
     focusReminderVisualInput.checked = Settings.shouldShowFocusReminder();

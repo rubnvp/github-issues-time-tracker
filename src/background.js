@@ -16,8 +16,8 @@ let lastKnownTabId = null; // last tab that sent us any content-script message
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason !== 'install') return;
-  chrome.storage.local.set({ usageProfile: 'basic', focusReminderVisualEnabled: false })
-    .catch(error => console.error('Unable to initialize usage profile', error));
+  chrome.storage.local.set({ focusReminderVisualEnabled: false })
+    .catch(error => console.error('Unable to initialize reminder settings', error));
 });
 
 function formatBadge(ms) {
