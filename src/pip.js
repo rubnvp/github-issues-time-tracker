@@ -126,12 +126,14 @@ const PiP = (() => {
     }
     .focus-progress[data-pace="ahead"] .focus-fill { background: #34d399; }
     .focus-progress[data-pace="behind"] .focus-fill { background: #fbbf24; }
+    .focus-progress[data-pace="uncompared"] .focus-fill { background: #a7e4c9; }
     .focus-label {
       grid-column: 2;
       color: #cbd5e1;
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
     .focus-progress[data-pace="behind"] .focus-label { color: #fbbf24; }
+    .focus-progress[data-pace="uncompared"] .focus-label { color: #a7e4c9; }
     body[data-timer-running="true"] .focus-progress .focus-fill { background: #34d399; }
     body[data-timer-running="true"] .focus-progress .focus-label { color: #34d399; }
     body[data-timer-running="true"] .focus-fill::after {
@@ -313,7 +315,7 @@ const PiP = (() => {
         expectedMarker.style.left = `${(focus.expectedProgress ?? 0) * 100}%`;
 
         let pace = focus.comparisonEnabled === false ? null : 'No schedule';
-        let state = 'neutral';
+        let state = focus.comparisonEnabled === false ? 'uncompared' : 'neutral';
         if (focus.differenceMs !== null) {
           state = focus.differenceMs >= 0 ? 'ahead' : 'behind';
           const difference = Math.abs(focus.differenceMs);

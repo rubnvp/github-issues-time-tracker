@@ -257,7 +257,7 @@ test('disabling pace comparison hides it and stops reminders without hiding prog
   assert.equal(day.children[1].textContent, '25.10%');
   assert.equal(focus.hidden, false);
   assert.equal(label.textContent, '0.00%');
-  assert.equal(focus.attributes.get('data-pace'), 'neutral');
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
   assert.equal(track.children[1].hidden, true);
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
   assert.equal(focus.title, 'Focus 0m / 4h');
@@ -265,6 +265,14 @@ test('disabling pace comparison hides it and stops reminders without hiding prog
   h.setTime(11, 5);
   h.tick();
   assert.equal(h.reminders, 0);
+
+  h.timer.start('first');
+  h.tick();
+  assert.equal(body.attributes.get('data-timer-running'), 'true');
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
+  h.timer.stop('first');
+  h.tick();
+  assert.equal(body.attributes.get('data-timer-running'), 'false');
 
   await h.settings.setFocusPaceComparisonEnabled(true);
   h.tick();
