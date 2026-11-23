@@ -1,245 +1,95 @@
 # GitHub Issues Time Tracker
 
-A Chrome extension to help you stay focused on one issue at a time and easily track the time you invest in each one — directly from your **GitHub Projects board**, no external tools, no context switching.
+Track time and stay focused on one issue at a time, directly from your GitHub Projects board.
 
 ![A small sprout companion working at a laptop](docs/mascot-preview.png)
 
-Meet your little focus companion: a sprout that works alongside you in Picture-in-Picture and rests when you pause.
+Your sprout companion works alongside you in Picture-in-Picture and rests when you pause.
 
-![Screenshot](docs/screenshot.png)
-
----
-
-## Features
-
-### ▶ Per-card timer
-
-Every card on your GitHub Projects board gets a small timer widget at the bottom. Click the play button to start focusing, click pause to stop. Simple as that.
-
-- **Grey** — no time recorded yet
-- **Green** — time recorded, timer stopped
-- **Indigo** — timer is currently running
-
-Only one timer can be active at a time. Starting a new one automatically pauses the previous.
-
-A short sound plays when the timer starts and when it stops.
-
----
-
-### 📋 Session history
-
-Tracked time is stored as individual sessions (start + end timestamp), not just a total. Hover over a card widget and click the **☰** icon to see a breakdown of all sessions:
-
-- Start and end time for each session
-- Duration per session
-- Active session shown as "ongoing"
-- Sessions ordered from most to least recent
-
----
-
-### 🟣 Floating bar
-
-While a timer is running, a pill-shaped bar appears at the top center of the page showing:
-
-- **FOCUSING** label
-- The issue title
-- Live elapsed time
-- A **pause button** to stop the timer
-- A **⧉ button** to open the Picture-in-Picture window
-
-The browser tab title also updates in real time:
-
-```
-5m 30s — Fix login redirect
-```
-
-The original title is restored when the timer stops.
-
----
-
-### 🖥 Picture-in-Picture window
-
-Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps. The extension requests a full-width, low-height window, but Chrome may limit its dimensions.
-
-- Shows a sprout companion and live timer; the sprout works while focusing and rests when paused
-- Shows the issue title and a pause/resume button
-- Displays a proportional daily timeline with colored work intervals, dark breaks, and a white current-time marker; the percentage counts only scheduled work hours
-- Optionally shows a second focus-goal bar with a percentage aligned with the day's percentage; hover for focus hours, the daily target, and, if enabled, pace comparison
-- Closes when the timer is stopped unless **Keep PiP open when paused** is enabled
-
-> Requires Chrome 116+ and must be opened via a direct click (browser security requirement).
-
----
-
-### 🔔 Extension badge
-
-The extension icon in the Chrome toolbar shows a live badge with the elapsed time while a timer is running. Useful when GitHub is in a background tab.
-
----
-
-### ⏹ Extension popup
-
-Click the extension icon in the toolbar to open a compact popup. It has two sections:
-
-**Active timer row** — visible only when a timer is running:
-- Pulsing dot + issue title + live elapsed time
-- A **stop button** to end the session
-
-**Daily history** — always visible below the timer row:
-- Lists every issue worked on that day, grouped by issue, ordered from most to least recent
-- Each group shows the issue title, total time for the day, and individual session ranges (e.g. `09:15 – 10:45`) with their duration
-- A **total focus time** for the day is displayed in the header
-- Use the **‹ ›** arrows to navigate to previous or future days
-
-If no timer is running, the top row simply shows a muted indicator.
-
-Open **Settings** from the popup to configure PiP, your daily focus goal, reminders, and work hours.
-
----
-
-### ⚙ Settings
-
-Settings open in a separate tab and save automatically.
-
-#### Settings sections
-
-Choose a card to view one group of settings:
-
-- **General:** Picture-in-Picture options.
-- **Workday:** the daily focus goal and work schedule.
-- **Pace:** pace comparison and focus reminders.
-
-Switching sections only changes what's visible in Settings; enabled features continue working. Automatic PiP and both reminder types are off by default.
-
-#### Picture-in-Picture
-
-Enable **Open PiP when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
-
-Enable **Keep PiP open when paused** to keep the available progress bars updating without recording focus time. PiP displays "Paused", a lighter background and a play button to resume the last issue; starting another issue updates the same window. An active visual reminder takes precedence over the paused background.
-
-Both PiP options are off by default. Keeping PiP open does not automatically reopen it after you close it manually.
-
-#### Daily focus goal
-
-Enable **Show focus progress in PiP** to see today's focus against a single daily goal (2 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
-
-A second thin bar shows goal completion as a percentage. While focusing, the bar and percentage stay green, even when behind. Two clearly visible light-green sweeps move to the right in a 3-second cycle, following the motion of [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16). Reduced-motion preferences disable the animation. When the current pace indicator is disabled, paused focus progress is a softer green. The animation stays inside the filled portion and never changes the actual percentage or expected-pace marker.
-
-Both percentages show two decimal places and refresh every second. Rounding may leave displayed values unchanged on consecutive refreshes. The focus percentage reflects recorded focus time, not simulated progress; pausing stops its increase. The day percentage counts only elapsed scheduled work time, excluding schedule gaps; pausing the focus timer does not stop day progress.
-
-Hover over the focus bar or percentage for focus hours and the goal, plus the pace difference when its indicator is enabled. On days without work hours, goal progress still appears, without a pace comparison. The focus goal is off by default and updates in an already-open PiP when settings change.
-
-#### Focus pace
-
-Pace compares focus against your work schedule, assuming focus is spread evenly over scheduled work time, not breaks. Set an enabled focus goal and work hours in Workday. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. The white marker shows this expected pace; when paused, green means on pace or ahead and amber means behind.
-
-Choose separately whether to show the indicator **when on track or ahead** and **when behind**. Both are on by default. Turning either off hides the marker, pace details and comparison colors for that state; paused focus progress is shown in a softer green instead. The visual and sound reminders remain independently configurable and may still alert you when behind, even if the behind indicator is hidden.
-
-Turn off both indicators and reminders to show only focus and day progress without pace feedback.
-
-#### Focus reminders
-
-In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the sprout and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. This setting is off by default.
-
-Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The sprout briefly opens its eyes and moves its leaf when the sound plays, independently of the visual reminder setting; reduced-motion preferences disable the leaf movement. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
-
-Set **Sound interval (minutes)** to any whole number of minutes of at least 1; the default is **2 minutes**. Existing saved intervals are unchanged. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
-
-#### Work schedule
-
-Set local work intervals for each day to show daily progress in PiP. Each day can have different hours and multiple intervals for breaks. Use **Copy Monday to all other days** to replace Tuesday through Sunday with Monday's intervals, then adjust individual days as needed. Intervals cannot cross midnight: split overnight hours between the two days.
-
-PiP shows work intervals in color and breaks in dark. Gaps pause the percentage while the current-time marker continues across the break. This progress tracks the planned day, not time spent focusing. Days without a schedule have no day progress bar.
-
-The weekly scheduled-hour total appears above the daily editors, and each day shows its own total. Totals update as you edit and exclude gaps.
-
----
-
-### 🎉 Celebration
-
-Hover over any card widget that has tracked time to reveal a **🎉** button. Click it to fire a confetti burst and a short fanfare — a small reward for getting the work done.
-
----
+![GitHub Projects board with timer and Picture-in-Picture window](docs/screenshot.png)
 
 ## Installation
 
-This extension is not published to the Chrome Web Store yet. Install it manually in developer mode:
+Requires Chrome 116+ and a GitHub Projects v2 board on `github.com`. The extension is not yet available in the Chrome Web Store:
 
-1. Clone or download this repository
-2. Open Chrome and go to `chrome://extensions`
-3. Enable **Developer mode** (top right toggle)
-4. Click **Load unpacked**
-5. Select the root folder of this repository
+1. Clone or download this repository.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and select the repository root.
 
----
+## Using the timer
 
-## How time is stored
+Each board card has a play/pause button and a time display. Only one timer can run at a time; starting another pauses the previous one. The indicator is grey before any time is recorded, green when paused and indigo while running. Start and stop actions play a short sound.
 
-Time is saved in `localStorage` under keys prefixed with `gitt:` followed by the card's internal GitHub board ID.
+Hover over the card timer and click **☰** to see its sessions, or **🎉** for a confetti celebration. While running, the floating bar shows the issue, elapsed time and controls; the browser tab title and extension badge also show the timer.
 
-Each entry stores an array of sessions:
+Open the extension popup to stop the active timer, browse daily history by issue and access **Settings**.
 
-```json
-{
-  "issueRef": "owner/repo/issues/42",
-  "issueTitle": "Fix login redirect",
-  "sessions": [
-    { "start": 1748000000000, "end": 1748003600000 },
-    { "start": 1748010000000, "end": null }
-  ]
-}
-```
+### Picture-in-Picture
 
-- `end: null` means the session is currently active
-- `issueTitle` is saved the first time you press play on a card, so the popup history can display it even when the board is not open
-- Total time and running state are derived from the sessions array — never stored separately
-- Entries are only created when you first press play on a card
+Click **⧉** in the floating bar to open an always-on-top window with the sprout, timer, issue and pause/resume button. Chrome may limit the requested window size; opening it requires a user gesture.
 
-> **Note:** data is stored locally in the browser. It is not synced across devices or Chrome profiles.
+When configured, the window also shows:
 
-Extension preferences, including PiP options, the weekly work schedule, the focus goal, and sound reminders, are stored separately in `chrome.storage.local`. They are not synced across devices or Chrome profiles either.
+- **Workday progress:** elapsed scheduled work time, excluding breaks. Colored segments show work intervals; the white marker shows the current time.
+- **Focus progress:** today's recorded focus against your daily goal. Hover for hours, goal and any enabled pace comparison.
 
----
+Pausing stops focus time but not workday progress. Percentages refresh every second. Animations respect the system's reduced-motion preference.
 
-## Compatibility
+## Settings
 
-- Chrome 116+ (required for Document Picture-in-Picture API)
-- Works on `github.com` project boards (GitHub Projects v2)
+Open **Settings** from the extension popup. Changes save automatically; switching sections does not disable features.
 
----
+### General
 
-## Known limitations
+- **Open PiP when starting a timer:** open PiP when starting from a card.
+- **Keep PiP open when paused:** keep progress visible and resume from PiP. It does not reopen a window closed manually.
 
-- **Local storage only** — session data lives in `localStorage` for the GitHub domain. Clearing browser data will erase all tracked time.
-- **One board at a time** — if you have multiple GitHub Projects tabs open, the active timer state may conflict between tabs.
-- **GitHub markup dependency** — the extension relies on GitHub's DOM structure. If GitHub updates its Projects UI, some selectors may need updating. The selector tests (see below) will catch breakage early.
+Both options are off by default.
 
----
+### Workday
 
-## Selector tests
+- **Daily focus goal:** opt in to show focus progress in PiP. The default goal is 2 hours, configurable and the same every day. All recorded focus counts, including time outside work hours; sessions crossing midnight contribute only today's portion.
+- **Work schedule:** set local work intervals and breaks for each day. **Copy Monday to all other days** replaces Tuesday through Sunday, including weekends; adjust individual days afterwards. Split overnight shifts across days.
 
-The extension relies on specific GitHub DOM selectors. If GitHub changes its markup, these tests will tell you exactly which selector broke and what to fix.
+Daily and weekly totals exclude breaks. Without a schedule for the current day, the workday bar and pace comparison are unavailable, but focus progress still appears. The focus-bar sweep is based on [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16).
 
-### Setup (required once, and whenever GitHub updates its markup)
+### Pace
 
-1. Open a GitHub Projects board in Chrome
-2. Open DevTools → Elements tab
-3. Right-click on `<html>` → **Copy** → **Copy outerHTML**
-4. Paste the content into `tests/fixtures/board.html`
+Pace compares recorded focus with the daily goal spread evenly across scheduled work hours. The white marker shows the expected pace; when paused, green means on track or ahead and amber means behind. While focusing, the focus bar remains green.
 
-> `board.html` is git-ignored — it must be generated locally.
+The **on track or ahead** and **behind** indicators can be enabled separately; both default to on. Disabling an indicator hides its marker, details and comparison color, without disabling reminders.
 
-### Run
+**Visual reminder** and **Sound reminder** are independent and off by default. Both require an open PiP, a paused timer, an enabled focus goal behind schedule, and current time within work hours.
 
-```
-npm install
-npm test
-```
+- The visual reminder pulses the background amber along with the sprout and focus percentage. With reduced motion, the background remains steadily amber.
+- The sound reminder plays two short bursts and the sprout briefly reacts. Its interval defaults to **2 minutes** and accepts whole minutes of at least 1; saved intervals are unchanged. The first alert occurs after the interval and repeats while conditions hold.
 
----
+Changing the interval restarts the wait. Resuming focus, getting back on pace, disabling sound or entering a break resets it; closing PiP stops reminders. Sleep or browser throttling may delay alerts.
+
+## Data and limitations
+
+Sessions are stored in the GitHub domain's `localStorage` under `gitt:<boardCardId>`, with start/end timestamps and issue information. Running state and totals are derived from those sessions. Clearing browser data erases tracked time.
+
+Preferences are stored separately in `chrome.storage.local`. Neither sessions nor preferences sync across devices or Chrome profiles.
+
+- Multiple GitHub Projects tabs may have conflicting active timer state.
+- The extension depends on GitHub's Projects markup; GitHub changes may break its selectors.
+
+## Development
+
+The selector tests require a local GitHub Projects fixture:
+
+1. Open a Projects board in Chrome and open DevTools → **Elements**.
+2. Right-click `<html>` → **Copy** → **Copy outerHTML**.
+3. Save it as `tests/fixtures/board.html`. The fixture is git-ignored; refresh it if GitHub's markup changes.
+4. Install dependencies and run the tests:
+
+   ```sh
+   npm install
+   npm test
+   ```
 
 ## Ideas for the future
 
-- **Timer on issue pages** — inject the widget directly on `/issues/123` pages, not just on the board, for people who work from the issue view
-- **Timer on pull requests** — track time spent reviewing PRs on `/pull/123` pages; code review is invisible work worth measuring
-- **Meeting timer in the popup** — a dedicated button to track time spent in meetings, separate from issue work, to understand the meeting vs. deep work ratio over time
+- Track time directly on issue and pull request pages.
+- Add a meeting timer to the popup.
