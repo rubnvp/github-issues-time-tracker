@@ -48,15 +48,20 @@ const PiP = (() => {
       flex: 0 1 25vw;
       min-width: 0;
     }
-    .progress {
-      display: flex;
+    .progress-stack {
+      display: grid;
+      grid-template-columns: minmax(20px, 1fr) auto;
       align-items: center;
-      gap: 8px;
+      gap: 5px 8px;
       flex: 1;
       min-width: 40px;
     }
-    .progress[hidden] { display: none; }
+    .progress, .focus-progress {
+      display: contents;
+    }
+    .progress[hidden], .focus-progress[hidden] { display: none; }
     .progress-track {
+      grid-column: 1;
       position: relative;
       height: 8px;
       flex: 1;
@@ -88,12 +93,25 @@ const PiP = (() => {
       pointer-events: none;
     }
     .progress-label {
+      justify-self: end;
       width: 4ch;
       color: rgba(255, 255, 255, 0.7);
       font: 11px monospace;
       text-align: right;
       flex-shrink: 0;
     }
+    .focus-track { height: 5px; }
+    .focus-fill { background: #94a3b8; }
+    .focus-progress[data-pace="ahead"] .focus-fill { background: #34d399; }
+    .focus-progress[data-pace="behind"] .focus-fill { background: #fbbf24; }
+    .focus-label {
+      grid-column: 2;
+      color: #cbd5e1;
+      font: 10px monospace;
+      white-space: nowrap;
+    }
+    .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
+    .focus-progress[data-pace="behind"] .focus-label { color: #fbbf24; }
     .pause-btn {
       width: 22px;
       height: 22px;
@@ -112,6 +130,11 @@ const PiP = (() => {
     .pause-btn:hover { background: #4f46e5; }
     @media (max-width: 480px) {
       .title { display: none; }
+      .focus-label {
+        max-width: 110px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
@@ -120,6 +143,13 @@ const PiP = (() => {
   `;
 
   let openRequestId = 0;
+
+  function formatFocusDuration(ms) {
+    const minutes = Math.floor(ms / 60000);
+    const hours = Math.floor(minutes / 60);
+    if (!hours) return `${minutes}m`;
+    return minutes % 60 ? `${hours}h ${minutes % 60}m` : `${hours}h`;
+  }
 
   return {
     async open(boardCardId) {
@@ -184,6 +214,31 @@ const PiP = (() => {
       progressLabel.className = 'progress-label';
       progressEl.append(progressTrack, progressLabel);
 
+      const focusEl = doc.createElement('div');
+      focusEl.className = 'focus-progress';
+      focusEl.hidden = true;
+
+      const focusTrack = doc.createElement('div');
+      focusTrack.className = 'progress-track focus-track';
+      focusTrack.setAttribute('role', 'progressbar');
+      focusTrack.setAttribute('aria-label', 'Daily focus goal progress');
+      focusTrack.setAttribute('aria-valuemin', '0');
+      focusTrack.setAttribute('aria-valuemax', '100');
+
+      const focusFill = doc.createElement('div');
+      focusFill.className = 'progress-fill focus-fill';
+      const expectedMarker = doc.createElement('div');
+      expectedMarker.className = 'progress-marker';
+      focusTrack.append(focusFill, expectedMarker);
+
+      const focusLabel = doc.createElement('span');
+      focusLabel.className = 'focus-label';
+      focusEl.append(focusTrack, focusLabel);
+
+      const progressStack = doc.createElement('div');
+      progressStack.className = 'progress-stack';
+      progressStack.append(progressEl, focusEl);
+
       const pauseBtn = doc.createElement('button');
       pauseBtn.className = 'pause-btn';
       pauseBtn.textContent = '⏸\uFE0E';
@@ -193,11 +248,40 @@ const PiP = (() => {
       doc.body.appendChild(dot);
       doc.body.appendChild(timeEl);
       doc.body.appendChild(titleEl);
-      doc.body.appendChild(progressEl);
+      doc.body.appendChild(progressStack);
       doc.body.appendChild(pauseBtn);
+
+      function updateFocus(now) {
+        focusEl.hidden = !Settings.getFocusGoal().enabled;
+        if (focusEl.hidden) return;
+
+        const focus = Settings.getFocusProgress(Storage.getDailyFocusMs(now), now);
+        const percent = Math.round(focus.progress * 100);
+        focusFill.style.width = `${focus.progress * 100}%`;
+        focusTrack.setAttribute('aria-valuenow', String(percent));
+        expectedMarker.hidden = focus.expectedProgress === null;
+        expectedMarker.style.left = `${(focus.expectedProgress ?? 0) * 100}%`;
+
+        let pace = 'No schedule';
+        let state = 'neutral';
+        if (focus.differenceMs !== null) {
+          state = focus.differenceMs >= 0 ? 'ahead' : 'behind';
+          const difference = Math.abs(focus.differenceMs);
+          const duration = difference < 60000 ? '<1m' : formatFocusDuration(difference);
+          pace = difference < 1000 ? 'On pace' :
+            `${focus.differenceMs >= 0 ? '+' : '-'}${duration} ${state}`;
+        }
+
+        focusEl.setAttribute('data-pace', state);
+        focusLabel.textContent =
+          `Focus ${formatFocusDuration(focus.focusMs)} / ${formatFocusDuration(focus.goalMs)} \u00b7 ${pace}`;
+        focusEl.title = focusLabel.textContent;
+        focusTrack.setAttribute('aria-valuetext', `${percent}% of focus goal. ${focusLabel.textContent}`);
+      }
 
       function updateProgress() {
         const now = new Date();
+        updateFocus(now);
         const progress = Settings.getDailyProgress(now);
         progressEl.hidden = progress === null;
         if (progress === null) return;

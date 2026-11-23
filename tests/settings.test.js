@@ -154,3 +154,47 @@ test('daily timeline preserves proportional work intervals and gaps while work p
   assert.equal(settings.getDailyTimeline(new Date(2026, 0, 5, 18, 0)).position, 1);
   assert.equal(settings.getDailyTimeline(new Date(2026, 0, 6, 12, 0)), null);
 });
+
+test('focus goal compares all daily focus against workday pace and freezes expected focus in gaps', async () => {
+  const { settings } = createSettings();
+  await settings.ready;
+  assert.equal(settings.getFocusProgress(0), null);
+  await settings.setFocusGoal({ enabled: true, hours: 4 });
+  await settings.setWeeklySchedule({
+    monday: [{ start: '09:00', end: '13:00' }, { start: '14:00', end: '18:00' }],
+  });
+
+  const now = new Date(2026, 0, 5, 13, 30);
+  const behind = settings.getFocusProgress(1.5 * 3600000, now);
+  assert.equal(behind.progress, 0.375);
+  assert.equal(behind.expectedProgress, 0.5);
+  assert.equal(behind.differenceMs, -1800000);
+  assert.equal(settings.getFocusProgress(2 * 3600000, now).differenceMs, 0);
+  assert.equal(settings.getFocusProgress(2.5 * 3600000, now).differenceMs, 1800000);
+  assert.equal(settings.getFocusProgress(0, new Date(2026, 0, 5, 13, 45)).expectedProgress, 0.5);
+  assert.equal(settings.getFocusProgress(0, new Date(2026, 0, 5, 8)).expectedProgress, 0);
+  assert.equal(settings.getFocusProgress(0, new Date(2026, 0, 5, 19)).expectedProgress, 1);
+  const exceeded = settings.getFocusProgress(5 * 3600000, new Date(2026, 0, 5, 19));
+  assert.equal(exceeded.progress, 1);
+  assert.equal(exceeded.focusMs, 5 * 3600000);
+  assert.equal(exceeded.differenceMs, 3600000);
+  const unscheduled = settings.getFocusProgress(3600000, new Date(2026, 0, 6, 12));
+  assert.equal(unscheduled.progress, 0.25);
+  assert.equal(unscheduled.expectedProgress, null);
+  assert.equal(unscheduled.differenceMs, null);
+});
+
+test('focus goal persists fractional hours, reacts to settings changes, and rejects invalid goals', async () => {
+  const { settings, notifyChanged } = createSettings({
+    focusGoal: { enabled: true, hours: 4 },
+  });
+  await settings.ready;
+  assert.equal(settings.getFocusGoal().hours, 4);
+  await settings.setFocusGoal({ enabled: true, hours: 3.5 });
+  assert.equal(settings.getFocusProgress(3600000).goalMs, 3.5 * 3600000);
+  for (const hours of [0, -1, NaN, Infinity]) {
+    await assert.rejects(settings.setFocusGoal({ enabled: true, hours }), /positive number/);
+  }
+  notifyChanged({ focusGoal: { newValue: { enabled: false, hours: 3.5 } } });
+  assert.equal(settings.getFocusProgress(3600000), null);
+});

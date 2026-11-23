@@ -46,6 +46,26 @@
         <div id="weekly-schedule" class="options__days"></div>
         <p id="weekly-total" class="options__weekly-total" role="status"></p>
       </section>
+
+      <section class="options__section">
+        <h2>Daily focus goal</h2>
+        <label class="options__setting">
+          <input id="focus-goal-enabled" type="checkbox">
+          <span class="options__setting-copy">
+            <span class="options__setting-title">Show focus goal progress in PiP</span>
+            <span class="options__setting-description">
+              Count all focus recorded today, including outside work hours. Compare it with the expected pace of your scheduled day.
+            </span>
+          </span>
+        </label>
+        <label class="options__goal-hours">
+          <span>Focus hours per day (same goal every day)</span>
+          <input id="focus-goal-hours" type="number" min="0" step="any" value="4" required disabled>
+        </label>
+        <p class="options__goal-help">
+          Green means on pace or ahead; amber means behind. The white mark shows the expected progress, which pauses during breaks. Without a work schedule, only goal progress is shown.
+        </p>
+      </section>
     </fieldset>
 
     <p id="save-status" class="options__status" role="status" aria-live="polite"></p>

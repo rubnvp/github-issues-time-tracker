@@ -60,6 +60,7 @@ Click **⧉** in the floating bar to open a full-width, low-height always-on-top
 - Shows a slow-pulsing dot + live timer
 - Shows the issue title and pause button
 - Displays a proportional daily timeline with colored work intervals, dark breaks, and a white current-time marker; the percentage counts only scheduled work hours
+- Optionally shows a second focus-goal bar with today's focus, the daily target, and time ahead of or behind the expected workday pace
 - Automatically closes when the timer is stopped
 
 > Requires Chrome 116+ and must be opened via a direct click (browser security requirement).
@@ -89,6 +90,8 @@ Click the extension icon in the toolbar to open a compact popup. It has two sect
 If no timer is running, the top row simply shows a muted indicator.
 
 Open **Settings** from the popup to configure the extension. Enable **Open PiP automatically when starting a timer** to open the PiP window when clicking a card's play button, without using the floating bar button. Set local work intervals for each weekday to show daily progress in PiP; gaps between intervals pause the percentage while the time marker continues across the dark break, and schedules can be copied between days. Daily and weekly scheduled-hour totals update as you edit, excluding gaps. This progress tracks the planned day, not time spent focusing. Days without a schedule have no progress bar.
+
+Enable **Show focus goal progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today. A second thin bar shows goal completion and a white expected-pace marker: green means on pace or ahead, amber means behind. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. Breaks pause the expected pace. On days without work hours, goal progress still appears, without a pace comparison. The feature is off by default and updates in an already-open PiP when settings change.
 
 ---
 

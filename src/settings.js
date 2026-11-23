@@ -14,6 +14,7 @@ const Settings = (() => {
 
   let autoPipEnabled = false;
   let weeklySchedule = createEmptySchedule();
+  let focusGoal = { enabled: false, hours: 4 };
 
   function createEmptySchedule() {
     return Object.fromEntries(DAYS.map(({ key }) => [key, []]));
@@ -65,15 +66,18 @@ const Settings = (() => {
   const ready = chrome.storage.local.get({
     autoPipEnabled: false,
     weeklySchedule: createEmptySchedule(),
+    focusGoal: { enabled: false, hours: 4 },
   }).then((settings) => {
     autoPipEnabled = settings.autoPipEnabled === true;
     weeklySchedule = normalizeSchedule(settings.weeklySchedule);
+    focusGoal = settings.focusGoal;
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') return;
     if (changes.autoPipEnabled) autoPipEnabled = changes.autoPipEnabled.newValue === true;
     if (changes.weeklySchedule) weeklySchedule = normalizeSchedule(changes.weeklySchedule.newValue);
+    if (changes.focusGoal) focusGoal = changes.focusGoal.newValue ?? { enabled: false, hours: 4 };
   });
 
   return {
@@ -86,6 +90,24 @@ const Settings = (() => {
 
     getWeeklySchedule() {
       return cloneSchedule(weeklySchedule);
+    },
+
+    getFocusGoal() {
+      return { ...focusGoal };
+    },
+
+    getFocusProgress(focusMs, date = new Date()) {
+      if (!focusGoal.enabled) return null;
+
+      const goalMs = focusGoal.hours * 3600000;
+      const expectedProgress = this.getDailyProgress(date);
+      return {
+        focusMs,
+        goalMs,
+        progress: Math.min(1, focusMs / goalMs),
+        expectedProgress,
+        differenceMs: expectedProgress === null ? null : focusMs - goalMs * expectedProgress,
+      };
     },
 
     getScheduleTotals(schedule) {
@@ -160,6 +182,17 @@ const Settings = (() => {
     async setAutoPipEnabled(enabled) {
       await chrome.storage.local.set({ autoPipEnabled: enabled });
       autoPipEnabled = enabled;
+    },
+
+    async setFocusGoal({ enabled, hours }) {
+      if (typeof enabled !== 'boolean' || !Number.isFinite(hours) || hours <= 0 ||
+          !Number.isFinite(hours * 3600000)) {
+        throw new Error('Focus goal must be a positive number of hours.');
+      }
+
+      const nextGoal = { enabled, hours };
+      await chrome.storage.local.set({ focusGoal: nextGoal });
+      focusGoal = nextGoal;
     },
 
     async setWeeklySchedule(schedule) {

@@ -73,7 +73,7 @@ test('closing an older PiP window cannot clear the current window reference', as
     Timer: { formatMs: () => '0s', stop() {} },
     Storage: { currentSessionMs: () => 0, load: () => ({}) },
     GitHubAdapter: { getIssueTitle: () => 'Issue' },
-    Settings: { getDailyProgress: () => null },
+    Settings: { getDailyProgress: () => null, getFocusGoal: () => ({ enabled: false }) },
     setInterval: () => 1,
     clearInterval() {},
   });
@@ -112,6 +112,7 @@ test('PiP displays work segments and moves the time marker through breaks withou
     Timer: { formatMs: () => '0s', stop() {} },
     Storage: { currentSessionMs: () => 0, load: () => ({}) },
     Settings: {
+      getFocusGoal: () => ({ enabled: false }),
       getDailyProgress: () => 3 / 7,
       getDailyTimeline: () => ({
         position,
@@ -127,7 +128,8 @@ test('PiP displays work segments and moves the time marker through breaks withou
   vm.runInContext(pipSource, context);
   await vm.runInContext('PiP.open("issue")', context);
 
-  const progress = pipWindow.document.body.children.find(el => el.className === 'progress');
+  const stack = pipWindow.document.body.children.find(el => el.className === 'progress-stack');
+  const progress = stack.children.find(el => el.className === 'progress');
   const [track, label] = progress.children;
   const [morning, afternoon, marker] = track.children;
   assert.equal(morning.style.width, '37.5%');
@@ -148,4 +150,75 @@ test('PiP displays work segments and moves the time marker through breaks withou
   position = 6 / 8;
   tick();
   assert.equal(afternoon.children[0].style.width, '50%');
+});
+
+test('focus progress updates pace, honors disabling, and works without a work schedule', async () => {
+  const pipWindow = new FakePipWindow();
+  const documentPictureInPicture = { requestWindow: async () => pipWindow };
+  let tick;
+  let enabled = false;
+  let focusMs = 5400000;
+  let expectedProgress = 0.5;
+  let reads = 0;
+  const context = vm.createContext({
+    window: { screen: { availWidth: 1440 }, documentPictureInPicture },
+    documentPictureInPicture,
+    document: { querySelector: () => null },
+    Timer: { formatMs: () => '0s', stop() {} },
+    Storage: {
+      currentSessionMs: () => 0,
+      load: () => ({}),
+      getDailyFocusMs() { reads += 1; return focusMs; },
+    },
+    Settings: {
+      getDailyProgress: () => null,
+      getFocusGoal: () => ({ enabled, hours: 4 }),
+      getFocusProgress: (ms) => ({
+        focusMs: ms,
+        goalMs: 14400000,
+        progress: Math.min(1, ms / 14400000),
+        expectedProgress,
+        differenceMs: expectedProgress === null ? null : ms - 14400000 * expectedProgress,
+      }),
+    },
+    setInterval(callback) { tick = callback; return 1; },
+    clearInterval() {},
+  });
+  vm.runInContext(pipSource, context);
+  await vm.runInContext('PiP.open("issue")', context);
+
+  const stack = pipWindow.document.body.children.find(el => el.className === 'progress-stack');
+  const focusRow = stack.children.find(el => el.className === 'focus-progress');
+  const [track, label] = focusRow.children;
+  const [fill, marker] = track.children;
+  assert.equal(focusRow.hidden, true);
+  assert.equal(reads, 0);
+
+  enabled = true;
+  tick();
+  assert.equal(focusRow.hidden, false);
+  assert.equal(fill.style.width, '37.5%');
+  assert.equal(marker.style.left, '50%');
+  assert.equal(focusRow.attributes.get('data-pace'), 'behind');
+  assert.equal(label.textContent, 'Focus 1h 30m / 4h \u00b7 -30m behind');
+
+  focusMs = 9000000;
+  tick();
+  assert.equal(focusRow.attributes.get('data-pace'), 'ahead');
+  assert.match(label.textContent, /\+30m ahead/);
+
+  focusMs = 18000000;
+  tick();
+  assert.equal(fill.style.width, '100%');
+  assert.match(label.textContent, /Focus 5h \/ 4h/);
+
+  expectedProgress = null;
+  tick();
+  assert.equal(marker.hidden, true);
+  assert.equal(focusRow.attributes.get('data-pace'), 'neutral');
+  assert.match(label.textContent, /No schedule/);
+
+  enabled = false;
+  tick();
+  assert.equal(focusRow.hidden, true);
 });

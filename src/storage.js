@@ -57,6 +57,27 @@ const Storage = {
     return Date.now() - state.sessions[state.sessions.length - 1].start;
   },
 
+  getDailyFocusMs(date = new Date()) {
+    const now = date.getTime();
+    const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
+    let totalMs = 0;
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(this.PREFIX)) continue;
+
+      const state = this.load(key.slice(this.PREFIX.length));
+      for (const session of state.sessions) {
+        // Include only today's portion of sessions that span midnight.
+        totalMs += Math.max(0,
+          Math.min(session.end ?? now, now, dayEnd) - Math.max(session.start, dayStart));
+      }
+    }
+
+    return totalMs;
+  },
+
   // ── Session mutations ──────────────────────────────────────────────────────
 
   startSession(boardCardId, issueTitle = null) {

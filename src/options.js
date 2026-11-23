@@ -1,5 +1,7 @@
 const controls = document.getElementById('settings-controls');
 const autoPipInput = document.getElementById('auto-pip');
+const focusGoalEnabled = document.getElementById('focus-goal-enabled');
+const focusGoalHours = document.getElementById('focus-goal-hours');
 const copySource = document.getElementById('copy-source');
 const copyTarget = document.getElementById('copy-target');
 const copyButton = document.getElementById('copy-schedule');
@@ -243,9 +245,45 @@ autoPipInput.addEventListener('change', async () => {
   }
 });
 
+async function saveFocusGoal() {
+  const enabled = focusGoalEnabled.checked;
+  // Disabling must still work when an unfinished hours edit is invalid.
+  const hours = enabled ? focusGoalHours.valueAsNumber : Settings.getFocusGoal().hours;
+  focusGoalHours.disabled = !enabled;
+  if (!Number.isFinite(hours) || hours <= 0 || !Number.isFinite(hours * 3600000)) {
+    setStatus('Focus goal must be a positive number of hours.');
+    return;
+  }
+
+  focusGoalEnabled.disabled = true;
+  focusGoalHours.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setFocusGoal({ enabled, hours });
+    focusGoalHours.value = String(hours);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save focus goal', error);
+    const previousGoal = Settings.getFocusGoal();
+    focusGoalEnabled.checked = previousGoal.enabled;
+    focusGoalHours.value = String(previousGoal.hours);
+    setStatus('Unable to save focus goal.');
+  } finally {
+    focusGoalEnabled.disabled = false;
+    focusGoalHours.disabled = !focusGoalEnabled.checked;
+  }
+}
+
+focusGoalEnabled.addEventListener('change', saveFocusGoal);
+focusGoalHours.addEventListener('change', saveFocusGoal);
+
 Settings.ready
   .then(() => {
     autoPipInput.checked = Settings.shouldOpenPip();
+    const goal = Settings.getFocusGoal();
+    focusGoalEnabled.checked = goal.enabled;
+    focusGoalHours.value = String(goal.hours);
+    focusGoalHours.disabled = !goal.enabled;
     renderSchedule(Settings.getWeeklySchedule());
     controls.disabled = false;
   })

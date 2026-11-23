@@ -227,6 +227,32 @@ body {
   font-size: 12px;
 }
 
+.options__goal-hours {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.options__goal-hours input {
+  width: 90px;
+  padding: 8px;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  background: #111827;
+  color: #f9fafb;
+  font: inherit;
+}
+
+.options__goal-help {
+  margin: 10px 0 0;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 @media (max-width: 480px) {
   .options {
     margin: 24px auto;
