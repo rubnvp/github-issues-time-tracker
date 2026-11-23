@@ -198,3 +198,19 @@ test('focus goal persists fractional hours, reacts to settings changes, and reje
   notifyChanged({ focusGoal: { newValue: { enabled: false, hours: 3.5 } } });
   assert.equal(settings.getFocusProgress(3600000), null);
 });
+
+test('work-time reminders exclude breaks, workday end, and unscheduled days', async () => {
+  const { settings } = createSettings();
+  await settings.ready;
+  await settings.setWeeklySchedule({
+    monday: [{ start: '09:00', end: '12:00' }, { start: '13:00', end: '17:00' }],
+  });
+
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 8, 59, 59)), false);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 9)), true);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 11, 59, 59)), true);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 12)), false);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 13)), true);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 17)), false);
+  assert.equal(settings.isWorkTime(new Date(2026, 0, 6, 10)), false);
+});

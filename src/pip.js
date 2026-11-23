@@ -7,6 +7,7 @@
 const PiP = (() => {
   let pipWindow = null;
   let activeBoardCardId = null;
+  let refreshWindow = null;
 
   const CSS = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,6 +30,19 @@ const PiP = (() => {
       flex-shrink: 0;
       box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.6);
       animation: pulse 4.5s ease-in-out infinite;
+    }
+    body[data-timer-running="false"] .dot {
+      background: #64748b;
+      box-shadow: none;
+      animation: none;
+    }
+    body[data-focus-reminder="true"] .dot {
+      background: #fbbf24;
+      box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.4);
+      animation: focus-reminder 3s ease-in-out infinite;
+    }
+    body[data-focus-reminder="true"] .focus-label {
+      animation: focus-reminder 3s ease-in-out infinite;
     }
     .time {
       font-family: monospace;
@@ -133,6 +147,15 @@ const PiP = (() => {
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
       50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(99,102,241,0.3); }
     }
+    @keyframes focus-reminder {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dot, body[data-focus-reminder="true"] .dot,
+      body[data-focus-reminder="true"] .focus-label { animation: none; }
+      .progress-fill { transition: none; }
+    }
   `;
 
   let openRequestId = 0;
@@ -151,7 +174,8 @@ const PiP = (() => {
       const requestId = ++openRequestId;
       const previousWindow = pipWindow;
       pipWindow = null;
-      activeBoardCardId = null;
+      refreshWindow = null;
+      activeBoardCardId = boardCardId;
       if (previousWindow) previousWindow.close();
 
       const nextWindow = await documentPictureInPicture.requestWindow({
@@ -166,7 +190,6 @@ const PiP = (() => {
       }
 
       pipWindow = nextWindow;
-      activeBoardCardId = boardCardId;
       const doc = nextWindow.document;
 
       const style = doc.createElement('style');
@@ -178,12 +201,8 @@ const PiP = (() => {
 
       const timeEl = doc.createElement('span');
       timeEl.className = 'time';
-      timeEl.textContent = Timer.formatMs(Storage.currentSessionMs(Storage.load(boardCardId)));
-
-      const card = document.querySelector(`[data-board-card-id="${boardCardId}"]`);
       const titleEl = doc.createElement('span');
       titleEl.className = 'title';
-      titleEl.textContent = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
 
       const progressEl = doc.createElement('div');
       progressEl.className = 'progress';
@@ -202,6 +221,7 @@ const PiP = (() => {
       progressTrack.title = 'Work hours are colored; breaks are dark. White marker: current time.';
       let segmentKey = null;
       let segmentElements = [];
+      let nextReminderAt = null;
 
       const progressLabel = doc.createElement('span');
       progressLabel.className = 'progress-label';
@@ -236,7 +256,11 @@ const PiP = (() => {
       pauseBtn.className = 'pause-btn';
       pauseBtn.textContent = '⏸\uFE0E';
       pauseBtn.title = 'Pause timer';
-      pauseBtn.addEventListener('click', () => Timer.stop(boardCardId));
+      pauseBtn.addEventListener('click', () => {
+        if (!activeBoardCardId) return;
+        if (Storage.isRunning(Storage.load(activeBoardCardId))) Timer.stop(activeBoardCardId);
+        else Timer.start(activeBoardCardId);
+      });
 
       doc.body.appendChild(dot);
       doc.body.appendChild(timeEl);
@@ -246,7 +270,7 @@ const PiP = (() => {
 
       function updateFocus(now) {
         focusEl.hidden = !Settings.getFocusGoal().enabled;
-        if (focusEl.hidden) return;
+        if (focusEl.hidden) return null;
 
         const focus = Settings.getFocusProgress(Storage.getDailyFocusMs(now), now);
         const percent = Math.round(focus.progress * 100);
@@ -273,11 +297,25 @@ const PiP = (() => {
         focusTrack.title = detail;
         focusLabel.title = detail;
         focusTrack.setAttribute('aria-valuetext', `${percent}% of focus goal. ${detail}`);
+        return focus;
       }
 
-      function updateProgress() {
-        const now = new Date();
-        updateFocus(now);
+      function updateProgress(now, running) {
+        const focus = updateFocus(now);
+        const remind = !running && focus !== null && focus.differenceMs !== null &&
+          focus.differenceMs < 0 && Settings.isWorkTime(now);
+        doc.body.setAttribute('data-focus-reminder', String(remind));
+        dot.title = running ? 'Focusing' : remind ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
+        if (remind && Settings.shouldPlayFocusReminder()) {
+          if (nextReminderAt === null) {
+            nextReminderAt = now.getTime() + 5 * 60000;
+          } else if (now.getTime() >= nextReminderAt) {
+            nextReminderAt = now.getTime() + 5 * 60000;
+            Sounds.remind().catch(error => console.error('Unable to play focus reminder', error));
+          }
+        } else {
+          nextReminderAt = null;
+        }
         const progress = Settings.getDailyProgress(now);
         progressEl.hidden = progress === null;
         if (progress === null) return;
@@ -314,21 +352,45 @@ const PiP = (() => {
         progressLabel.textContent = `${percent}%`;
       }
 
-      updateProgress();
+      function updateDisplay() {
+        if (pipWindow !== nextWindow) return;
+        const state = Storage.load(activeBoardCardId);
+        const running = Storage.isRunning(state);
+        if (!running && !Settings.shouldKeepPipOpen()) {
+          PiP.close();
+          return;
+        }
 
-      const tickId = setInterval(() => {
-        if (pipWindow !== nextWindow || activeBoardCardId !== boardCardId) return;
-        timeEl.textContent = Timer.formatMs(Storage.currentSessionMs(Storage.load(activeBoardCardId)));
-        updateProgress();
-      }, 1000);
+        doc.body.setAttribute('data-timer-running', String(running));
+        timeEl.textContent = running ? Timer.formatMs(Storage.currentSessionMs(state)) : 'Paused';
+        const card = document.querySelector(`[data-board-card-id="${activeBoardCardId}"]`);
+        titleEl.textContent = state.issueTitle || (card ? GitHubAdapter.getIssueTitle(card) : 'Issue');
+        pauseBtn.textContent = running ? '⏸\uFE0E' : '▶';
+        pauseBtn.title = running ? 'Pause timer' : 'Resume timer';
+        pauseBtn.setAttribute('aria-label', pauseBtn.title);
+        updateProgress(new Date(), running);
+      }
 
+      const tickId = setInterval(updateDisplay, 1000);
       nextWindow.addEventListener('pagehide', () => {
         clearInterval(tickId);
         if (pipWindow === nextWindow) {
           pipWindow = null;
           activeBoardCardId = null;
+          refreshWindow = null;
         }
       });
+      refreshWindow = updateDisplay;
+      updateDisplay();
+    },
+
+    setTimer(boardCardId) {
+      activeBoardCardId = boardCardId;
+      this.refresh();
+    },
+
+    refresh() {
+      if (refreshWindow) refreshWindow();
     },
 
     close() {
@@ -336,6 +398,7 @@ const PiP = (() => {
       const currentWindow = pipWindow;
       pipWindow = null;
       activeBoardCardId = null;
+      refreshWindow = null;
       if (currentWindow) currentWindow.close();
     },
 

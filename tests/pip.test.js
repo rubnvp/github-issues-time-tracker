@@ -71,7 +71,7 @@ test('closing an older PiP window cannot clear the current window reference', as
     documentPictureInPicture,
     document: { querySelector: () => null },
     Timer: { formatMs: () => '0s', stop() {} },
-    Storage: { currentSessionMs: () => 0, load: () => ({}) },
+    Storage: { currentSessionMs: () => 0, load: () => ({}), isRunning: () => true },
     GitHubAdapter: { getIssueTitle: () => 'Issue' },
     Settings: { getDailyProgress: () => null, getFocusGoal: () => ({ enabled: false }) },
     setInterval: () => 1,
@@ -110,7 +110,7 @@ test('PiP displays work segments and moves the time marker through breaks withou
     documentPictureInPicture,
     document: { querySelector: () => null },
     Timer: { formatMs: () => '0s', stop() {} },
-    Storage: { currentSessionMs: () => 0, load: () => ({}) },
+    Storage: { currentSessionMs: () => 0, load: () => ({}), isRunning: () => true },
     Settings: {
       getFocusGoal: () => ({ enabled: false }),
       getDailyProgress: () => 3 / 7,
@@ -168,6 +168,7 @@ test('focus progress updates pace, honors disabling, and works without a work sc
     Storage: {
       currentSessionMs: () => 0,
       load: () => ({}),
+      isRunning: () => true,
       getDailyFocusMs() { reads += 1; return focusMs; },
     },
     Settings: {

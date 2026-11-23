@@ -77,6 +77,9 @@ const Timer = {
     } catch (_) { /* extension context invalidated (e.g. after reload) */ }
 
     FloatingBar.show(boardCardId);
+    PiP.setTimer(boardCardId);
+    const render = this._renderers.get(boardCardId);
+    if (render) render();
   },
 
   stop(boardCardId) {
@@ -94,7 +97,8 @@ const Timer = {
     if (this._intervals.size === 0) {
       Sounds.stop();
       try { chrome.runtime.sendMessage({ type: 'TIMER_STOP' }); } catch (_) {}
-      PiP.close();
+      if (Settings.shouldKeepPipOpen()) PiP.refresh();
+      else PiP.close();
       FloatingBar.hide();
     }
   },

@@ -12,7 +12,7 @@ const Sounds = (() => {
   function playTone(frequencies, duration = 0.08, gain = 0.15) {
     const ac = getCtx();
     const resume = ac.state === 'suspended' ? ac.resume() : Promise.resolve();
-    resume.then(() => _scheduleTones(ac, frequencies, duration, gain));
+    return resume.then(() => _scheduleTones(ac, frequencies, duration, gain));
   }
 
   function _scheduleTones(ac, frequencies, duration, gain) {
@@ -52,6 +52,13 @@ const Sounds = (() => {
         { freq: 660, time: 0 },
         { freq: 440, time: 0.1 },
       ]);
+    },
+
+    async remind() {
+      return playTone([
+        { freq: 523.3, time: 0 },
+        { freq: 659.3, time: 0.18 },
+      ], 0.15, 0.08);
     },
 
     // Fanfare — signals issue completed 🎉

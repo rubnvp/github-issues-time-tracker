@@ -13,6 +13,8 @@ const Settings = (() => {
   ];
 
   let autoPipEnabled = false;
+  let keepPipOpen = false;
+  let focusReminderSoundEnabled = false;
   let weeklySchedule = createEmptySchedule();
   let focusGoal = { enabled: false, hours: 4 };
 
@@ -65,10 +67,14 @@ const Settings = (() => {
 
   const ready = chrome.storage.local.get({
     autoPipEnabled: false,
+    keepPipOpen: false,
+    focusReminderSoundEnabled: false,
     weeklySchedule: createEmptySchedule(),
     focusGoal: { enabled: false, hours: 4 },
   }).then((settings) => {
     autoPipEnabled = settings.autoPipEnabled === true;
+    keepPipOpen = settings.keepPipOpen === true;
+    focusReminderSoundEnabled = settings.focusReminderSoundEnabled === true;
     weeklySchedule = normalizeSchedule(settings.weeklySchedule);
     focusGoal = settings.focusGoal;
   });
@@ -76,6 +82,10 @@ const Settings = (() => {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') return;
     if (changes.autoPipEnabled) autoPipEnabled = changes.autoPipEnabled.newValue === true;
+    if (changes.keepPipOpen) keepPipOpen = changes.keepPipOpen.newValue === true;
+    if (changes.focusReminderSoundEnabled) {
+      focusReminderSoundEnabled = changes.focusReminderSoundEnabled.newValue === true;
+    }
     if (changes.weeklySchedule) weeklySchedule = normalizeSchedule(changes.weeklySchedule.newValue);
     if (changes.focusGoal) focusGoal = changes.focusGoal.newValue ?? { enabled: false, hours: 4 };
   });
@@ -86,6 +96,14 @@ const Settings = (() => {
 
     shouldOpenPip() {
       return autoPipEnabled;
+    },
+
+    shouldKeepPipOpen() {
+      return keepPipOpen;
+    },
+
+    shouldPlayFocusReminder() {
+      return focusReminderSoundEnabled;
     },
 
     getWeeklySchedule() {
@@ -130,6 +148,12 @@ const Settings = (() => {
     getScheduleForDate(date = new Date()) {
       const day = DAYS.find(({ dateIndex }) => dateIndex === date.getDay());
       return weeklySchedule[day.key].map(interval => ({ ...interval }));
+    },
+
+    isWorkTime(date = new Date()) {
+      const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+      return this.getScheduleForDate(date).some(({ start, end }) =>
+        seconds >= timeToSeconds(start) && seconds < timeToSeconds(end));
     },
 
     getDailyTimeline(date = new Date()) {
@@ -182,6 +206,16 @@ const Settings = (() => {
     async setAutoPipEnabled(enabled) {
       await chrome.storage.local.set({ autoPipEnabled: enabled });
       autoPipEnabled = enabled;
+    },
+
+    async setKeepPipOpen(enabled) {
+      await chrome.storage.local.set({ keepPipOpen: enabled });
+      keepPipOpen = enabled;
+    },
+
+    async setFocusReminderSoundEnabled(enabled) {
+      await chrome.storage.local.set({ focusReminderSoundEnabled: enabled });
+      focusReminderSoundEnabled = enabled;
     },
 
     async setFocusGoal({ enabled, hours }) {

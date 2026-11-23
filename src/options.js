@@ -1,5 +1,7 @@
 const controls = document.getElementById('settings-controls');
 const autoPipInput = document.getElementById('auto-pip');
+const keepPipOpenInput = document.getElementById('keep-pip-open');
+const focusReminderSoundInput = document.getElementById('focus-reminder-sound');
 const focusGoalEnabled = document.getElementById('focus-goal-enabled');
 const focusGoalHours = document.getElementById('focus-goal-hours');
 const copySource = document.getElementById('copy-source');
@@ -245,6 +247,36 @@ autoPipInput.addEventListener('change', async () => {
   }
 });
 
+keepPipOpenInput.addEventListener('change', async () => {
+  keepPipOpenInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setKeepPipOpen(keepPipOpenInput.checked);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save PiP pause setting', error);
+    keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
+    setStatus('Unable to save settings.');
+  } finally {
+    keepPipOpenInput.disabled = false;
+  }
+});
+
+focusReminderSoundInput.addEventListener('change', async () => {
+  focusReminderSoundInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setFocusReminderSoundEnabled(focusReminderSoundInput.checked);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save focus reminder sound setting', error);
+    focusReminderSoundInput.checked = Settings.shouldPlayFocusReminder();
+    setStatus('Unable to save settings.');
+  } finally {
+    focusReminderSoundInput.disabled = false;
+  }
+});
+
 async function saveFocusGoal() {
   const enabled = focusGoalEnabled.checked;
   // Disabling must still work when an unfinished hours edit is invalid.
@@ -280,6 +312,8 @@ focusGoalHours.addEventListener('change', saveFocusGoal);
 Settings.ready
   .then(() => {
     autoPipInput.checked = Settings.shouldOpenPip();
+    keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
+    focusReminderSoundInput.checked = Settings.shouldPlayFocusReminder();
     const goal = Settings.getFocusGoal();
     focusGoalEnabled.checked = goal.enabled;
     focusGoalHours.value = String(goal.hours);

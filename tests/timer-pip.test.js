@@ -1,0 +1,254 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
+
+const sources = await Promise.all(['settings', 'storage', 'pip', 'timer'].map(name =>
+  readFile(new URL(`../src/${name}.js`, import.meta.url), 'utf8')));
+
+class Element {
+  constructor() {
+    this.children = [];
+    this.style = {};
+    this.attributes = new Map();
+    this.listeners = new Map();
+  }
+
+  append(...children) { this.children.push(...children); }
+  appendChild(child) { this.append(child); }
+  replaceChildren(...children) { this.children = children; }
+  setAttribute(name, value) { this.attributes.set(name, value); }
+  addEventListener(name, callback) { this.listeners.set(name, callback); }
+}
+
+async function createHarness(keepPipOpen = true) {
+  let now = new Date(2026, 0, 5, 11).getTime();
+  let nextInterval = 0;
+  const intervals = new Map();
+  const localData = new Map();
+  const extensionData = {
+    keepPipOpen,
+    focusGoal: { enabled: true, hours: 4 },
+    weeklySchedule: {
+      monday: [{ start: '09:00', end: '12:00' }, { start: '13:00', end: '18:00' }],
+    },
+  };
+  const windows = [];
+  let reminders = 0;
+  const pictureInPicture = {
+    async requestWindow() {
+      const listeners = new Map();
+      const window = {
+        closed: false,
+        document: { body: new Element(), head: new Element(), createElement: () => new Element() },
+        addEventListener(name, callback) { listeners.set(name, callback); },
+        close() { this.closed = true; listeners.get('pagehide')?.(); },
+      };
+      windows.push(window);
+      return window;
+    },
+  };
+  class Clock extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
+  const context = vm.createContext({
+    Date: Clock,
+    window: { screen: { availWidth: 1440 }, documentPictureInPicture: pictureInPicture },
+    documentPictureInPicture: pictureInPicture,
+    document: {
+      querySelector: selector => ({ issueTitle: selector.includes('second') ? 'Second issue' : 'First issue' }),
+    },
+    chrome: {
+      storage: {
+        local: {
+          get: async defaults => ({ ...defaults, ...extensionData }),
+          set: async values => Object.assign(extensionData, values),
+        },
+        onChanged: { addListener() {} },
+      },
+      runtime: { sendMessage() {}, onMessage: { addListener() {} } },
+    },
+    localStorage: {
+      get length() { return localData.size; },
+      key: index => [...localData.keys()][index],
+      getItem: key => localData.get(key) ?? null,
+      setItem: (key, value) => localData.set(key, value),
+    },
+    setInterval(callback) { intervals.set(++nextInterval, callback); return nextInterval; },
+    clearInterval(id) { intervals.delete(id); },
+    GitHubAdapter: { getIssueTitle: card => card.issueTitle },
+    Injector: { _extractIssueRef: () => null },
+    FloatingBar: { show() {}, hide() {} },
+    Sounds: { play() {}, stop() {}, async remind() { reminders += 1; } },
+  });
+  sources.forEach(source => vm.runInContext(source, context));
+  const settings = vm.runInContext('Settings', context);
+  await settings.ready;
+
+  return {
+    timer: vm.runInContext('Timer', context),
+    pip: vm.runInContext('PiP', context),
+    storage: vm.runInContext('Storage', context),
+    settings,
+    windows,
+    intervals,
+    get reminders() { return reminders; },
+    setTime(hour, minute = 0, second = 0) { now = new Date(2026, 0, 5, hour, minute, second).getTime(); },
+    tick() { [...intervals.values()].forEach(callback => callback()); },
+  };
+}
+
+test('persistent PiP pauses without tracking focus, reminds only during work hours, and resumes', async () => {
+  const h = await createHarness();
+  let renders = 0;
+  h.timer.registerRenderer('first', () => { renders += 1; });
+  h.timer.start('first');
+  await h.pip.open('first');
+  const window = h.windows[0];
+  const { body } = window.document;
+  const button = body.children.find(el => el.className === 'pause-btn');
+  const time = body.children.find(el => el.className === 'time');
+  const click = () => button.listeners.get('click')();
+
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  h.setTime(11, 1);
+  click();
+  assert.equal(h.pip.isOpen(), true);
+  assert.equal(h.timer._intervals.size, 0);
+  assert.equal(time.textContent, 'Paused');
+  assert.equal(button.title, 'Resume timer');
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  assert.equal(h.storage.isRunning(h.storage.load('first')), false);
+
+  h.setTime(11, 30);
+  h.tick();
+  assert.equal(h.storage.getDailyFocusMs(), 60000);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+
+  h.setTime(12, 30);
+  h.tick();
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  h.setTime(13);
+  h.tick();
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+
+  click();
+  assert.equal(h.storage.isRunning(h.storage.load('first')), true);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(button.title, 'Pause timer');
+  assert.equal(time.textContent, '0s');
+  assert.equal(renders, 3);
+  assert.equal(h.windows.length, 1);
+});
+
+test('kept PiP follows a different issue and its controls act on the new timer', async () => {
+  const h = await createHarness();
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.start('second');
+
+  const { body } = h.windows[0].document;
+  assert.equal(body.children.find(el => el.className === 'title').textContent, 'Second issue');
+  const click = body.children.find(el => el.className === 'pause-btn').listeners.get('click');
+  click();
+  assert.equal(h.storage.isRunning(h.storage.load('second')), false);
+  click();
+  assert.equal(h.storage.isRunning(h.storage.load('second')), true);
+  assert.equal(h.storage.isRunning(h.storage.load('first')), false);
+  assert.equal(h.windows.length, 1);
+});
+
+test('pause still closes PiP by default, and disabling persistence closes a paused PiP', async () => {
+  const h = await createHarness(false);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  assert.equal(h.pip.isOpen(), false);
+  assert.equal(h.windows[0].closed, true);
+  assert.equal(h.intervals.size, 0);
+
+  await h.settings.setKeepPipOpen(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  assert.equal(h.pip.isOpen(), true);
+  await h.settings.setKeepPipOpen(false);
+  h.tick();
+  assert.equal(h.pip.isOpen(), false);
+  assert.equal(h.intervals.size, 0);
+});
+
+test('optional sound reminders wait five minutes, repeat without bursts, and reset over breaks', async () => {
+  const h = await createHarness();
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  h.setTime(11, 30);
+  h.tick();
+  assert.equal(h.reminders, 0);
+
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.tick();
+  h.setTime(11, 34, 59);
+  h.tick();
+  assert.equal(h.reminders, 0);
+  h.setTime(11, 35);
+  h.tick();
+  assert.equal(h.reminders, 1);
+  h.setTime(11, 40);
+  h.tick();
+  assert.equal(h.reminders, 2);
+
+  h.setTime(11, 55);
+  h.tick();
+  h.tick();
+  assert.equal(h.reminders, 3);
+  h.timer.start('first');
+  h.setTime(11, 56);
+  h.tick();
+  h.timer.stop('first');
+
+  h.setTime(12, 30);
+  h.tick();
+  assert.equal(h.reminders, 3);
+  h.setTime(13);
+  h.tick();
+  h.setTime(13, 4, 59);
+  h.tick();
+  assert.equal(h.reminders, 3);
+  h.setTime(13, 5);
+  h.tick();
+  assert.equal(h.reminders, 4);
+
+  await h.settings.setFocusReminderSoundEnabled(false);
+  h.tick();
+  h.setTime(13, 15);
+  h.tick();
+  assert.equal(h.reminders, 4);
+});
+
+test('no reminder is raised when ahead, with the goal disabled, or after closing PiP', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.setTime(11, 1);
+  h.timer.stop('first');
+  await h.settings.setFocusGoal({ enabled: true, hours: 0.01 });
+  h.tick();
+  h.setTime(11, 10);
+  h.tick();
+  const body = h.windows[0].document.body;
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(h.reminders, 0);
+
+  await h.settings.setFocusGoal({ enabled: false, hours: 4 });
+  h.tick();
+  h.setTime(11, 20);
+  h.tick();
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(h.reminders, 0);
+  h.pip.close();
+  assert.equal(h.intervals.size, 0);
+});
