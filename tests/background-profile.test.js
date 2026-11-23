@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source = await readFile(new URL('../src/background.js', import.meta.url), 'utf8');
 
-test('new installs start with visual reminders disabled; updates leave settings unchanged', async () => {
+test('new installs start with pace comparison and visual reminders disabled; updates keep settings', async () => {
   let onInstalled;
   const writes = [];
   const chrome = {
@@ -19,5 +19,5 @@ test('new installs start with visual reminders disabled; updates leave settings 
   onInstalled({ reason: 'update' });
   assert.equal(writes.length, 0);
   onInstalled({ reason: 'install' });
-  assert.deepEqual(writes, [{ focusReminderVisualEnabled: false }]);
+  assert.deepEqual(writes, [{ focusReminderVisualEnabled: false, focusPaceComparisonEnabled: false }]);
 });

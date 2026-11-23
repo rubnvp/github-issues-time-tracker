@@ -33,7 +33,7 @@
             <input type="radio" name="settings-section" value="tracking">
             <span class="options__profile-copy">
               <span class="options__profile-title">Tracking</span>
-              <span class="options__profile-description">Work schedule and reminders</span>
+              <span class="options__profile-description">Schedule, pace and reminders</span>
             </span>
           </label>
         </fieldset>
@@ -75,41 +75,57 @@
         </label>
         <label class="options__goal-hours">
           <span>Daily focus goal (hours)</span>
-          <input id="focus-goal-hours" type="number" min="0" step="any" value="4" required disabled>
+          <input id="focus-goal-hours" type="number" min="0" step="any" value="2" required disabled>
         </label>
         <p class="options__goal-help">
           The goal is the same every day. Reduced-motion settings disable the bar animation.
         </p>
         <p class="options__goal-help">
-          With work hours set, the white marker shows your expected pace. When paused, green means on track; amber means behind.
+          If pace comparison is enabled, the white marker shows your expected pace. When paused, green means on track; amber means behind.
         </p>
+      </section>
+
+      <section id="focus-comparison-section" class="options__section" hidden>
+        <h2>Focus pace</h2>
+        <label class="options__setting">
+          <input id="focus-pace-comparison" type="checkbox">
+          <span class="options__setting-copy">
+            <span class="options__setting-title">Compare with a steady pace</span>
+            <span class="options__setting-description">
+              Compare focus progress with your work schedule. This assumes focus is spread evenly across work hours.
+            </span>
+          </span>
+        </label>
       </section>
 
       <section id="focus-reminders-section" class="options__section" hidden>
         <h2>Focus reminders</h2>
-        <p class="options__description">Reminders need an open PiP and an enabled focus goal. They activate when you're paused and behind pace during work hours, not during breaks.</p>
-        <label class="options__setting">
-          <input id="focus-reminder-visual" type="checkbox">
-          <span class="options__setting-copy">
-            <span class="options__setting-title">Visual reminder</span>
-            <span class="options__setting-description">
-              Pulse the PiP background amber. With reduced motion, it stays amber.
+        <p class="options__description">Reminders need an open PiP, an enabled focus goal and pace comparison. They activate when you're paused and behind pace during work hours, not during breaks.</p>
+        <p id="focus-reminders-disabled" class="options__description" hidden>Enable pace comparison to use reminders. Your reminder settings are saved.</p>
+        <fieldset id="focus-reminder-controls" class="options__controls options__reminders" aria-label="Focus reminder options">
+          <label class="options__setting">
+            <input id="focus-reminder-visual" type="checkbox">
+            <span class="options__setting-copy">
+              <span class="options__setting-title">Visual reminder</span>
+              <span class="options__setting-description">
+                Pulse the PiP background amber. With reduced motion, it stays amber.
+              </span>
             </span>
-          </span>
-        </label>
-        <label class="options__setting">
-          <input id="focus-reminder-sound" type="checkbox">
-          <span class="options__setting-copy">
-            <span class="options__setting-title">Sound reminder</span>
-            <span class="options__setting-description">
-              Play a sound after the set interval, then repeat.
+          </label>
+          <label class="options__setting">
+            <input id="focus-reminder-sound" type="checkbox">
+            <span class="options__setting-copy">
+              <span class="options__setting-title">Sound reminder</span>
+              <span class="options__setting-description">
+                Play a sound after the set interval, then repeat.
+              </span>
             </span>
-          </span>
-        </label>
-        <label class="options__goal-hours">
-          <span>Sound interval (minutes)</span>
-          <input id="focus-reminder-interval" type="number" min="1" step="1" value="1" required disabled>
-        </label>
+          </label>
+          <label class="options__goal-hours">
+            <span>Sound interval (minutes)</span>
+            <input id="focus-reminder-interval" type="number" min="1" step="1" value="1" required disabled>
+          </label>
+        </fieldset>
       </section>
 
       <section id="work-schedule-section" class="options__section" hidden>

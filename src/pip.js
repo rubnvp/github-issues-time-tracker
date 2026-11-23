@@ -312,7 +312,7 @@ const PiP = (() => {
         expectedMarker.hidden = focus.expectedProgress === null;
         expectedMarker.style.left = `${(focus.expectedProgress ?? 0) * 100}%`;
 
-        let pace = 'No schedule';
+        let pace = focus.comparisonEnabled === false ? null : 'No schedule';
         let state = 'neutral';
         if (focus.differenceMs !== null) {
           state = focus.differenceMs >= 0 ? 'ahead' : 'behind';
@@ -324,8 +324,8 @@ const PiP = (() => {
 
         focusEl.setAttribute('data-pace', state);
         focusLabel.textContent = `${percent}%`;
-        const detail =
-          `Focus ${formatFocusDuration(focus.focusMs)} / ${formatFocusDuration(focus.goalMs)} \u00b7 ${pace}`;
+        const detail = `Focus ${formatFocusDuration(focus.focusMs)} / ${formatFocusDuration(focus.goalMs)}` +
+          (pace ? ` \u00b7 ${pace}` : '');
         focusEl.title = detail;
         focusTrack.title = detail;
         focusLabel.title = detail;

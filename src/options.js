@@ -2,10 +2,14 @@ const controls = document.getElementById('settings-controls');
 const settingsSectionGroup = document.getElementById('settings-section');
 const pipSection = document.getElementById('pip-section');
 const focusGoalSection = document.getElementById('focus-goal-section');
+const focusComparisonSection = document.getElementById('focus-comparison-section');
 const focusRemindersSection = document.getElementById('focus-reminders-section');
 const workScheduleSection = document.getElementById('work-schedule-section');
 const autoPipInput = document.getElementById('auto-pip');
 const keepPipOpenInput = document.getElementById('keep-pip-open');
+const focusPaceComparisonInput = document.getElementById('focus-pace-comparison');
+const focusReminderControls = document.getElementById('focus-reminder-controls');
+const focusRemindersDisabled = document.getElementById('focus-reminders-disabled');
 const focusReminderVisualInput = document.getElementById('focus-reminder-visual');
 const focusReminderSoundInput = document.getElementById('focus-reminder-sound');
 const focusReminderIntervalInput = document.getElementById('focus-reminder-interval');
@@ -25,9 +29,36 @@ function setStatus(message) {
 function showSettingsSection(section) {
   pipSection.hidden = section !== 'basic';
   focusGoalSection.hidden = section !== 'support';
+  focusComparisonSection.hidden = section !== 'tracking';
   focusRemindersSection.hidden = section !== 'tracking';
   workScheduleSection.hidden = section !== 'tracking';
 }
+
+function updateFocusComparison() {
+  const enabled = Settings.shouldCompareFocusPace();
+  focusPaceComparisonInput.checked = enabled;
+  focusReminderControls.disabled = !enabled;
+  focusRemindersDisabled.hidden = enabled;
+}
+
+focusPaceComparisonInput.addEventListener('change', async () => {
+  focusPaceComparisonInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setFocusPaceComparisonEnabled(focusPaceComparisonInput.checked);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save focus pace comparison setting', error);
+    setStatus('Unable to save focus pace setting.');
+  } finally {
+    updateFocusComparison();
+    focusPaceComparisonInput.disabled = false;
+  }
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.focusPaceComparisonEnabled) updateFocusComparison();
+});
 
 settingsSectionGroup.addEventListener('change', (event) => {
   showSettingsSection(event.target.value);
@@ -369,6 +400,7 @@ Settings.ready
     showSettingsSection('basic');
     autoPipInput.checked = Settings.shouldOpenPip();
     keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
+    updateFocusComparison();
     focusReminderVisualInput.checked = Settings.shouldShowFocusReminder();
     focusReminderSoundInput.checked = Settings.shouldPlayFocusReminder();
     focusReminderIntervalInput.value = String(Settings.getFocusReminderIntervalMinutes());

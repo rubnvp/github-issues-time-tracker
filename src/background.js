@@ -16,7 +16,7 @@ let lastKnownTabId = null; // last tab that sent us any content-script message
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason !== 'install') return;
-  chrome.storage.local.set({ focusReminderVisualEnabled: false })
+  chrome.storage.local.set({ focusReminderVisualEnabled: false, focusPaceComparisonEnabled: false })
     .catch(error => console.error('Unable to initialize reminder settings', error));
 });
 

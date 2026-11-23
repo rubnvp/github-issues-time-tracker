@@ -42,6 +42,19 @@ function createSettings(initialData = {}) {
   };
 }
 
+test('focus goal defaults to two hours without overwriting a saved goal', async () => {
+  const fresh = createSettings();
+  await fresh.settings.ready;
+  assert.equal(fresh.settings.getFocusGoal().hours, 2);
+  assert.equal(fresh.settings.getFocusGoal().enabled, false);
+
+  const existing = createSettings({ focusGoal: { enabled: true, hours: 4 } });
+  await existing.settings.ready;
+  assert.equal(existing.settings.getFocusGoal().hours, 4);
+  existing.notifyChanged({ focusGoal: { newValue: undefined } });
+  assert.equal(existing.settings.getFocusGoal().hours, 2);
+});
+
 test('daily progress counts scheduled time and pauses during schedule gaps', async () => {
   const { settings } = createSettings();
   await settings.ready;
@@ -198,6 +211,28 @@ test('focus goal persists fractional hours, reacts to settings changes, and reje
   }
   notifyChanged({ focusGoal: { newValue: { enabled: false, hours: 3.5 } } });
   assert.equal(settings.getFocusProgress(3600000), null);
+});
+
+test('pace comparison can be disabled without changing the focus goal or workday progress', async () => {
+  const { settings, data, notifyChanged } = createSettings({
+    focusGoal: { enabled: true, hours: 4 },
+    weeklySchedule: { monday: [{ start: '09:00', end: '17:00' }] },
+  });
+  await settings.ready;
+  const now = new Date(2026, 0, 5, 11);
+  assert.equal(settings.shouldCompareFocusPace(), true);
+  assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
+  await settings.setFocusPaceComparisonEnabled(false);
+  assert.equal(data.focusPaceComparisonEnabled, false);
+  const focus = settings.getFocusProgress(3600000, now);
+  assert.equal(focus.progress, 0.25);
+  assert.equal(focus.comparisonEnabled, false);
+  assert.equal(focus.expectedProgress, null);
+  assert.equal(focus.differenceMs, null);
+  assert.equal(settings.getDailyProgress(now), 0.25);
+  assert.equal(settings.getDailyTimeline(now).position, 0.25);
+  notifyChanged({ focusPaceComparisonEnabled: { newValue: true } });
+  assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
 });
 
 test('work-time reminders exclude breaks, workday end, and unscheduled days', async () => {

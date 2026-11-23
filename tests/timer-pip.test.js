@@ -235,6 +235,50 @@ test('visual reminder can be disabled independently of the optional sound', asyn
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
 });
 
+test('disabling pace comparison hides it and stops reminders without hiding progress', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const body = h.windows[0].document.body;
+  const stack = body.children.find(el => el.className === 'progress-stack');
+  const day = stack.children.find(el => el.className === 'progress');
+  const focus = stack.children.find(el => el.className === 'focus-progress');
+  const [track, label] = focus.children;
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  assert.equal(focus.attributes.get('data-pace'), 'behind');
+  assert.equal(track.children[1].hidden, false);
+
+  h.setTime(11, 0, 30);
+  await h.settings.setFocusPaceComparisonEnabled(false);
+  h.tick();
+  assert.equal(day.hidden, false);
+  assert.equal(day.children[1].textContent, '25.10%');
+  assert.equal(focus.hidden, false);
+  assert.equal(label.textContent, '0.00%');
+  assert.equal(focus.attributes.get('data-pace'), 'neutral');
+  assert.equal(track.children[1].hidden, true);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(focus.title, 'Focus 0m / 4h');
+  assert.equal(track.attributes.get('aria-valuetext'), '0.00% of focus goal. Focus 0m / 4h');
+  h.setTime(11, 5);
+  h.tick();
+  assert.equal(h.reminders, 0);
+
+  await h.settings.setFocusPaceComparisonEnabled(true);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'behind');
+  assert.equal(track.children[1].hidden, false);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  h.setTime(11, 5, 59);
+  h.tick();
+  assert.equal(h.reminders, 0);
+  h.setTime(11, 6);
+  h.tick();
+  assert.equal(h.reminders, 1);
+});
+
 test('pause still closes PiP by default, and disabling persistence closes a paused PiP', async () => {
   const h = await createHarness(false);
   h.timer.start('first');
