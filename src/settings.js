@@ -18,7 +18,8 @@ const Settings = (() => {
   let focusReminderVisualEnabled = false;
   let focusPaceAheadEnabled = true;
   let focusPaceBehindEnabled = true;
-  let focusReminderIntervalMinutes = 1;
+  const DEFAULT_FOCUS_REMINDER_INTERVAL_MINUTES = 2;
+  let focusReminderIntervalMinutes = DEFAULT_FOCUS_REMINDER_INTERVAL_MINUTES;
   let weeklySchedule = createEmptySchedule();
   let focusGoal = { enabled: false, hours: 2 };
 
@@ -76,7 +77,7 @@ const Settings = (() => {
     focusReminderVisualEnabled: false,
     focusPaceAheadEnabled: true,
     focusPaceBehindEnabled: true,
-    focusReminderIntervalMinutes: 1,
+    focusReminderIntervalMinutes: DEFAULT_FOCUS_REMINDER_INTERVAL_MINUTES,
     weeklySchedule: createEmptySchedule(),
     focusGoal: { enabled: false, hours: 2 },
   }).then((settings) => {
@@ -108,7 +109,7 @@ const Settings = (() => {
       focusPaceBehindEnabled = changes.focusPaceBehindEnabled.newValue !== false;
     }
     if (changes.focusReminderIntervalMinutes) {
-      focusReminderIntervalMinutes = changes.focusReminderIntervalMinutes.newValue ?? 1;
+      focusReminderIntervalMinutes = changes.focusReminderIntervalMinutes.newValue ?? DEFAULT_FOCUS_REMINDER_INTERVAL_MINUTES;
     }
     if (changes.weeklySchedule) weeklySchedule = normalizeSchedule(changes.weeklySchedule.newValue);
     if (changes.focusGoal) focusGoal = changes.focusGoal.newValue ?? { enabled: false, hours: 2 };

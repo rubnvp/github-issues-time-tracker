@@ -26,6 +26,9 @@ async function createOptions() {
   let ahead = true;
   let behind = true;
   let failSave = false;
+  const savedSchedules = [];
+  let renderedSchedule;
+  let pendingScheduleSave;
   let onChanged;
   const Settings = {
     DAYS: [],
@@ -36,10 +39,24 @@ async function createOptions() {
     shouldShowBehindPace: () => behind,
     shouldShowFocusReminder: () => true,
     shouldPlayFocusReminder: () => true,
-    getFocusReminderIntervalMinutes: () => 1,
+    getFocusReminderIntervalMinutes: () => 2,
     getFocusGoal: () => ({ enabled: true, hours: 4 }),
     getWeeklySchedule: () => ({}),
     getScheduleTotals: () => ({ dailyMinutes: {}, weeklyMinutes: 0 }),
+    validateWeeklySchedule(schedule) {
+      return schedule.monday?.some(interval => !interval.start || !interval.end)
+        ? 'Set both start and end times for Monday.'
+        : null;
+    },
+    async setWeeklySchedule(schedule) {
+      if (failSave) throw new Error('storage error');
+      if (pendingScheduleSave) {
+        const pending = pendingScheduleSave;
+        pendingScheduleSave = null;
+        await pending;
+      }
+      savedSchedules.push(structuredClone(schedule));
+    },
     async setFocusPaceAheadEnabled(value) {
       if (failSave) throw new Error('storage error');
       ahead = value;
@@ -50,10 +67,25 @@ async function createOptions() {
     },
   };
   const chrome = { storage: { onChanged: { addListener(listener) { onChanged = listener; } } } };
-  vm.runInNewContext(source, { document, Settings, chrome, console: { error() {} } });
+  const context = vm.createContext({ document, Settings, chrome, console: { error() {} } });
+  vm.runInContext(source, context);
   await new Promise(resolve => setImmediate(resolve));
   return {
     get: id => elements.get(id),
+    savedSchedules,
+    get renderedSchedule() { return renderedSchedule; },
+    setSchedule(schedule) {
+      Settings.DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        .map(key => ({ key }));
+      context.readScheduleFromForm = () => structuredClone(schedule);
+      context.renderSchedule = value => { renderedSchedule = value; };
+      context.updateScheduleTotals = () => {};
+    },
+    deferNextScheduleSave() {
+      let release;
+      pendingScheduleSave = new Promise(resolve => { release = resolve; });
+      return release;
+    },
     failSave() { failSave = true; },
     externalBehindChange(value) {
       behind = value;
@@ -78,6 +110,57 @@ test('settings sections show only their own controls without changing preference
   assert.equal(options.get('focus-reminder-sound').checked, true);
   choose('general');
   assert.deepEqual(visibility(), [true, false, false, false, false]);
+});
+
+test('copies Monday intervals to every other day and allows independent edits', async () => {
+  const options = await createOptions();
+  const monday = [{ start: '09:00', end: '12:00' }, { start: '13:00', end: '17:00' }];
+  options.setSchedule({ monday, tuesday: [{ start: '10:00', end: '11:00' }], sunday: [] });
+  await options.get('copy-schedule').listeners.click();
+
+  const schedule = options.savedSchedules[0];
+  for (const day of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']) {
+    assert.deepEqual(schedule[day], monday);
+  }
+  options.renderedSchedule.tuesday[0].start = '08:00';
+  assert.equal(options.renderedSchedule.monday[0].start, '09:00');
+  assert.equal(options.renderedSchedule.wednesday[0].start, '09:00');
+  assert.match(options.get('save-status').textContent, /copied.*saved/i);
+});
+
+test('does not replace other days when Monday is invalid or saving fails', async () => {
+  const options = await createOptions();
+  options.setSchedule({ monday: [{ start: '', end: '17:00' }], tuesday: [{ start: '10:00', end: '11:00' }] });
+  await options.get('copy-schedule').listeners.click();
+  assert.equal(options.savedSchedules.length, 0);
+  assert.equal(options.renderedSchedule, undefined);
+  assert.match(options.get('save-status').textContent, /Monday/);
+
+  options.setSchedule({ monday: [{ start: '09:00', end: '17:00' }], tuesday: [{ start: '10:00', end: '11:00' }] });
+  options.failSave();
+  await options.get('copy-schedule').listeners.click();
+  assert.equal(options.savedSchedules.length, 0);
+  assert.equal(options.renderedSchedule, undefined);
+  assert.match(options.get('save-status').textContent, /Unable to save/);
+  assert.equal(options.get('copy-schedule').disabled, false);
+});
+
+test('copy is saved after an earlier in-flight schedule edit', async () => {
+  const options = await createOptions();
+  options.setSchedule({
+    monday: [{ start: '09:00', end: '17:00' }],
+    tuesday: [{ start: '10:00', end: '11:00' }],
+  });
+  const release = options.deferNextScheduleSave();
+  options.get('weekly-schedule').listeners.change();
+  const copying = options.get('copy-schedule').listeners.click();
+  await Promise.resolve();
+  assert.equal(options.savedSchedules.length, 0);
+  release();
+  await copying;
+  assert.equal(options.savedSchedules.length, 2);
+  assert.equal(options.savedSchedules[0].tuesday[0].start, '10:00');
+  assert.equal(options.savedSchedules[1].tuesday[0].start, '09:00');
 });
 
 test('pace indicator choices are independent, saved, and restored on failure', async () => {

@@ -14,8 +14,6 @@ const focusReminderSoundInput = document.getElementById('focus-reminder-sound');
 const focusReminderIntervalInput = document.getElementById('focus-reminder-interval');
 const focusGoalEnabled = document.getElementById('focus-goal-enabled');
 const focusGoalHours = document.getElementById('focus-goal-hours');
-const copySource = document.getElementById('copy-source');
-const copyTarget = document.getElementById('copy-target');
 const copyButton = document.getElementById('copy-schedule');
 const weeklySchedule = document.getElementById('weekly-schedule');
 const weeklyTotal = document.getElementById('weekly-total');
@@ -76,25 +74,6 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 settingsSectionGroup.addEventListener('change', (event) => {
   showSettingsSection(event.target.value);
 });
-
-function addDayOptions(select, includeEmpty) {
-  if (includeEmpty) {
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = 'Choose a day';
-    select.appendChild(placeholder);
-  }
-
-  for (const day of Settings.DAYS) {
-    const option = document.createElement('option');
-    option.value = day.key;
-    option.textContent = day.label;
-    select.appendChild(option);
-  }
-}
-
-addDayOptions(copySource, false);
-addDayOptions(copyTarget, true);
 
 function createIntervalRow(interval, index) {
   const row = document.createElement('div');
@@ -206,6 +185,8 @@ function timeToMinutes(value) {
   return match ? Number(match[1]) * 60 + Number(match[2]) : null;
 }
 
+let scheduleSaveQueue = Promise.resolve();
+
 async function saveSchedule(schedule, successMessage = 'Saved') {
   const validationError = Settings.validateWeeklySchedule(schedule);
   if (validationError) {
@@ -214,15 +195,19 @@ async function saveSchedule(schedule, successMessage = 'Saved') {
   }
 
   setStatus('Saving…');
-  try {
-    await Settings.setWeeklySchedule(schedule);
-    setStatus(successMessage);
-    return true;
-  } catch (error) {
-    console.error('Unable to save work schedule', error);
-    setStatus('Unable to save work schedule.');
-    return false;
-  }
+  const save = scheduleSaveQueue.then(async () => {
+    try {
+      await Settings.setWeeklySchedule(schedule);
+      setStatus(successMessage);
+      return true;
+    } catch (error) {
+      console.error('Unable to save work schedule', error);
+      setStatus('Unable to save work schedule.');
+      return false;
+    }
+  });
+  scheduleSaveQueue = save.then(() => undefined);
+  return save;
 }
 
 function addInterval(dayKey) {
@@ -274,22 +259,26 @@ weeklySchedule.addEventListener('input', () => {
   updateScheduleTotals(readScheduleFromForm());
 });
 
-copyTarget.addEventListener('change', () => {
-  copyButton.disabled = !copyTarget.value || copyTarget.value === copySource.value;
-});
-
-copySource.addEventListener('change', () => {
-  copyButton.disabled = !copyTarget.value || copyTarget.value === copySource.value;
-});
-
-copyButton.addEventListener('click', () => {
-  if (!copyTarget.value || copyTarget.value === copySource.value) return;
-
+copyButton.addEventListener('click', async () => {
   const schedule = readScheduleFromForm();
-  schedule[copyTarget.value] = schedule[copySource.value].map(interval => ({ ...interval }));
-  renderSchedule(schedule);
-  const targetDay = Settings.DAYS.find(({ key }) => key === copyTarget.value);
-  saveSchedule(schedule, `${targetDay.label} schedule copied and saved.`);
+  const validationError = Settings.validateWeeklySchedule({ monday: schedule.monday });
+  if (validationError) {
+    setStatus(validationError);
+    return;
+  }
+  for (const { key } of Settings.DAYS) {
+    if (key !== 'monday') schedule[key] = schedule.monday.map(interval => ({ ...interval }));
+  }
+  copyButton.disabled = true;
+  weeklySchedule.inert = true;
+  try {
+    if (await saveSchedule(schedule, 'Monday schedule copied to all other days and saved.')) {
+      renderSchedule(schedule);
+    }
+  } finally {
+    weeklySchedule.inert = false;
+    copyButton.disabled = false;
+  }
 });
 
 autoPipInput.addEventListener('change', async () => {

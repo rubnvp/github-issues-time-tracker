@@ -143,11 +143,11 @@ In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle
 
 Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The sprout briefly opens its eyes and moves its leaf when the sound plays, independently of the visual reminder setting; reduced-motion preferences disable the leaf movement. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 
-Set **Sound interval (minutes)** to any whole number of minutes of at least 1; the default is **1 minute**. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
+Set **Sound interval (minutes)** to any whole number of minutes of at least 1; the default is **2 minutes**. Existing saved intervals are unchanged. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
 
 #### Work schedule
 
-Set local work intervals for each day to show daily progress in PiP. Each day can have different hours and multiple intervals for breaks; schedules can be copied between days. Intervals cannot cross midnight: split overnight hours between the two days.
+Set local work intervals for each day to show daily progress in PiP. Each day can have different hours and multiple intervals for breaks. Use **Copy Monday to all other days** to replace Tuesday through Sunday with Monday's intervals, then adjust individual days as needed. Intervals cannot cross midnight: split overnight hours between the two days.
 
 PiP shows work intervals in color and breaks in dark. Gaps pause the percentage while the current-time marker continues across the break. This progress tracks the planned day, not time spent focusing. Days without a schedule have no day progress bar.
 

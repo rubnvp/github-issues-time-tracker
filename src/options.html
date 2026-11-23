@@ -130,7 +130,7 @@
           </label>
           <label class="options__goal-hours">
             <span>Sound interval (minutes)</span>
-            <input id="focus-reminder-interval" type="number" min="1" step="1" value="1" required disabled>
+            <input id="focus-reminder-interval" type="number" min="1" step="1" value="2" required disabled>
           </label>
         </fieldset>
       </section>
@@ -142,15 +142,8 @@
         </p>
 
         <div class="options__copy">
-          <label>
-            <span>Copy schedule from</span>
-            <select id="copy-source"></select>
-          </label>
-          <label>
-            <span>Copy to</span>
-            <select id="copy-target"></select>
-          </label>
-          <button id="copy-schedule" type="button" disabled>Copy schedule</button>
+          <button id="copy-schedule" type="button">Copy Monday to all other days</button>
+          <span>Replaces existing hours from Tuesday through Sunday, including days off.</span>
         </div>
 
         <p id="weekly-total" class="options__weekly-total" role="status"></p>

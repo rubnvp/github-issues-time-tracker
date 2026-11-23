@@ -55,6 +55,16 @@ test('focus goal defaults to two hours without overwriting a saved goal', async 
   assert.equal(existing.settings.getFocusGoal().hours, 2);
 });
 
+test('sound reminder defaults to two minutes without overwriting a saved interval', async () => {
+  const fresh = createSettings();
+  await fresh.settings.ready;
+  assert.equal(fresh.settings.getFocusReminderIntervalMinutes(), 2);
+
+  const existing = createSettings({ focusReminderIntervalMinutes: 1 });
+  await existing.settings.ready;
+  assert.equal(existing.settings.getFocusReminderIntervalMinutes(), 1);
+});
+
 test('daily progress counts scheduled time and pauses during schedule gaps', async () => {
   const { settings } = createSettings();
   await settings.ready;
@@ -289,5 +299,5 @@ test('reminder interval persists, follows live changes, and rejects invalid minu
   notifyChanged({ focusReminderIntervalMinutes: { newValue: 4 } });
   assert.equal(settings.getFocusReminderIntervalMinutes(), 4);
   notifyChanged({ focusReminderIntervalMinutes: { newValue: undefined } });
-  assert.equal(settings.getFocusReminderIntervalMinutes(), 1);
+  assert.equal(settings.getFocusReminderIntervalMinutes(), 2);
 });

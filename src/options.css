@@ -150,7 +150,7 @@ body {
 
 .options__copy {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
@@ -160,7 +160,12 @@ body {
   background: #1a1f2e;
 }
 
-.options__copy label,
+.options__copy span {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .options__time-field {
   display: flex;
   flex-direction: column;
@@ -169,7 +174,6 @@ body {
   font-size: 11px;
 }
 
-.options__copy select,
 .options__time-field input {
   min-height: 32px;
   padding: 4px 8px;

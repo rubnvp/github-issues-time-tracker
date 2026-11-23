@@ -226,6 +226,7 @@ test('focus percentage uses two decimals across goals and freezes when paused', 
 
 test('visual reminder can be disabled independently of the optional sound', async () => {
   const h = await createHarness();
+  await h.settings.setFocusReminderIntervalMinutes(1);
   await h.settings.setFocusReminderVisualEnabled(false);
   await h.settings.setFocusReminderSoundEnabled(true);
   h.timer.start('first');
@@ -243,6 +244,7 @@ test('visual reminder can be disabled independently of the optional sound', asyn
 
 test('mascot reacts briefly to each sound independently of the visual reminder', async () => {
   const h = await createHarness();
+  await h.settings.setFocusReminderIntervalMinutes(1);
   await h.settings.setFocusReminderVisualEnabled(false);
   await h.settings.setFocusReminderSoundEnabled(true);
   h.timer.start('first');
@@ -275,6 +277,7 @@ test('failed or stale sound reminders do not trigger a mascot reaction', async (
   const h = await createHarness(true, () => new Promise((resolve, reject) => {
     settle = { resolve, reject };
   }));
+  await h.settings.setFocusReminderIntervalMinutes(1);
   await h.settings.setFocusReminderSoundEnabled(true);
   h.timer.start('first');
   await h.pip.open('first');
@@ -338,6 +341,7 @@ test('disabling both indicators and reminders leaves progress visible', async ()
 
 test('pace indicators can be hidden independently without disabling reminders', async () => {
   const h = await createHarness();
+  await h.settings.setFocusReminderIntervalMinutes(1);
   await h.settings.setFocusReminderSoundEnabled(true);
   h.timer.start('first');
   await h.pip.open('first');
@@ -475,37 +479,37 @@ test('optional sound reminders wait five minutes, repeat without bursts, and res
   assert.equal(h.reminders, 4);
 });
 
-test('sound reminders default to one minute and restart the wait when their interval changes', async () => {
+test('sound reminders default to two minutes and restart the wait when their interval changes', async () => {
   const h = await createHarness();
   await h.settings.setFocusReminderSoundEnabled(true);
   h.timer.start('first');
   await h.pip.open('first');
   h.timer.stop('first');
-  h.setTime(11, 0, 59);
+  h.setTime(11, 1, 59);
   h.tick();
   assert.equal(h.reminders, 0);
-  h.setTime(11, 1);
+  h.setTime(11, 2);
   h.tick();
   assert.equal(h.reminders, 1);
-  h.setTime(11, 2);
+  h.setTime(11, 4);
   h.tick();
   assert.equal(h.reminders, 2);
 
   await h.settings.setFocusReminderIntervalMinutes(3);
   h.tick();
-  h.setTime(11, 4, 59);
+  h.setTime(11, 6, 59);
   h.tick();
   assert.equal(h.reminders, 2);
-  h.setTime(11, 5);
+  h.setTime(11, 7);
   h.tick();
   assert.equal(h.reminders, 3);
 
   await h.settings.setFocusReminderIntervalMinutes(2);
   h.tick();
-  h.setTime(11, 6, 59);
+  h.setTime(11, 8, 59);
   h.tick();
   assert.equal(h.reminders, 3);
-  h.setTime(11, 7);
+  h.setTime(11, 9);
   h.tick();
   assert.equal(h.reminders, 4);
 });
