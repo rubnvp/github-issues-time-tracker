@@ -156,6 +156,7 @@ const Injector = {
         Timer.stop(boardCardId);
       } else {
         Timer.start(boardCardId);
+        if (Settings.shouldOpenPip()) PiP.open(boardCardId);
       }
 
       render();

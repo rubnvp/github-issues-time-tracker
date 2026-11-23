@@ -88,6 +88,8 @@ Click the extension icon in the toolbar to open a compact popup. It has two sect
 
 If no timer is running, the top row simply shows a muted indicator.
 
+The popup also includes an **Open PiP automatically when starting a timer** setting. When enabled, clicking a card's play button opens the PiP window without needing to use the floating bar button.
+
 ---
 
 ### 🎉 Celebration

@@ -40,7 +40,9 @@ function startHeartbeat() {
   setInterval(() => Injector.injectAllCards(), 3000);
 }
 
-init();
+Settings.ready
+  .then(init)
+  .catch((error) => console.error('Unable to load extension settings', error));
 
 // ── Respond to popup requests for daily session history ───────────────────────
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {

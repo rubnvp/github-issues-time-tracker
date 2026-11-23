@@ -253,6 +253,24 @@ body {
   flex-shrink: 0;
 }
 
+/* ── Settings ────────────────────────────────────────────────────────────── */
+
+.popup__setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.popup__setting input {
+  accent-color: #6366f1;
+  flex-shrink: 0;
+}
+
 /* ── Keyframes ────────────────────────────────────────────────────────────── */
 
 @keyframes pulse {
