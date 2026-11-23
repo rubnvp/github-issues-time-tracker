@@ -304,6 +304,8 @@ const PiP = (() => {
         if (focusEl.hidden) return null;
 
         const focus = Settings.getFocusProgress(Storage.getDailyFocusMs(now), now);
+        focusEl.hidden = focus === null;
+        if (focusEl.hidden) return null;
         const percent = (focus.progress * 100).toFixed(2);
         focusFill.style.width = `${focus.progress * 100}%`;
         focusTrack.setAttribute('aria-valuenow', String(percent));
@@ -335,7 +337,7 @@ const PiP = (() => {
         const focus = updateFocus(now);
         const remind = !running && focus !== null && focus.differenceMs !== null &&
           focus.differenceMs < 0 && Settings.isWorkTime(now);
-        doc.body.setAttribute('data-focus-reminder', String(remind));
+        doc.body.setAttribute('data-focus-reminder', String(remind && Settings.shouldShowFocusReminder()));
         dot.title = running ? 'Focusing' : remind ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
         if (remind && Settings.shouldPlayFocusReminder()) {
           const minutes = Settings.getFocusReminderIntervalMinutes();

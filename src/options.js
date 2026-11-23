@@ -1,6 +1,12 @@
 const controls = document.getElementById('settings-controls');
+const usageProfileInput = document.getElementById('usage-profile');
+const focusGoalSection = document.getElementById('focus-goal-section');
+const focusPaceHelp = document.getElementById('focus-pace-help');
+const focusRemindersSection = document.getElementById('focus-reminders-section');
+const workScheduleSection = document.getElementById('work-schedule-section');
 const autoPipInput = document.getElementById('auto-pip');
 const keepPipOpenInput = document.getElementById('keep-pip-open');
+const focusReminderVisualInput = document.getElementById('focus-reminder-visual');
 const focusReminderSoundInput = document.getElementById('focus-reminder-sound');
 const focusReminderIntervalInput = document.getElementById('focus-reminder-interval');
 const focusGoalEnabled = document.getElementById('focus-goal-enabled');
@@ -15,6 +21,35 @@ const saveStatus = document.getElementById('save-status');
 function setStatus(message) {
   saveStatus.textContent = message;
 }
+
+function updateProfile() {
+  const profile = Settings.getUsageProfile();
+  usageProfileInput.value = profile;
+  focusGoalSection.hidden = profile === 'basic';
+  focusPaceHelp.hidden = profile !== 'tracking';
+  focusRemindersSection.hidden = profile !== 'tracking';
+  workScheduleSection.hidden = profile !== 'tracking';
+}
+
+usageProfileInput.addEventListener('change', async () => {
+  usageProfileInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setUsageProfile(usageProfileInput.value);
+    updateProfile();
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save usage level', error);
+    updateProfile();
+    setStatus('Unable to save usage level.');
+  } finally {
+    usageProfileInput.disabled = false;
+  }
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.usageProfile) updateProfile();
+});
 
 function addDayOptions(select, includeEmpty) {
   if (includeEmpty) {
@@ -263,6 +298,21 @@ keepPipOpenInput.addEventListener('change', async () => {
   }
 });
 
+focusReminderVisualInput.addEventListener('change', async () => {
+  focusReminderVisualInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setFocusReminderVisualEnabled(focusReminderVisualInput.checked);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save visual focus reminder setting', error);
+    focusReminderVisualInput.checked = Settings.shouldShowFocusReminder();
+    setStatus('Unable to save settings.');
+  } finally {
+    focusReminderVisualInput.disabled = false;
+  }
+});
+
 focusReminderSoundInput.addEventListener('change', async () => {
   focusReminderSoundInput.disabled = true;
   setStatus('Saving…');
@@ -334,8 +384,10 @@ focusGoalHours.addEventListener('change', saveFocusGoal);
 
 Settings.ready
   .then(() => {
+    updateProfile();
     autoPipInput.checked = Settings.shouldOpenPip();
     keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
+    focusReminderVisualInput.checked = Settings.shouldShowFocusReminder();
     focusReminderSoundInput.checked = Settings.shouldPlayFocusReminder();
     focusReminderIntervalInput.value = String(Settings.getFocusReminderIntervalMinutes());
     focusReminderIntervalInput.disabled = !focusReminderSoundInput.checked;

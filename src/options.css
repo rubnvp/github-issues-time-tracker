@@ -52,6 +52,23 @@ body {
   line-height: 1.5;
 }
 
+.options__profile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.options__profile select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  background: #1a1f2e;
+  color: #f9fafb;
+  font: inherit;
+}
+
 .options__setting {
   display: flex;
   align-items: flex-start;

@@ -13,8 +13,10 @@ const Settings = (() => {
   ];
 
   let autoPipEnabled = false;
+  let usageProfile = 'tracking';
   let keepPipOpen = false;
   let focusReminderSoundEnabled = false;
+  let focusReminderVisualEnabled = true;
   let focusReminderIntervalMinutes = 1;
   let weeklySchedule = createEmptySchedule();
   let focusGoal = { enabled: false, hours: 4 };
@@ -68,15 +70,19 @@ const Settings = (() => {
 
   const ready = chrome.storage.local.get({
     autoPipEnabled: false,
+    usageProfile: 'tracking',
     keepPipOpen: false,
     focusReminderSoundEnabled: false,
+    focusReminderVisualEnabled: true,
     focusReminderIntervalMinutes: 1,
     weeklySchedule: createEmptySchedule(),
     focusGoal: { enabled: false, hours: 4 },
   }).then((settings) => {
     autoPipEnabled = settings.autoPipEnabled === true;
+    usageProfile = settings.usageProfile;
     keepPipOpen = settings.keepPipOpen === true;
     focusReminderSoundEnabled = settings.focusReminderSoundEnabled === true;
+    focusReminderVisualEnabled = settings.focusReminderVisualEnabled === true;
     focusReminderIntervalMinutes = settings.focusReminderIntervalMinutes;
     weeklySchedule = normalizeSchedule(settings.weeklySchedule);
     focusGoal = settings.focusGoal;
@@ -85,9 +91,13 @@ const Settings = (() => {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') return;
     if (changes.autoPipEnabled) autoPipEnabled = changes.autoPipEnabled.newValue === true;
+    if (changes.usageProfile) usageProfile = changes.usageProfile.newValue ?? 'tracking';
     if (changes.keepPipOpen) keepPipOpen = changes.keepPipOpen.newValue === true;
     if (changes.focusReminderSoundEnabled) {
       focusReminderSoundEnabled = changes.focusReminderSoundEnabled.newValue === true;
+    }
+    if (changes.focusReminderVisualEnabled) {
+      focusReminderVisualEnabled = changes.focusReminderVisualEnabled.newValue !== false;
     }
     if (changes.focusReminderIntervalMinutes) {
       focusReminderIntervalMinutes = changes.focusReminderIntervalMinutes.newValue ?? 1;
@@ -100,6 +110,10 @@ const Settings = (() => {
     DAYS,
     ready,
 
+    getUsageProfile() {
+      return usageProfile;
+    },
+
     shouldOpenPip() {
       return autoPipEnabled;
     },
@@ -110,6 +124,10 @@ const Settings = (() => {
 
     shouldPlayFocusReminder() {
       return focusReminderSoundEnabled;
+    },
+
+    shouldShowFocusReminder() {
+      return focusReminderVisualEnabled;
     },
 
     getFocusReminderIntervalMinutes() {
@@ -125,7 +143,7 @@ const Settings = (() => {
     },
 
     getFocusProgress(focusMs, date = new Date()) {
-      if (!focusGoal.enabled) return null;
+      if (usageProfile === 'basic' || !focusGoal.enabled) return null;
 
       const goalMs = focusGoal.hours * 3600000;
       const expectedProgress = this.getDailyProgress(date);
@@ -161,12 +179,14 @@ const Settings = (() => {
     },
 
     isWorkTime(date = new Date()) {
+      if (usageProfile !== 'tracking') return false;
       const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
       return this.getScheduleForDate(date).some(({ start, end }) =>
         seconds >= timeToSeconds(start) && seconds < timeToSeconds(end));
     },
 
     getDailyTimeline(date = new Date()) {
+      if (usageProfile !== 'tracking') return null;
       const intervals = this.getScheduleForDate(date);
       if (intervals.length === 0) return null;
 
@@ -187,6 +207,7 @@ const Settings = (() => {
     },
 
     getDailyProgress(date = new Date()) {
+      if (usageProfile !== 'tracking') return null;
       const intervals = this.getScheduleForDate(date);
       if (intervals.length === 0) return null;
 
@@ -213,6 +234,14 @@ const Settings = (() => {
 
     validateWeeklySchedule,
 
+    async setUsageProfile(profile) {
+      if (!['basic', 'support', 'tracking'].includes(profile)) {
+        throw new Error('Invalid usage profile.');
+      }
+      await chrome.storage.local.set({ usageProfile: profile });
+      usageProfile = profile;
+    },
+
     async setAutoPipEnabled(enabled) {
       await chrome.storage.local.set({ autoPipEnabled: enabled });
       autoPipEnabled = enabled;
@@ -226,6 +255,11 @@ const Settings = (() => {
     async setFocusReminderSoundEnabled(enabled) {
       await chrome.storage.local.set({ focusReminderSoundEnabled: enabled });
       focusReminderSoundEnabled = enabled;
+    },
+
+    async setFocusReminderVisualEnabled(enabled) {
+      await chrome.storage.local.set({ focusReminderVisualEnabled: enabled });
+      focusReminderVisualEnabled = enabled;
     },
 
     async setFocusReminderIntervalMinutes(minutes) {

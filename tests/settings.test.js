@@ -216,6 +216,39 @@ test('work-time reminders exclude breaks, workday end, and unscheduled days', as
   assert.equal(settings.isWorkTime(new Date(2026, 0, 6, 10)), false);
 });
 
+test('usage levels gate progress and reminders without erasing saved preferences', async () => {
+  const { settings, data, notifyChanged } = createSettings({
+    focusGoal: { enabled: true, hours: 4 },
+    focusReminderSoundEnabled: true,
+    weeklySchedule: { monday: [{ start: '09:00', end: '17:00' }] },
+  });
+  await settings.ready;
+  const now = new Date(2026, 0, 5, 11);
+  assert.equal(settings.getUsageProfile(), 'tracking');
+  assert.equal(settings.getDailyProgress(now), 0.25);
+  assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
+
+  await settings.setUsageProfile('support');
+  assert.equal(settings.getFocusProgress(3600000, now).progress, 0.25);
+  assert.equal(settings.getFocusProgress(3600000, now).expectedProgress, null);
+  assert.equal(settings.getDailyProgress(now), null);
+  assert.equal(settings.getDailyTimeline(now), null);
+  assert.equal(settings.isWorkTime(now), false);
+
+  await settings.setUsageProfile('basic');
+  assert.equal(settings.getFocusProgress(3600000, now), null);
+  assert.equal(data.focusGoal.hours, 4);
+  assert.equal(data.focusReminderSoundEnabled, true);
+  assert.equal(data.weeklySchedule.monday[0].start, '09:00');
+  await assert.rejects(settings.setUsageProfile('invalid'), /Invalid usage profile/);
+  assert.equal(settings.getUsageProfile(), 'basic');
+
+  notifyChanged({ usageProfile: { newValue: 'tracking' } });
+  assert.equal(settings.getDailyProgress(now), 0.25);
+  assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
+  assert.equal(settings.shouldPlayFocusReminder(), true);
+});
+
 test('reminder interval persists, follows live changes, and rejects invalid minutes', async () => {
   const { settings, data, notifyChanged } = createSettings({ focusReminderIntervalMinutes: 3 });
   await settings.ready;

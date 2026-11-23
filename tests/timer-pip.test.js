@@ -201,6 +201,67 @@ test('focus percentage uses two decimals across goals and freezes when paused', 
   assert.equal(label.textContent, '0.11%');
 });
 
+test('an open PiP applies usage level changes without losing progress or triggering reminders', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const body = h.windows[0].document.body;
+  const stack = body.children.find(el => el.className === 'progress-stack');
+  const day = stack.children.find(el => el.className === 'progress');
+  const focus = stack.children.find(el => el.className === 'focus-progress');
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  assert.equal(day.hidden, false);
+  assert.equal(focus.hidden, false);
+
+  await h.settings.setUsageProfile('support');
+  h.tick();
+  assert.equal(day.hidden, true);
+  assert.equal(focus.hidden, false);
+  assert.equal(focus.attributes.get('data-pace'), 'neutral');
+  assert.equal(focus.children[0].children[1].hidden, true);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  h.setTime(11, 5);
+  h.tick();
+  assert.equal(h.reminders, 0);
+
+  await h.settings.setUsageProfile('basic');
+  h.tick();
+  assert.equal(day.hidden, true);
+  assert.equal(focus.hidden, true);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+
+  await h.settings.setUsageProfile('tracking');
+  h.tick();
+  assert.equal(day.hidden, false);
+  assert.equal(focus.hidden, false);
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  h.setTime(11, 5, 59);
+  h.tick();
+  assert.equal(h.reminders, 0);
+  h.setTime(11, 6);
+  h.tick();
+  assert.equal(h.reminders, 1);
+});
+
+test('visual reminder can be disabled independently of the optional sound', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderVisualEnabled(false);
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const body = h.windows[0].document.body;
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  h.setTime(11, 1);
+  h.tick();
+  assert.equal(h.reminders, 1);
+  await h.settings.setFocusReminderVisualEnabled(true);
+  h.tick();
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+});
+
 test('pause still closes PiP by default, and disabling persistence closes a paused PiP', async () => {
   const h = await createHarness(false);
   h.timer.start('first');
