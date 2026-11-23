@@ -28,7 +28,7 @@ const Injector = {
 
   // ── Widget builder ─────────────────────────────────────────────────────────
 
-  _buildWidget(boardCardId, beforeFirstStart, afterFirstStart) {
+  _buildWidget(boardCardId, why) {
     const wrapper = document.createElement('div');
     wrapper.setAttribute('data-time-tracker', 'true');
     wrapper.className = 'gitt-card-widget';
@@ -60,6 +60,11 @@ const Injector = {
       Confetti.burst();
       Sounds.celebrate();
     });
+
+    const actions = document.createElement('div');
+    actions.className = 'gitt-card-widget__actions';
+    if (why) actions.appendChild(why.editButton);
+    actions.append(celebrateBtn, sessionsBtn);
 
     const popover = document.createElement('div');
     popover.id = popoverId;
@@ -155,9 +160,9 @@ const Injector = {
       if (Storage.isRunning(Storage.load(boardCardId))) {
         Timer.stop(boardCardId);
       } else {
-        const suggestWhy = beforeFirstStart();
+        const suggestWhy = why && Storage.shouldSuggestWhy(boardCardId);
         Timer.start(boardCardId);
-        if (suggestWhy) afterFirstStart();
+        if (suggestWhy) why.suggest();
         if (Settings.shouldOpenPip() && !PiP.isOpen()) PiP.open(boardCardId);
       }
 
@@ -166,8 +171,7 @@ const Injector = {
 
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
-    wrapper.appendChild(celebrateBtn);
-    wrapper.appendChild(sessionsBtn);
+    wrapper.appendChild(actions);
 
     Timer.registerRenderer(boardCardId, render);
 
@@ -185,7 +189,6 @@ const Injector = {
     const editButton = document.createElement('button');
     editButton.type = 'button';
     editButton.className = 'gitt-card-why__edit';
-    editButton.setAttribute('aria-label', 'Editar porqué personal');
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -198,7 +201,7 @@ const Injector = {
     const hint = document.createElement('span');
     hint.className = 'gitt-card-why__hint';
     hint.hidden = true;
-    wrapper.append(text, editButton, input, hint);
+    wrapper.append(text, input, hint);
 
     let editing = false;
     let suggestion = false;
@@ -211,6 +214,7 @@ const Injector = {
       text.hidden = editing || !why;
       editButton.textContent = why ? '✎' : '+';
       editButton.title = why ? 'Editar porqué personal' : 'Añadir porqué personal';
+      editButton.setAttribute('aria-label', editButton.title);
       editButton.hidden = editing;
       input.hidden = !editing;
       hint.hidden = !editing;
@@ -241,6 +245,7 @@ const Injector = {
 
     wrapper.addEventListener('pointerdown', (event) => event.stopPropagation());
     wrapper.addEventListener('mousedown', (event) => event.stopPropagation());
+    wrapper.addEventListener('click', (event) => event.stopPropagation());
     wrapper.addEventListener('dragstart', (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -249,6 +254,12 @@ const Injector = {
       event.preventDefault();
       event.stopPropagation();
       beginEdit();
+    });
+    editButton.addEventListener('pointerdown', (event) => event.stopPropagation());
+    editButton.addEventListener('mousedown', (event) => event.stopPropagation());
+    editButton.addEventListener('dragstart', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
     });
     input.addEventListener('keydown', (event) => {
       event.stopPropagation();
@@ -263,7 +274,7 @@ const Injector = {
     input.addEventListener('blur', () => finishEdit(true));
 
     render();
-    return { wrapper, render, suggest: () => beginEdit(true) };
+    return { wrapper, render, editButton, suggest: () => beginEdit(true) };
   },
 
   // ── Mount ──────────────────────────────────────────────────────────────────
@@ -311,11 +322,7 @@ const Injector = {
     if (existingWidget && existingWhy) return;
 
     const why = existingWhy ? null : this._buildWhyNote(boardCardId);
-    const widget = existingWidget ? null : this._buildWidget(
-      boardCardId,
-      () => Boolean(why && Storage.shouldSuggestWhy(boardCardId)),
-      () => why?.suggest()
-    );
+    const widget = existingWidget ? null : this._buildWidget(boardCardId, why);
     const wrapper = widget?.wrapper || existingWidget;
     const render = widget?.render || (() => {});
     const whyNote = why?.wrapper || existingWhy;
