@@ -21,10 +21,12 @@ class Element {
   addEventListener(name, callback) { this.listeners.set(name, callback); }
 }
 
-async function createHarness(keepPipOpen = true) {
+async function createHarness(keepPipOpen = true, playReminder = () => Promise.resolve()) {
   let now = new Date(2026, 0, 5, 11).getTime();
   let nextInterval = 0;
   const intervals = new Map();
+  const timeouts = new Map();
+  const errors = [];
   const localData = new Map();
   const extensionData = {
     keepPipOpen,
@@ -81,10 +83,13 @@ async function createHarness(keepPipOpen = true) {
     },
     setInterval(callback) { intervals.set(++nextInterval, callback); return nextInterval; },
     clearInterval(id) { intervals.delete(id); },
+    setTimeout(callback) { timeouts.set(++nextInterval, callback); return nextInterval; },
+    clearTimeout(id) { timeouts.delete(id); },
+    console: { error(...args) { errors.push(args); } },
     GitHubAdapter: { getIssueTitle: card => card.issueTitle },
     Injector: { _extractIssueRef: () => null },
     FloatingBar: { show() {}, hide() {} },
-    Sounds: { play() {}, stop() {}, async remind() { reminders += 1; } },
+    Sounds: { play() {}, stop() {}, remind() { reminders += 1; return playReminder(); } },
   });
   sources.forEach(source => vm.runInContext(source, context));
   const settings = vm.runInContext('Settings', context);
@@ -97,9 +102,16 @@ async function createHarness(keepPipOpen = true) {
     settings,
     windows,
     intervals,
+    timeouts,
+    errors,
     get reminders() { return reminders; },
     setTime(hour, minute = 0, second = 0) { now = new Date(2026, 0, 5, hour, minute, second).getTime(); },
     tick() { [...intervals.values()].forEach(callback => callback()); },
+    finishTimeouts() {
+      const callbacks = [...timeouts.values()];
+      timeouts.clear();
+      callbacks.forEach(callback => callback());
+    },
   };
 }
 
@@ -227,6 +239,62 @@ test('visual reminder can be disabled independently of the optional sound', asyn
   await h.settings.setFocusReminderVisualEnabled(true);
   h.tick();
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+});
+
+test('mascot reacts briefly to each sound independently of the visual reminder', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderVisualEnabled(false);
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const mascot = h.windows[0].document.body.children.find(el => el.className === 'mascot');
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'false');
+
+  h.setTime(11, 1);
+  h.tick();
+  await Promise.resolve();
+  assert.equal(h.reminders, 1);
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'true');
+  h.tick();
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'true');
+  h.finishTimeouts();
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'false');
+
+  h.setTime(11, 2);
+  h.tick();
+  await Promise.resolve();
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'true');
+  h.timer.start('first');
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'false');
+  assert.equal(h.timeouts.size, 0);
+});
+
+test('failed or stale sound reminders do not trigger a mascot reaction', async () => {
+  let settle;
+  const h = await createHarness(true, () => new Promise((resolve, reject) => {
+    settle = { resolve, reject };
+  }));
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const mascot = h.windows[0].document.body.children.find(el => el.className === 'mascot');
+  h.setTime(11, 1);
+  h.tick();
+  settle.reject(new Error('Audio unavailable'));
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'false');
+  assert.equal(h.errors.length, 1);
+
+  h.setTime(11, 2);
+  h.tick();
+  h.pip.close();
+  settle.resolve();
+  await Promise.resolve();
+  assert.equal(mascot.attributes.get('data-sound-reminder'), 'false');
+  assert.equal(h.timeouts.size, 0);
 });
 
 test('disabling both indicators and reminders leaves progress visible', async () => {

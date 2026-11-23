@@ -53,6 +53,11 @@ const PiP = (() => {
     body[data-timer-running="false"] .mascot-face-rest,
     body[data-timer-running="false"] .mascot-arms-rest { opacity: 1; }
     body[data-timer-running="false"] .mascot-laptop { opacity: .48; }
+    .mascot[data-sound-reminder="true"] .mascot-face-awake { opacity: 1; }
+    .mascot[data-sound-reminder="true"] .mascot-face-rest { opacity: 0; }
+    .mascot[data-sound-reminder="true"] .mascot-leaf {
+      animation: mascot-notice 1.6s ease-in-out;
+    }
     body[data-focus-reminder="true"] {
       background: #67430d;
       animation: focus-reminder-background 2s ease-in-out infinite;
@@ -193,6 +198,11 @@ const PiP = (() => {
       20%, 60% { transform: translateY(-1.3px); }
       40%, 80% { transform: translateY(.5px); }
     }
+    @keyframes mascot-notice {
+      0%, 100% { transform: rotate(0); }
+      20%, 60% { transform: rotate(-12deg); }
+      40%, 80% { transform: rotate(12deg); }
+    }
     @keyframes focus-reminder {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.45; }
@@ -208,6 +218,7 @@ const PiP = (() => {
     }
     @media (prefers-reduced-motion: reduce) {
       .mascot-character, .mascot-leaf, .mascot-arms-working,
+      .mascot[data-sound-reminder="true"] .mascot-leaf,
       body[data-focus-reminder="true"], body[data-focus-reminder="true"] .mascot,
       body[data-focus-reminder="true"] .focus-label { animation: none; }
       body[data-timer-running="true"] .focus-fill::after { display: none; animation: none; }
@@ -299,6 +310,7 @@ const PiP = (() => {
       doc.head.appendChild(style);
 
       const mascot = createMascot(doc);
+      mascot.setAttribute('data-sound-reminder', 'false');
 
       const timeEl = doc.createElement('span');
       timeEl.className = 'time';
@@ -324,6 +336,28 @@ const PiP = (() => {
       let segmentElements = [];
       let nextReminderAt = null;
       let reminderIntervalMinutes = null;
+      let soundGeneration = 0;
+      let reactionTimeoutId = null;
+
+      function clearSoundReaction() {
+        soundGeneration += 1;
+        if (reactionTimeoutId !== null) clearTimeout(reactionTimeoutId);
+        reactionTimeoutId = null;
+        mascot.setAttribute('data-sound-reminder', 'false');
+      }
+
+      function playSoundReminder() {
+        const generation = ++soundGeneration;
+        Sounds.remind().then(() => {
+          if (pipWindow !== nextWindow || generation !== soundGeneration) return;
+          if (reactionTimeoutId !== null) clearTimeout(reactionTimeoutId);
+          mascot.setAttribute('data-sound-reminder', 'true');
+          reactionTimeoutId = setTimeout(() => {
+            reactionTimeoutId = null;
+            mascot.setAttribute('data-sound-reminder', 'false');
+          }, 1800);
+        }).catch(error => console.error('Unable to play focus reminder', error));
+      }
 
       const progressLabel = doc.createElement('span');
       progressLabel.className = 'progress-label';
@@ -423,10 +457,11 @@ const PiP = (() => {
             nextReminderAt = now.getTime() + minutes * 60000;
           } else if (now.getTime() >= nextReminderAt) {
             nextReminderAt = now.getTime() + minutes * 60000;
-            Sounds.remind().catch(error => console.error('Unable to play focus reminder', error));
+            playSoundReminder();
           }
         } else {
           nextReminderAt = null;
+          clearSoundReaction();
         }
         const progress = Settings.getDailyProgress(now);
         progressEl.hidden = progress === null;
@@ -486,6 +521,7 @@ const PiP = (() => {
       const tickId = setInterval(updateDisplay, 1000);
       nextWindow.addEventListener('pagehide', () => {
         clearInterval(tickId);
+        clearSoundReaction();
         if (pipWindow === nextWindow) {
           pipWindow = null;
           activeBoardCardId = null;
