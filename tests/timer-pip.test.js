@@ -184,7 +184,7 @@ test('kept PiP follows a different issue and its controls act on the new timer',
   h.storage.saveWhy('second', 'Help users finish setup');
   h.pip.refresh();
   const why = issueInfo.children.find(el => el.className === 'why');
-  assert.equal(why.textContent, 'Help users finish setup');
+  assert.equal(why.textContent, '⚓ Help users finish setup');
   assert.equal(why.hidden, false);
   const click = body.children.find(el => el.className === 'pause-btn').listeners.get('click');
   click();

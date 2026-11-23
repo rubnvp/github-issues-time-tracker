@@ -172,6 +172,7 @@ const Injector = {
     wrapper.appendChild(btn);
     wrapper.appendChild(display);
     wrapper.appendChild(actions);
+    if (why) wrapper.appendChild(why.editor);
 
     Timer.registerRenderer(boardCardId, render);
 
@@ -186,22 +187,29 @@ const Injector = {
     const text = document.createElement('span');
     text.className = 'gitt-card-why__text';
 
-    const editButton = document.createElement('button');
-    editButton.type = 'button';
-    editButton.className = 'gitt-card-why__edit';
+    const icon = document.createElement('span');
+    icon.className = 'gitt-card-why__icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '⚓';
+    wrapper.append(icon, text);
 
     const input = document.createElement('input');
     input.type = 'text';
     input.maxLength = 160;
     input.className = 'gitt-card-why__input';
-    input.placeholder = '¿Por qué importa esta tarea?';
-    input.setAttribute('aria-label', 'Porqué personal');
-    input.hidden = true;
+    input.placeholder = '¿Qué propósito tiene esta tarea?';
+    input.setAttribute('aria-label', 'Ancla de propósito');
 
     const hint = document.createElement('span');
     hint.className = 'gitt-card-why__hint';
-    hint.hidden = true;
-    wrapper.append(text, input, hint);
+    const editor = document.createElement('div');
+    editor.className = 'gitt-card-why__editor';
+    editor.hidden = true;
+    editor.append(input, hint);
+
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'gitt-card-why__edit';
 
     let editing = false;
     let suggestion = false;
@@ -209,18 +217,16 @@ const Injector = {
     function render() {
       const why = Storage.load(boardCardId).why || '';
       wrapper.dataset.hasWhy = String(Boolean(why));
-      wrapper.dataset.editing = String(editing);
       text.textContent = why;
-      text.hidden = editing || !why;
-      editButton.textContent = why ? '✎' : '+';
-      editButton.title = why ? 'Editar porqué personal' : 'Añadir porqué personal';
+      text.hidden = !why;
+      editButton.textContent = why ? '✎' : '⚓';
+      editButton.title = why ? 'Editar ancla de propósito' : 'Añadir ancla de propósito';
       editButton.setAttribute('aria-label', editButton.title);
       editButton.hidden = editing;
-      input.hidden = !editing;
-      hint.hidden = !editing;
+      editor.hidden = !editing;
       hint.textContent = suggestion
-        ? 'Recordatorio opcional · Enter para guardar · Esc para descartar'
-        : 'Enter para guardar · Esc para cancelar';
+        ? 'Opcional · Enter guarda · Esc descarta'
+        : 'Enter guarda · Esc cancela';
     }
 
     function beginEdit(isSuggestion = false) {
@@ -243,10 +249,10 @@ const Injector = {
       render();
     }
 
-    wrapper.addEventListener('pointerdown', (event) => event.stopPropagation());
-    wrapper.addEventListener('mousedown', (event) => event.stopPropagation());
-    wrapper.addEventListener('click', (event) => event.stopPropagation());
-    wrapper.addEventListener('dragstart', (event) => {
+    editor.addEventListener('pointerdown', (event) => event.stopPropagation());
+    editor.addEventListener('mousedown', (event) => event.stopPropagation());
+    editor.addEventListener('click', (event) => event.stopPropagation());
+    editor.addEventListener('dragstart', (event) => {
       event.preventDefault();
       event.stopPropagation();
     });
@@ -274,7 +280,7 @@ const Injector = {
     input.addEventListener('blur', () => finishEdit(true));
 
     render();
-    return { wrapper, render, editButton, suggest: () => beginEdit(true) };
+    return { wrapper, editor, render, editButton, suggest: () => beginEdit(true) };
   },
 
   // ── Mount ──────────────────────────────────────────────────────────────────

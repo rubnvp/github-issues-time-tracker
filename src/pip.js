@@ -537,7 +537,7 @@ const PiP = (() => {
         timeEl.textContent = running ? Timer.formatMs(Storage.currentSessionMs(state)) : 'Paused';
         const card = document.querySelector(`[data-board-card-id="${activeBoardCardId}"]`);
         titleEl.textContent = state.issueTitle || (card ? GitHubAdapter.getIssueTitle(card) : 'Issue');
-        whyEl.textContent = state.why || '';
+        whyEl.textContent = state.why ? `⚓ ${state.why}` : '';
         whyEl.hidden = !state.why;
         pauseBtn.textContent = running ? '⏸\uFE0E' : '▶';
         pauseBtn.title = running ? 'Pause timer' : 'Resume timer';

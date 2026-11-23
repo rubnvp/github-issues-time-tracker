@@ -86,7 +86,7 @@ const FloatingBar = (() => {
     const state = Storage.load(activeBoardCardId);
     const formatted = Timer.formatMs(Storage.currentSessionMs(state));
     timeEl.textContent = formatted;
-    whyEl.textContent = state.why || '';
+    whyEl.textContent = state.why ? `⚓ ${state.why}` : '';
     whyEl.hidden = !state.why;
     document.title = `${formatted} — ${activeIssueTitle}`;
   }

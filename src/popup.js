@@ -63,7 +63,7 @@ function IssueGroup({ group }) {
     <${Fragment}>
       <li class="popup__issue-header">
         <div class="popup__issue-copy">
-          ${group.why && html`<span class="popup__issue-why">${group.why}</span>`}
+          ${group.why && html`<span class="popup__issue-why">⚓ ${group.why}</span>`}
           <span class="popup__issue-title">${group.issueTitle}</span>
         </div>
         <span class="popup__issue-total">${formatMs(group.totalMs)}</span>
