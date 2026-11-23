@@ -16,24 +16,24 @@
         <h2 id="settings-section-heading">Settings sections</h2>
         <fieldset id="settings-section" class="options__profiles" aria-labelledby="settings-section-heading">
           <label class="options__profile">
-            <input type="radio" name="settings-section" value="basic" checked>
+            <input type="radio" name="settings-section" value="general" checked>
             <span class="options__profile-copy">
-              <span class="options__profile-title">Basic</span>
-              <span class="options__profile-description">Timer and PiP settings</span>
+              <span class="options__profile-title">General</span>
+              <span class="options__profile-description">Timer and PiP</span>
             </span>
           </label>
           <label class="options__profile">
-            <input type="radio" name="settings-section" value="support">
+            <input type="radio" name="settings-section" value="workday">
             <span class="options__profile-copy">
-              <span class="options__profile-title">With support</span>
-              <span class="options__profile-description">Daily focus goal</span>
+              <span class="options__profile-title">Workday</span>
+              <span class="options__profile-description">Focus goal and work hours</span>
             </span>
           </label>
           <label class="options__profile">
-            <input type="radio" name="settings-section" value="tracking">
+            <input type="radio" name="settings-section" value="pace">
             <span class="options__profile-copy">
-              <span class="options__profile-title">Tracking</span>
-              <span class="options__profile-description">Schedule, pace and reminders</span>
+              <span class="options__profile-title">Pace</span>
+              <span class="options__profile-description">Comparison and reminders</span>
             </span>
           </label>
         </fieldset>
@@ -81,7 +81,7 @@
           The goal is the same every day. Reduced-motion settings disable the bar animation.
         </p>
         <p class="options__goal-help">
-          If pace comparison is enabled, the white marker shows your expected pace. When paused, green means on track; amber means behind.
+          Choose pace indicators and reminders in Pace.
         </p>
       </section>
 
@@ -92,17 +92,34 @@
           <span class="options__setting-copy">
             <span class="options__setting-title">Compare with a steady pace</span>
             <span class="options__setting-description">
-              Compare focus progress with your work schedule. This assumes focus is spread evenly across work hours.
+              Compare focus with an even pace across work hours. Requires an enabled focus goal and work hours in Workday.
             </span>
           </span>
         </label>
+        <p id="focus-pace-disabled" class="options__goal-help" hidden>Enable pace comparison to choose indicators. Your choices are saved.</p>
+        <fieldset id="focus-pace-controls" class="options__controls options__dependent options__pace-controls" aria-label="Pace indicator options">
+          <label class="options__setting">
+            <input id="focus-pace-ahead" type="checkbox">
+            <span class="options__setting-copy">
+              <span class="options__setting-title">Show when on track or ahead</span>
+              <span class="options__setting-description">Show the pace marker and details when you've met or exceeded the expected pace.</span>
+            </span>
+          </label>
+          <label class="options__setting">
+            <input id="focus-pace-behind" type="checkbox">
+            <span class="options__setting-copy">
+              <span class="options__setting-title">Show when behind</span>
+              <span class="options__setting-description">Show the pace marker and details when you're behind. The bar is amber while paused.</span>
+            </span>
+          </label>
+        </fieldset>
       </section>
 
       <section id="focus-reminders-section" class="options__section" hidden>
         <h2>Focus reminders</h2>
-        <p class="options__description">Reminders need an open PiP, an enabled focus goal and pace comparison. They activate when you're paused and behind pace during work hours, not during breaks.</p>
+        <p class="options__description">Reminders work independently of the indicators. They require an open PiP, a focus goal and pace comparison, and activate when paused and behind during work hours.</p>
         <p id="focus-reminders-disabled" class="options__description" hidden>Enable pace comparison to use reminders. Your reminder settings are saved.</p>
-        <fieldset id="focus-reminder-controls" class="options__controls options__reminders" aria-label="Focus reminder options">
+        <fieldset id="focus-reminder-controls" class="options__controls options__dependent" aria-label="Focus reminder options">
           <label class="options__setting">
             <input id="focus-reminder-visual" type="checkbox">
             <span class="options__setting-copy">

@@ -8,6 +8,10 @@ const workScheduleSection = document.getElementById('work-schedule-section');
 const autoPipInput = document.getElementById('auto-pip');
 const keepPipOpenInput = document.getElementById('keep-pip-open');
 const focusPaceComparisonInput = document.getElementById('focus-pace-comparison');
+const focusPaceAheadInput = document.getElementById('focus-pace-ahead');
+const focusPaceBehindInput = document.getElementById('focus-pace-behind');
+const focusPaceControls = document.getElementById('focus-pace-controls');
+const focusPaceDisabled = document.getElementById('focus-pace-disabled');
 const focusReminderControls = document.getElementById('focus-reminder-controls');
 const focusRemindersDisabled = document.getElementById('focus-reminders-disabled');
 const focusReminderVisualInput = document.getElementById('focus-reminder-visual');
@@ -27,16 +31,20 @@ function setStatus(message) {
 }
 
 function showSettingsSection(section) {
-  pipSection.hidden = section !== 'basic';
-  focusGoalSection.hidden = section !== 'support';
-  focusComparisonSection.hidden = section !== 'tracking';
-  focusRemindersSection.hidden = section !== 'tracking';
-  workScheduleSection.hidden = section !== 'tracking';
+  pipSection.hidden = section !== 'general';
+  focusGoalSection.hidden = section !== 'workday';
+  focusComparisonSection.hidden = section !== 'pace';
+  focusRemindersSection.hidden = section !== 'pace';
+  workScheduleSection.hidden = section !== 'workday';
 }
 
 function updateFocusComparison() {
   const enabled = Settings.shouldCompareFocusPace();
   focusPaceComparisonInput.checked = enabled;
+  focusPaceAheadInput.checked = Settings.shouldShowAheadPace();
+  focusPaceBehindInput.checked = Settings.shouldShowBehindPace();
+  focusPaceControls.disabled = !enabled;
+  focusPaceDisabled.hidden = enabled;
   focusReminderControls.disabled = !enabled;
   focusRemindersDisabled.hidden = enabled;
 }
@@ -56,8 +64,39 @@ focusPaceComparisonInput.addEventListener('change', async () => {
   }
 });
 
+for (const { input, save, read } of [
+  {
+    input: focusPaceAheadInput,
+    save: value => Settings.setFocusPaceAheadEnabled(value),
+    read: () => Settings.shouldShowAheadPace(),
+  },
+  {
+    input: focusPaceBehindInput,
+    save: value => Settings.setFocusPaceBehindEnabled(value),
+    read: () => Settings.shouldShowBehindPace(),
+  },
+]) {
+  input.addEventListener('change', async () => {
+    input.disabled = true;
+    setStatus('Saving…');
+    try {
+      await save(input.checked);
+      setStatus('Saved');
+    } catch (error) {
+      console.error('Unable to save pace indicator setting', error);
+      setStatus('Unable to save pace indicator setting.');
+    } finally {
+      input.checked = read();
+      input.disabled = false;
+    }
+  });
+}
+
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'local' && changes.focusPaceComparisonEnabled) updateFocusComparison();
+  if (areaName === 'local' &&
+      (changes.focusPaceComparisonEnabled || changes.focusPaceAheadEnabled || changes.focusPaceBehindEnabled)) {
+    updateFocusComparison();
+  }
 });
 
 settingsSectionGroup.addEventListener('change', (event) => {
@@ -397,7 +436,7 @@ focusGoalHours.addEventListener('change', saveFocusGoal);
 
 Settings.ready
   .then(() => {
-    showSettingsSection('basic');
+    showSettingsSection('general');
     autoPipInput.checked = Settings.shouldOpenPip();
     keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
     updateFocusComparison();

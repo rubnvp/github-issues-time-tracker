@@ -17,6 +17,8 @@ const Settings = (() => {
   let focusReminderSoundEnabled = false;
   let focusReminderVisualEnabled = true;
   let focusPaceComparisonEnabled = true;
+  let focusPaceAheadEnabled = true;
+  let focusPaceBehindEnabled = true;
   let focusReminderIntervalMinutes = 1;
   let weeklySchedule = createEmptySchedule();
   let focusGoal = { enabled: false, hours: 2 };
@@ -74,6 +76,8 @@ const Settings = (() => {
     focusReminderSoundEnabled: false,
     focusReminderVisualEnabled: true,
     focusPaceComparisonEnabled: true,
+    focusPaceAheadEnabled: true,
+    focusPaceBehindEnabled: true,
     focusReminderIntervalMinutes: 1,
     weeklySchedule: createEmptySchedule(),
     focusGoal: { enabled: false, hours: 2 },
@@ -83,6 +87,8 @@ const Settings = (() => {
     focusReminderSoundEnabled = settings.focusReminderSoundEnabled === true;
     focusReminderVisualEnabled = settings.focusReminderVisualEnabled === true;
     focusPaceComparisonEnabled = settings.focusPaceComparisonEnabled === true;
+    focusPaceAheadEnabled = settings.focusPaceAheadEnabled === true;
+    focusPaceBehindEnabled = settings.focusPaceBehindEnabled === true;
     focusReminderIntervalMinutes = settings.focusReminderIntervalMinutes;
     weeklySchedule = normalizeSchedule(settings.weeklySchedule);
     focusGoal = settings.focusGoal;
@@ -100,6 +106,12 @@ const Settings = (() => {
     }
     if (changes.focusPaceComparisonEnabled) {
       focusPaceComparisonEnabled = changes.focusPaceComparisonEnabled.newValue !== false;
+    }
+    if (changes.focusPaceAheadEnabled) {
+      focusPaceAheadEnabled = changes.focusPaceAheadEnabled.newValue !== false;
+    }
+    if (changes.focusPaceBehindEnabled) {
+      focusPaceBehindEnabled = changes.focusPaceBehindEnabled.newValue !== false;
     }
     if (changes.focusReminderIntervalMinutes) {
       focusReminderIntervalMinutes = changes.focusReminderIntervalMinutes.newValue ?? 1;
@@ -130,6 +142,14 @@ const Settings = (() => {
 
     shouldCompareFocusPace() {
       return focusPaceComparisonEnabled;
+    },
+
+    shouldShowAheadPace() {
+      return focusPaceAheadEnabled;
+    },
+
+    shouldShowBehindPace() {
+      return focusPaceBehindEnabled;
     },
 
     getFocusReminderIntervalMinutes() {
@@ -257,6 +277,16 @@ const Settings = (() => {
     async setFocusPaceComparisonEnabled(enabled) {
       await chrome.storage.local.set({ focusPaceComparisonEnabled: enabled });
       focusPaceComparisonEnabled = enabled;
+    },
+
+    async setFocusPaceAheadEnabled(enabled) {
+      await chrome.storage.local.set({ focusPaceAheadEnabled: enabled });
+      focusPaceAheadEnabled = enabled;
+    },
+
+    async setFocusPaceBehindEnabled(enabled) {
+      await chrome.storage.local.set({ focusPaceBehindEnabled: enabled });
+      focusPaceBehindEnabled = enabled;
     },
 
     async setFocusReminderIntervalMinutes(minutes) {

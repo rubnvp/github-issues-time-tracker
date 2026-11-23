@@ -235,6 +235,23 @@ test('pace comparison can be disabled without changing the focus goal or workday
   assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
 });
 
+test('pace indicator preferences default on, persist independently, and follow external changes', async () => {
+  const { settings, data, notifyChanged } = createSettings();
+  await settings.ready;
+  assert.equal(settings.shouldShowAheadPace(), true);
+  assert.equal(settings.shouldShowBehindPace(), true);
+  await settings.setFocusPaceAheadEnabled(false);
+  assert.equal(data.focusPaceAheadEnabled, false);
+  assert.equal(settings.shouldShowBehindPace(), true);
+  await settings.setFocusPaceBehindEnabled(false);
+  assert.equal(data.focusPaceBehindEnabled, false);
+  notifyChanged({ focusPaceAheadEnabled: { newValue: true } });
+  assert.equal(settings.shouldShowAheadPace(), true);
+  assert.equal(settings.shouldShowBehindPace(), false);
+  notifyChanged({ focusPaceBehindEnabled: { newValue: undefined } });
+  assert.equal(settings.shouldShowBehindPace(), true);
+});
+
 test('work-time reminders exclude breaks, workday end, and unscheduled days', async () => {
   const { settings } = createSettings();
   await settings.ready;

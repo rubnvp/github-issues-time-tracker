@@ -101,9 +101,9 @@ Settings open in a separate tab and save automatically.
 
 Choose a card to view one group of settings:
 
-- **Basic:** Picture-in-Picture options.
-- **With support:** the daily focus goal.
-- **Tracking:** pace comparison, the work schedule, and focus reminders.
+- **General:** Picture-in-Picture options.
+- **Workday:** the daily focus goal and work schedule.
+- **Pace:** pace comparison and focus reminders.
 
 Switching sections only changes what's visible in Settings; enabled features continue working. Settings and recorded sessions are preserved. Previously saved options that were inactive because of a lower usage level are active again. Automatic PiP and both reminder types are off by default for new installations.
 
@@ -111,7 +111,7 @@ Switching sections only changes what's visible in Settings; enabled features con
 
 Enable **Open PiP when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
 
-Enable **Keep PiP open when paused** to keep the available progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window.
+Enable **Keep PiP open when paused** to keep the available progress bars updating without recording focus time. PiP displays "Paused", a lighter background and a play button to resume the last issue; starting another issue updates the same window. An active visual reminder takes precedence over the paused background.
 
 Both PiP options are off by default. Keeping PiP open does not automatically reopen it after you close it manually.
 
@@ -123,17 +123,19 @@ A second thin bar shows goal completion as a percentage. While focusing, the bar
 
 Both percentages show two decimal places and refresh every second. Rounding may leave displayed values unchanged on consecutive refreshes. The focus percentage reflects recorded focus time, not simulated progress; pausing stops its increase. The day percentage counts only elapsed scheduled work time, excluding schedule gaps; pausing the focus timer does not stop day progress.
 
-Hover over the focus bar or percentage for focus hours and the goal, plus the pace difference when comparison is enabled. On days without work hours, goal progress still appears, without a pace comparison. The focus goal is off by default and updates in an already-open PiP when settings change.
+Hover over the focus bar or percentage for focus hours and the goal, plus the pace difference when its indicator is enabled. On days without work hours, goal progress still appears, without a pace comparison. The focus goal is off by default and updates in an already-open PiP when settings change.
 
 #### Focus pace
 
 Enable **Compare with a steady pace** to compare focus against your work schedule. It assumes focus is spread evenly over scheduled work time, not breaks. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. The white marker shows this expected pace; when paused, green means on pace or ahead and amber means behind.
 
+Choose separately whether to show the indicator **when on track or ahead** and **when behind**. Both are on by default. Turning either off hides the marker, pace details and comparison colors for that state; paused focus progress is shown in a softer green instead. The visual and sound reminders remain independently configurable and may still alert you when behind, even if the behind indicator is hidden.
+
 Comparison is off by default for new installations; existing installations keep their previous behavior. When disabled, the focus bar, percentage, and day progress remain visible, but the pace marker, pace details, amber state, and focus reminders are suppressed. Reminder preferences are preserved and become active again when comparison is enabled.
 
 #### Focus reminders
 
-In Tracking, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours with pace comparison enabled. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. New installations have this setting off by default; existing installations retain the previous enabled behavior.
+In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours with pace comparison enabled. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. New installations have this setting off by default; existing installations retain the previous enabled behavior.
 
 Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, pace comparison is enabled, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 

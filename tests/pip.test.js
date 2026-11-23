@@ -175,6 +175,8 @@ test('focus progress updates pace, honors disabling, and works without a work sc
     Settings: {
       getDailyProgress: () => null,
       getFocusGoal: () => ({ enabled, hours: 4 }),
+      shouldShowAheadPace: () => true,
+      shouldShowBehindPace: () => true,
       getFocusProgress: (ms) => ({
         focusMs: ms,
         goalMs: 14400000,

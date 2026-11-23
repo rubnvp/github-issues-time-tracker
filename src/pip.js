@@ -22,6 +22,9 @@ const PiP = (() => {
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+    body[data-timer-running="false"]:not([data-focus-reminder="true"]) {
+      background: #2b3142;
+    }
     .dot {
       width: 14px;
       height: 14px;
@@ -311,18 +314,23 @@ const PiP = (() => {
         const percent = (focus.progress * 100).toFixed(2);
         focusFill.style.width = `${focus.progress * 100}%`;
         focusTrack.setAttribute('aria-valuenow', String(percent));
-        expectedMarker.hidden = focus.expectedProgress === null;
-        expectedMarker.style.left = `${(focus.expectedProgress ?? 0) * 100}%`;
-
         let pace = focus.comparisonEnabled === false ? null : 'No schedule';
         let state = focus.comparisonEnabled === false ? 'uncompared' : 'neutral';
+        let showPace = false;
         if (focus.differenceMs !== null) {
-          state = focus.differenceMs >= 0 ? 'ahead' : 'behind';
-          const difference = Math.abs(focus.differenceMs);
-          const duration = difference < 60000 ? '<1m' : formatFocusDuration(difference);
-          pace = difference < 1000 ? 'On pace' :
-            `${focus.differenceMs >= 0 ? '+' : '-'}${duration} ${state}`;
+          const ahead = focus.differenceMs >= 0;
+          showPace = ahead ? Settings.shouldShowAheadPace() : Settings.shouldShowBehindPace();
+          state = showPace ? (ahead ? 'ahead' : 'behind') : 'uncompared';
+          pace = null;
+          if (showPace) {
+            const difference = Math.abs(focus.differenceMs);
+            const duration = difference < 60000 ? '<1m' : formatFocusDuration(difference);
+            pace = difference < 1000 ? 'On pace' :
+              `${ahead ? '+' : '-'}${duration} ${state}`;
+          }
         }
+        expectedMarker.hidden = !showPace;
+        expectedMarker.style.left = `${(focus.expectedProgress ?? 0) * 100}%`;
 
         focusEl.setAttribute('data-pace', state);
         focusLabel.textContent = `${percent}%`;
@@ -340,7 +348,8 @@ const PiP = (() => {
         const remind = !running && focus !== null && focus.differenceMs !== null &&
           focus.differenceMs < 0 && Settings.isWorkTime(now);
         doc.body.setAttribute('data-focus-reminder', String(remind && Settings.shouldShowFocusReminder()));
-        dot.title = running ? 'Focusing' : remind ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
+        dot.title = running ? 'Focusing' :
+          remind && Settings.shouldShowBehindPace() ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
         if (remind && Settings.shouldPlayFocusReminder()) {
           const minutes = Settings.getFocusReminderIntervalMinutes();
           if (nextReminderAt === null || reminderIntervalMinutes !== minutes) {

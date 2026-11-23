@@ -120,6 +120,7 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
   click();
   assert.equal(h.pip.isOpen(), true);
   assert.equal(h.timer._intervals.size, 0);
+  assert.equal(body.attributes.get('data-timer-running'), 'false');
   assert.equal(time.textContent, 'Paused');
   assert.equal(button.title, 'Resume timer');
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
@@ -143,6 +144,7 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
 
   click();
   assert.equal(h.storage.isRunning(h.storage.load('first')), true);
+  assert.equal(body.attributes.get('data-timer-running'), 'true');
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
   assert.equal(button.title, 'Pause timer');
   assert.equal(time.textContent, '0s');
@@ -285,6 +287,75 @@ test('disabling pace comparison hides it and stops reminders without hiding prog
   h.setTime(11, 6);
   h.tick();
   assert.equal(h.reminders, 1);
+});
+
+test('pace indicators can be hidden independently without disabling reminders', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const body = h.windows[0].document.body;
+  const dot = body.children.find(el => el.className === 'dot');
+  const stack = body.children.find(el => el.className === 'progress-stack');
+  const focus = stack.children.find(el => el.className === 'focus-progress');
+  const [track] = focus.children;
+  const marker = track.children[1];
+
+  await h.settings.setFocusPaceBehindEnabled(false);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
+  assert.equal(marker.hidden, true);
+  assert.equal(focus.title, 'Focus 0m / 4h');
+  assert.equal(track.attributes.get('aria-valuetext'), '0.00% of focus goal. Focus 0m / 4h');
+  assert.equal(dot.title, 'Paused');
+  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  await h.settings.setFocusReminderVisualEnabled(false);
+  h.tick();
+  assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
+  h.setTime(11, 1);
+  h.tick();
+  assert.equal(h.reminders, 1);
+
+  await h.settings.setFocusPaceBehindEnabled(true);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'behind');
+  assert.equal(marker.hidden, false);
+  assert.match(focus.title, /behind/);
+  await h.settings.setFocusPaceAheadEnabled(false);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'behind');
+  await h.settings.setFocusGoal({ enabled: true, hours: 1 });
+  h.timer.start('first');
+  h.setTime(12, 0);
+  h.tick();
+  h.timer.stop('first');
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
+  assert.equal(marker.hidden, true);
+  assert.doesNotMatch(focus.title, /ahead|On pace/);
+  await h.settings.setFocusPaceAheadEnabled(true);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'ahead');
+  assert.equal(marker.hidden, false);
+  assert.match(focus.title, /ahead/);
+});
+
+test('on-pace indicator follows the on-track-or-ahead setting', async () => {
+  const h = await createHarness();
+  h.setTime(9);
+  await h.settings.setFocusPaceAheadEnabled(false);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  const stack = h.windows[0].document.body.children.find(el => el.className === 'progress-stack');
+  const focus = stack.children.find(el => el.className === 'focus-progress');
+  assert.equal(focus.attributes.get('data-pace'), 'uncompared');
+  assert.equal(focus.children[0].children[1].hidden, true);
+  await h.settings.setFocusPaceAheadEnabled(true);
+  h.tick();
+  assert.equal(focus.attributes.get('data-pace'), 'ahead');
+  assert.match(focus.title, /On pace/);
 });
 
 test('pause still closes PiP by default, and disabling persistence closes a paused PiP', async () => {
