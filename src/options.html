@@ -13,16 +13,31 @@
 
     <fieldset id="settings-controls" class="options__controls" disabled>
       <section class="options__section">
-        <h2>Usage level</h2>
+        <h2 id="usage-level-heading">Usage level</h2>
         <p class="options__description">Choose how much support you want. Higher levels include the features below them.</p>
-        <label class="options__profile">
-          <span>Level</span>
-          <select id="usage-profile">
-            <option value="basic">Basic — time tracking and history</option>
-            <option value="support">With support — daily focus goal</option>
-            <option value="tracking">Tracking — schedule, pace and reminders</option>
-          </select>
-        </label>
+        <fieldset id="usage-profile" class="options__profiles" aria-labelledby="usage-level-heading">
+          <label class="options__profile">
+            <input type="radio" name="usage-profile" value="basic">
+            <span class="options__profile-copy">
+              <span class="options__profile-title">Basic</span>
+              <span class="options__profile-description">Time tracking and history</span>
+            </span>
+          </label>
+          <label class="options__profile">
+            <input type="radio" name="usage-profile" value="support">
+            <span class="options__profile-copy">
+              <span class="options__profile-title">With support</span>
+              <span class="options__profile-description">Add a daily focus goal</span>
+            </span>
+          </label>
+          <label class="options__profile">
+            <input type="radio" name="usage-profile" value="tracking">
+            <span class="options__profile-copy">
+              <span class="options__profile-title">Tracking</span>
+              <span class="options__profile-description">Add schedule, pace and reminders</span>
+            </span>
+          </label>
+        </fieldset>
         <p class="options__goal-help">Changing levels preserves your settings and recorded time. Options from higher levels are inactive until you return to them. Automatic PiP and reminders remain optional.</p>
       </section>
 

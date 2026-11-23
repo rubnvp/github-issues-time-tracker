@@ -1,5 +1,6 @@
 const controls = document.getElementById('settings-controls');
-const usageProfileInput = document.getElementById('usage-profile');
+const usageProfileGroup = document.getElementById('usage-profile');
+const usageProfileInputs = usageProfileGroup.querySelectorAll('input[name="usage-profile"]');
 const focusGoalSection = document.getElementById('focus-goal-section');
 const focusPaceHelp = document.getElementById('focus-pace-help');
 const focusRemindersSection = document.getElementById('focus-reminders-section');
@@ -24,18 +25,19 @@ function setStatus(message) {
 
 function updateProfile() {
   const profile = Settings.getUsageProfile();
-  usageProfileInput.value = profile;
+  usageProfileInputs.forEach(input => { input.checked = input.value === profile; });
   focusGoalSection.hidden = profile === 'basic';
   focusPaceHelp.hidden = profile !== 'tracking';
   focusRemindersSection.hidden = profile !== 'tracking';
   workScheduleSection.hidden = profile !== 'tracking';
 }
 
-usageProfileInput.addEventListener('change', async () => {
-  usageProfileInput.disabled = true;
+usageProfileGroup.addEventListener('change', async (event) => {
+  const profile = event.target.value;
+  usageProfileGroup.disabled = true;
   setStatus('Saving…');
   try {
-    await Settings.setUsageProfile(usageProfileInput.value);
+    await Settings.setUsageProfile(profile);
     updateProfile();
     setStatus('Saved');
   } catch (error) {
@@ -43,7 +45,7 @@ usageProfileInput.addEventListener('change', async () => {
     updateProfile();
     setStatus('Unable to save usage level.');
   } finally {
-    usageProfileInput.disabled = false;
+    usageProfileGroup.disabled = false;
   }
 });
 
