@@ -109,9 +109,12 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
   const { body } = window.document;
   const button = body.children.find(el => el.className === 'pause-btn');
   const time = body.children.find(el => el.className === 'time');
+  const stack = body.children.find(el => el.className === 'progress-stack');
+  const dayLabel = stack.children.find(el => el.className === 'progress').children[1];
   const click = () => button.listeners.get('click')();
 
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(dayLabel.textContent, '25.00%');
   h.setTime(11, 1);
   click();
   assert.equal(h.pip.isOpen(), true);
@@ -119,19 +122,23 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
   assert.equal(time.textContent, 'Paused');
   assert.equal(button.title, 'Resume timer');
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  assert.equal(dayLabel.textContent, '25.21%');
   assert.equal(h.storage.isRunning(h.storage.load('first')), false);
 
   h.setTime(11, 30);
   h.tick();
   assert.equal(h.storage.getDailyFocusMs(), 60000);
+  assert.equal(dayLabel.textContent, '31.25%');
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
 
   h.setTime(12, 30);
   h.tick();
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(dayLabel.textContent, '37.50%');
   h.setTime(13);
   h.tick();
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
+  assert.equal(dayLabel.textContent, '37.50%');
 
   click();
   assert.equal(h.storage.isRunning(h.storage.load('first')), true);

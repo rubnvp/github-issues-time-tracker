@@ -112,7 +112,7 @@ const PiP = (() => {
     }
     .progress-label {
       justify-self: end;
-      width: 4ch;
+      width: 7ch;
       color: rgba(255, 255, 255, 0.7);
       font: 11px monospace;
       text-align: right;
@@ -128,7 +128,6 @@ const PiP = (() => {
     .focus-progress[data-pace="behind"] .focus-fill { background: #fbbf24; }
     .focus-label {
       grid-column: 2;
-      width: 7ch;
       color: #cbd5e1;
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
@@ -380,7 +379,7 @@ const PiP = (() => {
         });
         progressMarker.style.left = `${timeline.position * 100}%`;
 
-        const percent = Math.round(progress * 100);
+        const percent = (progress * 100).toFixed(2);
         progressTrack.setAttribute('aria-valuenow', String(percent));
         progressTrack.setAttribute('aria-valuetext', `${percent}% of scheduled work hours elapsed`);
         progressLabel.textContent = `${percent}%`;

@@ -138,13 +138,14 @@ test('PiP displays work segments and moves the time marker through breaks withou
   assert.equal(morning.children[0].style.width, '100%');
   assert.equal(afternoon.children[0].style.width, '0%');
   assert.equal(marker.style.left, '40.625%');
-  assert.equal(label.textContent, '43%');
+  assert.equal(label.textContent, '42.86%');
 
   position = 3.75 / 8;
   tick();
   assert.equal(marker.style.left, '46.875%');
-  assert.equal(label.textContent, '43%');
-  assert.equal(track.attributes.get('aria-valuenow'), '43');
+  assert.equal(label.textContent, '42.86%');
+  assert.equal(track.attributes.get('aria-valuenow'), '42.86');
+  assert.equal(track.attributes.get('aria-valuetext'), '42.86% of scheduled work hours elapsed');
   assert.equal(afternoon.children[0].style.width, '0%');
 
   position = 6 / 8;
