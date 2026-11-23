@@ -128,6 +128,7 @@ const PiP = (() => {
     .focus-progress[data-pace="behind"] .focus-fill { background: #fbbf24; }
     .focus-label {
       grid-column: 2;
+      width: 7ch;
       color: #cbd5e1;
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
@@ -138,9 +139,10 @@ const PiP = (() => {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.28) 50%, transparent 80%);
-      transform: translateX(-100%);
-      animation: focus-charge 3s ease-in-out infinite;
+      background-image: linear-gradient(#bbf7d0 0 0), linear-gradient(#bbf7d0 0 0);
+      background-repeat: no-repeat;
+      background-size: 60% 100%;
+      animation: focus-charge 3s ease infinite;
       pointer-events: none;
     }
     .pause-btn {
@@ -175,8 +177,9 @@ const PiP = (() => {
       50% { background-color: #78520e; }
     }
     @keyframes focus-charge {
-      0% { transform: translateX(-100%); }
-      75%, 100% { transform: translateX(100%); }
+      0% { background-position: -150% 0, -150% 0; }
+      66% { background-position: 250% 0, -150% 0; }
+      100% { background-position: 250% 0, 250% 0; }
     }
     @media (prefers-reduced-motion: reduce) {
       .dot, body[data-focus-reminder="true"], body[data-focus-reminder="true"] .dot,
@@ -302,7 +305,7 @@ const PiP = (() => {
         if (focusEl.hidden) return null;
 
         const focus = Settings.getFocusProgress(Storage.getDailyFocusMs(now), now);
-        const percent = Math.round(focus.progress * 100);
+        const percent = (focus.progress * 100).toFixed(2);
         focusFill.style.width = `${focus.progress * 100}%`;
         focusTrack.setAttribute('aria-valuenow', String(percent));
         expectedMarker.hidden = focus.expectedProgress === null;

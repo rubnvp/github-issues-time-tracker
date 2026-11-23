@@ -159,6 +159,41 @@ test('kept PiP follows a different issue and its controls act on the new timer',
   assert.equal(h.windows.length, 1);
 });
 
+test('focus percentage uses two decimals across goals and freezes when paused', async () => {
+  const h = await createHarness();
+  h.timer.start('first');
+  await h.pip.open('first');
+  const stack = h.windows[0].document.body.children.find(el => el.className === 'progress-stack');
+  const [track, label] = stack.children.find(el => el.className === 'focus-progress').children;
+
+  assert.equal(label.textContent, '0.00%');
+  h.setTime(11, 0, 1);
+  h.tick();
+  assert.equal(label.textContent, '0.01%');
+  assert.equal(track.attributes.get('aria-valuenow'), '0.01');
+  h.setTime(11, 0, 2);
+  h.tick();
+  assert.equal(label.textContent, '0.01%');
+  h.setTime(11, 0, 3);
+  h.tick();
+  assert.equal(label.textContent, '0.02%');
+  h.timer.stop('first');
+  h.setTime(11, 1);
+  h.tick();
+  assert.equal(label.textContent, '0.02%');
+
+  await h.settings.setFocusGoal({ enabled: true, hours: 48 });
+  h.tick();
+  assert.equal(label.textContent, '0.00%');
+  h.timer.start('first');
+  h.setTime(11, 1, 1);
+  h.tick();
+  assert.equal(label.textContent, '0.00%');
+  await h.settings.setFocusGoal({ enabled: true, hours: 1 });
+  h.tick();
+  assert.equal(label.textContent, '0.11%');
+});
+
 test('pause still closes PiP by default, and disabling persistence closes a paused PiP', async () => {
   const h = await createHarness(false);
   h.timer.start('first');
