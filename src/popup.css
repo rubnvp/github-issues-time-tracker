@@ -253,22 +253,26 @@ body {
   flex-shrink: 0;
 }
 
-/* ── Settings ────────────────────────────────────────────────────────────── */
+/* ── Settings link ───────────────────────────────────────────────────────── */
 
-.popup__setting {
+.popup__settings-link {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  justify-content: flex-end;
+  padding: 6px 14px 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.65);
+}
+
+.popup__settings-btn {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
   font-size: 11px;
   cursor: pointer;
 }
 
-.popup__setting input {
-  accent-color: #6366f1;
-  flex-shrink: 0;
+.popup__settings-btn:hover {
+  color: #ffffff;
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────────── */

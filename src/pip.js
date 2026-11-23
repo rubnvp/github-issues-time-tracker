@@ -1,6 +1,6 @@
 // ─── PiP ──────────────────────────────────────────────────────────────────────
 // Manages the Document Picture-in-Picture window.
-// Responsive: shows dot + timer + pause always; title appears when width allows.
+// Shows the issue timer and the current scheduled-day progress when configured.
 //
 // IMPORTANT: open() must be called from a user gesture (e.g. a button click).
 
@@ -8,17 +8,13 @@ const PiP = (() => {
   let pipWindow = null;
   let activeBoardCardId = null;
 
-  // Width threshold above which the issue title becomes visible
-  const TITLE_MIN_WIDTH = 360;
-
   const CSS = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: #1a1f2e;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
+      gap: 12px;
       padding: 0 16px;
       width: 100vw;
       height: 100vh;
@@ -49,12 +45,54 @@ const PiP = (() => {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      display: none;
-      flex: 1;
+      flex: 0 1 25vw;
       min-width: 0;
     }
-    .title--visible {
-      display: block;
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 40px;
+    }
+    .progress[hidden] { display: none; }
+    .progress-track {
+      position: relative;
+      height: 8px;
+      flex: 1;
+      min-width: 20px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #0e1320;
+    }
+    .progress-segment {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #454878;
+    }
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: #818cf8;
+      transition: width 0.3s ease;
+    }
+    .progress-marker {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: #ffffff;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .progress-label {
+      width: 4ch;
+      color: rgba(255, 255, 255, 0.7);
+      font: 11px monospace;
+      text-align: right;
+      flex-shrink: 0;
     }
     .pause-btn {
       width: 22px;
@@ -72,26 +110,41 @@ const PiP = (() => {
       transition: background 0.1s ease;
     }
     .pause-btn:hover { background: #4f46e5; }
+    @media (max-width: 480px) {
+      .title { display: none; }
+    }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
       50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(99,102,241,0.3); }
     }
   `;
 
+  let openRequestId = 0;
+
   return {
     async open(boardCardId) {
       if (!('documentPictureInPicture' in window)) return;
-      if (pipWindow) pipWindow.close();
 
-      activeBoardCardId = boardCardId;
+      const requestId = ++openRequestId;
+      const previousWindow = pipWindow;
+      pipWindow = null;
+      activeBoardCardId = null;
+      if (previousWindow) previousWindow.close();
 
-      pipWindow = await documentPictureInPicture.requestWindow({
-        width: 240,
+      const nextWindow = await documentPictureInPicture.requestWindow({
+        width: Math.max(window.screen.availWidth, 240),
         height: 52,
         disallowReturnToOpener: true,
       });
 
-      const doc = pipWindow.document;
+      if (requestId !== openRequestId) {
+        nextWindow.close();
+        return;
+      }
+
+      pipWindow = nextWindow;
+      activeBoardCardId = boardCardId;
+      const doc = nextWindow.document;
 
       const style = doc.createElement('style');
       style.textContent = CSS;
@@ -109,6 +162,28 @@ const PiP = (() => {
       titleEl.className = 'title';
       titleEl.textContent = card ? GitHubAdapter.getIssueTitle(card) : 'Issue';
 
+      const progressEl = doc.createElement('div');
+      progressEl.className = 'progress';
+      progressEl.hidden = true;
+
+      const progressTrack = doc.createElement('div');
+      progressTrack.className = 'progress-track';
+      progressTrack.setAttribute('role', 'progressbar');
+      progressTrack.setAttribute('aria-label', 'Daily work schedule progress');
+      progressTrack.setAttribute('aria-valuemin', '0');
+      progressTrack.setAttribute('aria-valuemax', '100');
+
+      const progressMarker = doc.createElement('div');
+      progressMarker.className = 'progress-marker';
+      progressTrack.appendChild(progressMarker);
+      progressTrack.title = 'Work hours are colored; breaks are dark. White marker: current time.';
+      let segmentKey = null;
+      let segmentElements = [];
+
+      const progressLabel = doc.createElement('span');
+      progressLabel.className = 'progress-label';
+      progressEl.append(progressTrack, progressLabel);
+
       const pauseBtn = doc.createElement('button');
       pauseBtn.className = 'pause-btn';
       pauseBtn.textContent = '⏸\uFE0E';
@@ -118,31 +193,70 @@ const PiP = (() => {
       doc.body.appendChild(dot);
       doc.body.appendChild(timeEl);
       doc.body.appendChild(titleEl);
+      doc.body.appendChild(progressEl);
       doc.body.appendChild(pauseBtn);
 
-      // Show/hide title based on window width
-      function updateLayout() {
-        const wide = pipWindow.innerWidth >= TITLE_MIN_WIDTH;
-        titleEl.classList.toggle('title--visible', wide);
+      function updateProgress() {
+        const now = new Date();
+        const progress = Settings.getDailyProgress(now);
+        progressEl.hidden = progress === null;
+        if (progress === null) return;
+
+        const timeline = Settings.getDailyTimeline(now);
+        const nextSegmentKey = JSON.stringify(timeline.segments);
+        if (segmentKey !== nextSegmentKey) {
+          segmentKey = nextSegmentKey;
+          segmentElements = timeline.segments.map((segment) => {
+            const element = doc.createElement('div');
+            element.className = 'progress-segment';
+            element.style.left = `${segment.start * 100}%`;
+            element.style.width = `${(segment.end - segment.start) * 100}%`;
+            element.title = segment.label;
+
+            const fill = doc.createElement('div');
+            fill.className = 'progress-fill';
+            element.appendChild(fill);
+            return { element, fill };
+          });
+          progressTrack.replaceChildren(...segmentElements.map(({ element }) => element), progressMarker);
+        }
+
+        timeline.segments.forEach((segment, index) => {
+          const fraction = Math.max(0, Math.min(1,
+            (timeline.position - segment.start) / (segment.end - segment.start)));
+          segmentElements[index].fill.style.width = `${fraction * 100}%`;
+        });
+        progressMarker.style.left = `${timeline.position * 100}%`;
+
+        const percent = Math.round(progress * 100);
+        progressTrack.setAttribute('aria-valuenow', String(percent));
+        progressTrack.setAttribute('aria-valuetext', `${percent}% of scheduled work hours elapsed`);
+        progressLabel.textContent = `${percent}%`;
       }
-      updateLayout();
-      pipWindow.addEventListener('resize', updateLayout);
+
+      updateProgress();
 
       const tickId = setInterval(() => {
-        if (!activeBoardCardId) return;
+        if (pipWindow !== nextWindow || activeBoardCardId !== boardCardId) return;
         timeEl.textContent = Timer.formatMs(Storage.currentSessionMs(Storage.load(activeBoardCardId)));
+        updateProgress();
       }, 1000);
 
-      pipWindow.addEventListener('pagehide', () => {
+      nextWindow.addEventListener('pagehide', () => {
         clearInterval(tickId);
-        pipWindow = null;
-        activeBoardCardId = null;
+        if (pipWindow === nextWindow) {
+          pipWindow = null;
+          activeBoardCardId = null;
+        }
       });
     },
 
     close() {
-      if (pipWindow) { pipWindow.close(); pipWindow = null; }
+      openRequestId += 1;
+      const currentWindow = pipWindow;
+      pipWindow = null;
       activeBoardCardId = null;
+      if (currentWindow) currentWindow.close();
     },
 
     isOpen() {

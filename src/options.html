@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitHub Issues Time Tracker Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="options">
+    <h1>Settings</h1>
+    <p class="options__intro">Customize how GitHub Issues Time Tracker behaves.</p>
+
+    <fieldset id="settings-controls" class="options__controls" disabled>
+      <section class="options__section">
+        <h2>Picture-in-Picture</h2>
+        <label class="options__setting">
+          <input id="auto-pip" type="checkbox">
+          <span class="options__setting-copy">
+            <span class="options__setting-title">Open PiP automatically when starting a timer</span>
+            <span class="options__setting-description">
+              Open the Picture-in-Picture window when you click Play on a card.
+            </span>
+          </span>
+        </label>
+      </section>
+
+      <section class="options__section">
+        <h2>Daily progress bar</h2>
+        <p class="options__description">
+          Set local work hours for each day, using multiple intervals for breaks. PiP shows work intervals in color and breaks in dark, with a marker for the current time. The percentage counts only scheduled work hours and pauses during gaps, independently of time spent focusing.
+        </p>
+
+        <div class="options__copy">
+          <label>
+            <span>Copy schedule from</span>
+            <select id="copy-source"></select>
+          </label>
+          <label>
+            <span>Copy to</span>
+            <select id="copy-target"></select>
+          </label>
+          <button id="copy-schedule" type="button" disabled>Copy schedule</button>
+        </div>
+
+        <div id="weekly-schedule" class="options__days"></div>
+        <p id="weekly-total" class="options__weekly-total" role="status"></p>
+      </section>
+    </fieldset>
+
+    <p id="save-status" class="options__status" role="status" aria-live="polite"></p>
+  </main>
+  <script src="settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

@@ -55,11 +55,11 @@ The original title is restored when the timer stops.
 
 ### 🖥 Picture-in-Picture window
 
-Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps.
+Click **⧉** in the floating bar to open a full-width, low-height always-on-top mini window that floats above everything — even other apps.
 
 - Shows a slow-pulsing dot + live timer
-- Expand the window to also show the issue title
-- Includes a **pause button** so you can stop the timer without going back to the browser
+- Shows the issue title and pause button
+- Displays a proportional daily timeline with colored work intervals, dark breaks, and a white current-time marker; the percentage counts only scheduled work hours
 - Automatically closes when the timer is stopped
 
 > Requires Chrome 116+ and must be opened via a direct click (browser security requirement).
@@ -88,7 +88,7 @@ Click the extension icon in the toolbar to open a compact popup. It has two sect
 
 If no timer is running, the top row simply shows a muted indicator.
 
-The popup also includes an **Open PiP automatically when starting a timer** setting. When enabled, clicking a card's play button opens the PiP window without needing to use the floating bar button.
+Open **Settings** from the popup to configure the extension. Enable **Open PiP automatically when starting a timer** to open the PiP window when clicking a card's play button, without using the floating bar button. Set local work intervals for each weekday to show daily progress in PiP; gaps between intervals pause the percentage while the time marker continues across the dark break, and schedules can be copied between days. Daily and weekly scheduled-hour totals update as you edit, excluding gaps. This progress tracks the planned day, not time spent focusing. Days without a schedule have no progress bar.
 
 ---
 

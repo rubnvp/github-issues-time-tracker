@@ -1,0 +1,255 @@
+const controls = document.getElementById('settings-controls');
+const autoPipInput = document.getElementById('auto-pip');
+const copySource = document.getElementById('copy-source');
+const copyTarget = document.getElementById('copy-target');
+const copyButton = document.getElementById('copy-schedule');
+const weeklySchedule = document.getElementById('weekly-schedule');
+const weeklyTotal = document.getElementById('weekly-total');
+const saveStatus = document.getElementById('save-status');
+
+function setStatus(message) {
+  saveStatus.textContent = message;
+}
+
+function addDayOptions(select, includeEmpty) {
+  if (includeEmpty) {
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose a day';
+    select.appendChild(placeholder);
+  }
+
+  for (const day of Settings.DAYS) {
+    const option = document.createElement('option');
+    option.value = day.key;
+    option.textContent = day.label;
+    select.appendChild(option);
+  }
+}
+
+addDayOptions(copySource, false);
+addDayOptions(copyTarget, true);
+
+function createIntervalRow(interval, index) {
+  const row = document.createElement('div');
+  row.className = 'options__interval';
+  row.dataset.index = String(index);
+
+  for (const [field, labelText] of [['start', 'From'], ['end', 'To']]) {
+    const label = document.createElement('label');
+    label.className = 'options__time-field';
+
+    const labelTextEl = document.createElement('span');
+    labelTextEl.textContent = labelText;
+
+    const input = document.createElement('input');
+    input.type = 'time';
+    input.value = interval[field];
+    input.dataset.field = field;
+    input.setAttribute('aria-label', labelText);
+
+    label.append(labelTextEl, input);
+    row.appendChild(label);
+  }
+
+  const removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'options__remove-interval';
+  removeButton.textContent = 'Remove';
+  removeButton.setAttribute('aria-label', 'Remove this work interval');
+  row.appendChild(removeButton);
+
+  return row;
+}
+
+function renderSchedule(schedule) {
+  weeklySchedule.replaceChildren();
+
+  for (const day of Settings.DAYS) {
+    const daySection = document.createElement('section');
+    daySection.className = 'options__day';
+    daySection.dataset.day = day.key;
+
+    const header = document.createElement('div');
+    header.className = 'options__day-header';
+
+    const title = document.createElement('h3');
+    title.textContent = day.label;
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'options__add-interval';
+    addButton.textContent = '+ Add hours';
+
+    header.append(title, addButton);
+
+    const intervals = document.createElement('div');
+    intervals.className = 'options__intervals';
+    schedule[day.key].forEach((interval, index) => {
+      intervals.appendChild(createIntervalRow(interval, index));
+    });
+
+    const emptyMessage = document.createElement('p');
+    emptyMessage.className = 'options__day-empty';
+    emptyMessage.textContent = 'No work hours';
+    emptyMessage.hidden = schedule[day.key].length > 0;
+
+    const dailyTotal = document.createElement('p');
+    dailyTotal.className = 'options__day-total';
+
+    daySection.append(header, intervals, emptyMessage, dailyTotal);
+    weeklySchedule.appendChild(daySection);
+  }
+
+  updateScheduleTotals(schedule);
+}
+
+function formatScheduledMinutes(minutes) {
+  if (minutes === null) return 'Check hours';
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+}
+
+function updateScheduleTotals(schedule) {
+  const { dailyMinutes, weeklyMinutes } = Settings.getScheduleTotals(schedule);
+  for (const { key } of Settings.DAYS) {
+    const total = weeklySchedule.querySelector(`[data-day="${key}"] .options__day-total`);
+    total.textContent = `Daily total: ${formatScheduledMinutes(dailyMinutes[key])}`;
+  }
+  weeklyTotal.textContent = `Weekly total: ${formatScheduledMinutes(weeklyMinutes)}`;
+}
+
+function readScheduleFromForm() {
+  const schedule = Object.fromEntries(Settings.DAYS.map(({ key }) => [key, []]));
+
+  for (const day of Settings.DAYS) {
+    const daySection = weeklySchedule.querySelector(`[data-day="${day.key}"]`);
+    const rows = daySection.querySelectorAll('.options__interval');
+    schedule[day.key] = [...rows].map((row) => ({
+      start: row.querySelector('[data-field="start"]').value,
+      end: row.querySelector('[data-field="end"]').value,
+    }));
+  }
+
+  return schedule;
+}
+
+function timeToMinutes(value) {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+async function saveSchedule(schedule, successMessage = 'Saved') {
+  const validationError = Settings.validateWeeklySchedule(schedule);
+  if (validationError) {
+    setStatus(validationError);
+    return false;
+  }
+
+  setStatus('Saving…');
+  try {
+    await Settings.setWeeklySchedule(schedule);
+    setStatus(successMessage);
+    return true;
+  } catch (error) {
+    console.error('Unable to save work schedule', error);
+    setStatus('Unable to save work schedule.');
+    return false;
+  }
+}
+
+function addInterval(dayKey) {
+  const schedule = readScheduleFromForm();
+  const intervals = schedule[dayKey];
+  const previousEnd = intervals.at(-1)?.end;
+  const start = previousEnd || '09:00';
+  const startMinutes = timeToMinutes(start);
+  if (startMinutes === null || startMinutes >= 23 * 60 + 59) {
+    setStatus('No more same-day work time can be added after 23:59.');
+    return;
+  }
+
+  const endMinutes = intervals.length === 0
+    ? 17 * 60
+    : Math.min(startMinutes + 60, 23 * 60 + 59);
+  const end = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+
+  intervals.push({ start, end });
+  renderSchedule(schedule);
+  saveSchedule(schedule);
+}
+
+weeklySchedule.addEventListener('click', (event) => {
+  const daySection = event.target.closest('[data-day]');
+  if (!daySection) return;
+
+  if (event.target.closest('.options__add-interval')) {
+    addInterval(daySection.dataset.day);
+    return;
+  }
+
+  if (event.target.closest('.options__remove-interval')) {
+    const schedule = readScheduleFromForm();
+    const index = Number(event.target.closest('.options__interval').dataset.index);
+    schedule[daySection.dataset.day].splice(index, 1);
+    renderSchedule(schedule);
+    saveSchedule(schedule);
+  }
+});
+
+weeklySchedule.addEventListener('change', () => {
+  const schedule = readScheduleFromForm();
+  updateScheduleTotals(schedule);
+  saveSchedule(schedule);
+});
+
+weeklySchedule.addEventListener('input', () => {
+  updateScheduleTotals(readScheduleFromForm());
+});
+
+copyTarget.addEventListener('change', () => {
+  copyButton.disabled = !copyTarget.value || copyTarget.value === copySource.value;
+});
+
+copySource.addEventListener('change', () => {
+  copyButton.disabled = !copyTarget.value || copyTarget.value === copySource.value;
+});
+
+copyButton.addEventListener('click', () => {
+  if (!copyTarget.value || copyTarget.value === copySource.value) return;
+
+  const schedule = readScheduleFromForm();
+  schedule[copyTarget.value] = schedule[copySource.value].map(interval => ({ ...interval }));
+  renderSchedule(schedule);
+  const targetDay = Settings.DAYS.find(({ key }) => key === copyTarget.value);
+  saveSchedule(schedule, `${targetDay.label} schedule copied and saved.`);
+});
+
+autoPipInput.addEventListener('change', async () => {
+  const previousValue = Settings.shouldOpenPip();
+  autoPipInput.disabled = true;
+  setStatus('Saving…');
+
+  try {
+    await Settings.setAutoPipEnabled(autoPipInput.checked);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save extension settings', error);
+    autoPipInput.checked = previousValue;
+    setStatus('Unable to save settings.');
+  } finally {
+    autoPipInput.disabled = false;
+  }
+});
+
+Settings.ready
+  .then(() => {
+    autoPipInput.checked = Settings.shouldOpenPip();
+    renderSchedule(Settings.getWeeklySchedule());
+    controls.disabled = false;
+  })
+  .catch((error) => {
+    console.error('Unable to load extension settings', error);
+    setStatus('Unable to load settings.');
+  });

@@ -100,7 +100,6 @@ function App() {
   const [dateOffset, setDateOffset] = useState(0);
   const [groups,     setGroups]     = useState([]);
   const [dayTotal,   setDayTotal]   = useState('');
-  const [autoPipEnabled, setAutoPipEnabled] = useState(false);
 
   const tickRef = useRef(null);
 
@@ -120,8 +119,6 @@ function App() {
   }
 
   useEffect(() => {
-    Settings.ready.then(() => setAutoPipEnabled(Settings.shouldOpenPip()));
-
     chrome.runtime.sendMessage({ type: 'GET_STATE' }, (state) => {
       if (state?.active) {
         setActive(true);
@@ -153,14 +150,8 @@ function App() {
     loadHistory(next);
   }
 
-  function updateAutoPip(event) {
-    const enabled = event.currentTarget.checked;
-    Settings.setAutoPipEnabled(enabled)
-      .then(() => setAutoPipEnabled(enabled))
-      .catch((error) => {
-        console.error('Unable to save extension settings', error);
-        setAutoPipEnabled(Settings.shouldOpenPip());
-      });
+  function openSettings() {
+    chrome.runtime.openOptionsPage();
   }
 
   return html`
@@ -186,14 +177,9 @@ function App() {
         onNext=${nextDay}
       />
 
-      <label class="popup__setting">
-        <input
-          type="checkbox"
-          checked=${autoPipEnabled}
-          onChange=${updateAutoPip}
-        />
-        <span>Open PiP automatically when starting a timer</span>
-      </label>
+      <div class="popup__settings-link">
+        <button class="popup__settings-btn" onClick=${openSettings}>⚙ Settings</button>
+      </div>
     </${Fragment}>
   `;
 }
