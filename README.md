@@ -55,7 +55,7 @@ The original title is restored when the timer stops.
 
 ### 🖥 Picture-in-Picture window
 
-Click **⧉** in the floating bar to open a full-width, low-height always-on-top mini window that floats above everything — even other apps.
+Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps. The extension requests a full-width, low-height window, but Chrome may limit its dimensions.
 
 - Shows a slow-pulsing dot + live timer
 - Shows the issue title and a pause/resume button
@@ -89,13 +89,43 @@ Click the extension icon in the toolbar to open a compact popup. It has two sect
 
 If no timer is running, the top row simply shows a muted indicator.
 
-Open **Settings** from the popup to configure the extension. Enable **Open PiP automatically when starting a timer** to open the PiP window when clicking a card's play button, without using the floating bar button. Set local work intervals for each weekday to show daily progress in PiP; gaps between intervals pause the percentage while the time marker continues across the dark break, and schedules can be copied between days. Daily and weekly scheduled-hour totals update as you edit, excluding gaps. This progress tracks the planned day, not time spent focusing. Days without a schedule have no progress bar.
+Open **Settings** from the popup to configure PiP, your daily focus goal, reminders, and work hours.
 
-Enable **Show focus goal progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today. A second thin bar shows goal completion as a percentage and a white expected-pace marker: green means on pace or ahead, amber means behind. Hover over the focus bar or percentage for focus hours, the goal, and the pace difference. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. Breaks pause the expected pace. On days without work hours, goal progress still appears, without a pace comparison. The feature is off by default and updates in an already-open PiP when settings change.
+---
+
+### ⚙ Settings
+
+Settings open in a separate tab and save automatically. The sections follow this order:
+
+#### Picture-in-Picture
+
+Enable **Open PiP automatically when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
 
 Enable **Keep PiP open while the timer is paused** to keep both progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window. If paused and behind an enabled focus goal during scheduled work hours, the dot and focus percentage pulse gently in amber. There are no reminders during breaks or outside work hours, and reduced-motion preferences disable the animation.
 
-**Play a focus reminder every 5 minutes** adds an optional quiet chime under the same conditions, with PiP open. The first chime comes after five minutes, then repeats every five minutes without accumulating missed reminders. Resuming focus, getting back on pace, disabling reminders, or entering a break resets the wait. Both settings are off by default; closing PiP manually stops its reminders.
+Both PiP options are off by default. Keeping PiP open does not automatically reopen it after you close it manually.
+
+#### Daily focus goal
+
+Enable **Show focus goal progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
+
+A second thin bar shows goal completion as a percentage and a white expected-pace marker: green means on pace or ahead, amber means behind. Hover over the focus bar or percentage for focus hours, the goal, and the pace difference. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. Breaks pause the expected pace.
+
+On days without work hours, goal progress still appears, without a pace comparison. The feature is off by default and updates in an already-open PiP when settings change.
+
+#### Focus reminders
+
+Enable **Play a focus reminder every 5 minutes** for a quiet chime. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
+
+The first chime comes after five qualifying minutes, then repeats approximately every five minutes without accumulating missed reminders. Resuming focus, getting back on pace, disabling sound, or entering a break resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
+
+#### Work schedule
+
+Set local work intervals for each day to show daily progress in PiP. Each day can have different hours and multiple intervals for breaks; schedules can be copied between days. Intervals cannot cross midnight: split overnight hours between the two days.
+
+PiP shows work intervals in color and breaks in dark. Gaps pause the percentage while the current-time marker continues across the break. This progress tracks the planned day, not time spent focusing. Days without a schedule have no day progress bar.
+
+The weekly scheduled-hour total appears above the daily editors, and each day shows its own total. Totals update as you edit and exclude gaps.
 
 ---
 
@@ -140,6 +170,8 @@ Each entry stores an array of sessions:
 - Entries are only created when you first press play on a card
 
 > **Note:** data is stored locally in the browser. It is not synced across devices or Chrome profiles.
+
+Extension preferences, including PiP options, the weekly work schedule, the focus goal, and sound reminders, are stored separately in `chrome.storage.local`. They are not synced across devices or Chrome profiles either.
 
 ---
 
