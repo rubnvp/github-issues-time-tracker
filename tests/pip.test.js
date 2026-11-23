@@ -200,23 +200,29 @@ test('focus progress updates pace, honors disabling, and works without a work sc
   assert.equal(fill.style.width, '37.5%');
   assert.equal(marker.style.left, '50%');
   assert.equal(focusRow.attributes.get('data-pace'), 'behind');
-  assert.equal(label.textContent, 'Focus 1h 30m / 4h \u00b7 -30m behind');
+  assert.equal(label.textContent, '38%');
+  assert.equal(focusRow.title, 'Focus 1h 30m / 4h \u00b7 -30m behind');
+  assert.equal(track.attributes.get('aria-valuetext'),
+    '38% of focus goal. Focus 1h 30m / 4h \u00b7 -30m behind');
 
   focusMs = 9000000;
   tick();
   assert.equal(focusRow.attributes.get('data-pace'), 'ahead');
-  assert.match(label.textContent, /\+30m ahead/);
+  assert.equal(label.textContent, '63%');
+  assert.match(focusRow.title, /\+30m ahead/);
 
   focusMs = 18000000;
   tick();
   assert.equal(fill.style.width, '100%');
-  assert.match(label.textContent, /Focus 5h \/ 4h/);
+  assert.equal(label.textContent, '100%');
+  assert.match(focusRow.title, /Focus 5h \/ 4h/);
 
   expectedProgress = null;
   tick();
   assert.equal(marker.hidden, true);
   assert.equal(focusRow.attributes.get('data-pace'), 'neutral');
-  assert.match(label.textContent, /No schedule/);
+  assert.equal(label.textContent, '100%');
+  assert.match(focusRow.title, /No schedule/);
 
   enabled = false;
   tick();

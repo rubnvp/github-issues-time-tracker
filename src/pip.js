@@ -107,8 +107,6 @@ const PiP = (() => {
     .focus-label {
       grid-column: 2;
       color: #cbd5e1;
-      font: 10px monospace;
-      white-space: nowrap;
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
     .focus-progress[data-pace="behind"] .focus-label { color: #fbbf24; }
@@ -130,11 +128,6 @@ const PiP = (() => {
     .pause-btn:hover { background: #4f46e5; }
     @media (max-width: 480px) {
       .title { display: none; }
-      .focus-label {
-        max-width: 110px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
@@ -232,7 +225,7 @@ const PiP = (() => {
       focusTrack.append(focusFill, expectedMarker);
 
       const focusLabel = doc.createElement('span');
-      focusLabel.className = 'focus-label';
+      focusLabel.className = 'progress-label focus-label';
       focusEl.append(focusTrack, focusLabel);
 
       const progressStack = doc.createElement('div');
@@ -273,10 +266,13 @@ const PiP = (() => {
         }
 
         focusEl.setAttribute('data-pace', state);
-        focusLabel.textContent =
+        focusLabel.textContent = `${percent}%`;
+        const detail =
           `Focus ${formatFocusDuration(focus.focusMs)} / ${formatFocusDuration(focus.goalMs)} \u00b7 ${pace}`;
-        focusEl.title = focusLabel.textContent;
-        focusTrack.setAttribute('aria-valuetext', `${percent}% of focus goal. ${focusLabel.textContent}`);
+        focusEl.title = detail;
+        focusTrack.title = detail;
+        focusLabel.title = detail;
+        focusTrack.setAttribute('aria-valuetext', `${percent}% of focus goal. ${detail}`);
       }
 
       function updateProgress() {
