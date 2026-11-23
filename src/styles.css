@@ -80,28 +80,43 @@
 }
 
 .gitt-card-why__input {
+  box-sizing: border-box;
+  width: 100%;
   min-width: 0;
-  flex: 1;
-  border: 1px solid var(--borderColor-default, #d0d7de);
-  border-radius: 4px;
-  padding: 3px 6px;
+  min-height: 34px;
+  border: 1px solid var(--borderColor-default, #3d444d);
+  border-radius: 6px;
+  padding: 6px 10px;
   color: var(--fgColor-default, #1f2328);
   background: var(--bgColor-default, #ffffff);
-  font: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.gitt-card-why__input::placeholder {
+  color: var(--fgColor-muted, #8b949e);
+  opacity: 1;
+}
+
+.gitt-card-why__input:focus {
+  border-color: transparent;
+  outline: 2px solid var(--fgColor-accent, #4493f8);
+  outline-offset: 1px;
 }
 
 .gitt-card-why__hint {
   color: var(--fgColor-muted, #636c76);
-  font-size: 10px;
-  white-space: nowrap;
+  font-size: 11px;
 }
 
 .gitt-card-why__editor {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   flex-basis: 100%;
+  width: 100%;
+  min-width: 0;
   margin-top: 4px;
 }
 

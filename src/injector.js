@@ -197,8 +197,8 @@ const Injector = {
     input.type = 'text';
     input.maxLength = 160;
     input.className = 'gitt-card-why__input';
-    input.placeholder = '¿Qué propósito tiene esta tarea?';
-    input.setAttribute('aria-label', 'Ancla de propósito');
+    input.placeholder = 'What makes this issue matter?';
+    input.setAttribute('aria-label', 'Purpose anchor');
 
     const hint = document.createElement('span');
     hint.className = 'gitt-card-why__hint';
@@ -220,13 +220,13 @@ const Injector = {
       text.textContent = why;
       text.hidden = !why;
       editButton.textContent = why ? '✎' : '⚓';
-      editButton.title = why ? 'Editar ancla de propósito' : 'Añadir ancla de propósito';
+      editButton.title = why ? 'Edit purpose anchor' : 'Add purpose anchor';
       editButton.setAttribute('aria-label', editButton.title);
       editButton.hidden = editing;
       editor.hidden = !editing;
       hint.textContent = suggestion
-        ? 'Opcional · Enter guarda · Esc descarta'
-        : 'Enter guarda · Esc cancela';
+        ? 'Optional · Enter to save · Esc to dismiss'
+        : 'Enter to save · Esc to cancel';
     }
 
     function beginEdit(isSuggestion = false) {

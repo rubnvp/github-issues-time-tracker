@@ -54,7 +54,8 @@ test('purpose anchor text stays above the issue while its editor is separate', (
 test('empty purpose anchor uses the anchor icon as its add action', () => {
   const anchor = createHarness(null).build();
   assert.equal(anchor.editButton.textContent, '⚓');
-  assert.equal(anchor.editButton.title, 'Añadir ancla de propósito');
+  assert.equal(anchor.editButton.title, 'Add purpose anchor');
+  assert.equal(anchor.editor.children[0].placeholder, 'What makes this issue matter?');
 });
 
 test('purpose anchor editor opens below the controls and saves or removes the note', () => {

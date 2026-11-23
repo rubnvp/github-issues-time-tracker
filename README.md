@@ -22,7 +22,7 @@ Each board card has a play/pause button and a time display. Only one timer can r
 
 Hover over the card timer and click **☰** to see its sessions, or **🎉** for a confetti celebration. While running, the floating bar shows the issue, elapsed time and controls; the browser tab title and extension badge also show the timer.
 
-The **Ancla de propósito** is a short personal note above the GitHub issue title. Add or edit it from the card's lower action row; the editor opens on a second line below the timer controls. On a card's first timer start, an optional prompt appears without delaying the timer. The note stays local to that board card and appears in the floating bar, PiP and popup history.
+The **Purpose Anchor** is a short personal note above the GitHub issue title. Add or edit it from the card's lower action row; the full-width editor opens on a second line below the timer controls. On a card's first timer start, an optional prompt appears without delaying the timer. The note stays local to that board card and appears in the floating bar, PiP and popup history.
 
 Open the extension popup to stop the active timer, browse daily history by issue and access **Settings**.
 
@@ -70,7 +70,7 @@ Changing the interval restarts the wait. Resuming focus, getting back on pace, d
 
 ## Data and limitations
 
-Sessions and Ancla de propósito notes are stored in the GitHub domain's `localStorage` under `gitt:<boardCardId>`, with start/end timestamps and issue information. Running state and totals are derived from those sessions. The notes never update GitHub issues. Clearing browser data erases tracked time and notes.
+Sessions and Purpose Anchor notes are stored in the GitHub domain's `localStorage` under `gitt:<boardCardId>`, with start/end timestamps and issue information. Running state and totals are derived from those sessions. The notes never update GitHub issues. Clearing browser data erases tracked time and notes.
 
 Preferences are stored separately in `chrome.storage.local`. Neither sessions nor preferences sync across devices or Chrome profiles.
 
