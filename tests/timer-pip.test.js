@@ -181,6 +181,7 @@ test('pause still closes PiP by default, and disabling persistence closes a paus
 
 test('optional sound reminders wait five minutes, repeat without bursts, and reset over breaks', async () => {
   const h = await createHarness();
+  await h.settings.setFocusReminderIntervalMinutes(5);
   h.timer.start('first');
   await h.pip.open('first');
   h.timer.stop('first');
@@ -224,6 +225,41 @@ test('optional sound reminders wait five minutes, repeat without bursts, and res
   await h.settings.setFocusReminderSoundEnabled(false);
   h.tick();
   h.setTime(13, 15);
+  h.tick();
+  assert.equal(h.reminders, 4);
+});
+
+test('sound reminders default to one minute and restart the wait when their interval changes', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusReminderSoundEnabled(true);
+  h.timer.start('first');
+  await h.pip.open('first');
+  h.timer.stop('first');
+  h.setTime(11, 0, 59);
+  h.tick();
+  assert.equal(h.reminders, 0);
+  h.setTime(11, 1);
+  h.tick();
+  assert.equal(h.reminders, 1);
+  h.setTime(11, 2);
+  h.tick();
+  assert.equal(h.reminders, 2);
+
+  await h.settings.setFocusReminderIntervalMinutes(3);
+  h.tick();
+  h.setTime(11, 4, 59);
+  h.tick();
+  assert.equal(h.reminders, 2);
+  h.setTime(11, 5);
+  h.tick();
+  assert.equal(h.reminders, 3);
+
+  await h.settings.setFocusReminderIntervalMinutes(2);
+  h.tick();
+  h.setTime(11, 6, 59);
+  h.tick();
+  assert.equal(h.reminders, 3);
+  h.setTime(11, 7);
   h.tick();
   assert.equal(h.reminders, 4);
 });

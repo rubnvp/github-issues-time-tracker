@@ -34,6 +34,7 @@ function createSettings(initialData = {}) {
   vm.runInContext(settingsSource, context);
 
   return {
+    data,
     settings: vm.runInContext('Settings', context),
     notifyChanged(changes, areaName = 'local') {
       listeners.forEach(listener => listener(changes, areaName));
@@ -213,4 +214,20 @@ test('work-time reminders exclude breaks, workday end, and unscheduled days', as
   assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 13)), true);
   assert.equal(settings.isWorkTime(new Date(2026, 0, 5, 17)), false);
   assert.equal(settings.isWorkTime(new Date(2026, 0, 6, 10)), false);
+});
+
+test('reminder interval persists, follows live changes, and rejects invalid minutes', async () => {
+  const { settings, data, notifyChanged } = createSettings({ focusReminderIntervalMinutes: 3 });
+  await settings.ready;
+  assert.equal(settings.getFocusReminderIntervalMinutes(), 3);
+  await settings.setFocusReminderIntervalMinutes(2);
+  assert.equal(data.focusReminderIntervalMinutes, 2);
+  for (const minutes of [0, -1, 1.5, NaN, Infinity, '2', Number.MAX_VALUE]) {
+    await assert.rejects(settings.setFocusReminderIntervalMinutes(minutes), /whole number/);
+  }
+  assert.equal(data.focusReminderIntervalMinutes, 2);
+  notifyChanged({ focusReminderIntervalMinutes: { newValue: 4 } });
+  assert.equal(settings.getFocusReminderIntervalMinutes(), 4);
+  notifyChanged({ focusReminderIntervalMinutes: { newValue: undefined } });
+  assert.equal(settings.getFocusReminderIntervalMinutes(), 1);
 });

@@ -9,20 +9,20 @@ const Sounds = (() => {
     return ctx;
   }
 
-  function playTone(frequencies, duration = 0.08, gain = 0.15) {
+  function playTone(frequencies, duration = 0.08, gain = 0.15, waveform = 'sine') {
     const ac = getCtx();
     const resume = ac.state === 'suspended' ? ac.resume() : Promise.resolve();
-    return resume.then(() => _scheduleTones(ac, frequencies, duration, gain));
+    return resume.then(() => _scheduleTones(ac, frequencies, duration, gain, waveform));
   }
 
-  function _scheduleTones(ac, frequencies, duration, gain) {
+  function _scheduleTones(ac, frequencies, duration, gain, waveform) {
     const now = ac.currentTime;
 
     frequencies.forEach(({ freq, time }) => {
       const osc = ac.createOscillator();
       const env = ac.createGain();
 
-      osc.type = 'sine';
+      osc.type = waveform;
       osc.frequency.setValueAtTime(freq, now + time);
 
       env.gain.setValueAtTime(0, now + time);
@@ -56,9 +56,13 @@ const Sounds = (() => {
 
     async remind() {
       return playTone([
-        { freq: 523.3, time: 0 },
-        { freq: 659.3, time: 0.18 },
-      ], 0.15, 0.08);
+        { freq: 880, time: 0 },
+        { freq: 1174.7, time: 0.22 },
+        { freq: 880, time: 0.44 },
+        { freq: 880, time: 0.92 },
+        { freq: 1174.7, time: 1.14 },
+        { freq: 880, time: 1.36 },
+      ], 0.18, 0.28, 'triangle');
     },
 
     // Fanfare — signals issue completed 🎉

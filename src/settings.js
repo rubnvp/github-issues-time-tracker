@@ -15,6 +15,7 @@ const Settings = (() => {
   let autoPipEnabled = false;
   let keepPipOpen = false;
   let focusReminderSoundEnabled = false;
+  let focusReminderIntervalMinutes = 1;
   let weeklySchedule = createEmptySchedule();
   let focusGoal = { enabled: false, hours: 4 };
 
@@ -69,12 +70,14 @@ const Settings = (() => {
     autoPipEnabled: false,
     keepPipOpen: false,
     focusReminderSoundEnabled: false,
+    focusReminderIntervalMinutes: 1,
     weeklySchedule: createEmptySchedule(),
     focusGoal: { enabled: false, hours: 4 },
   }).then((settings) => {
     autoPipEnabled = settings.autoPipEnabled === true;
     keepPipOpen = settings.keepPipOpen === true;
     focusReminderSoundEnabled = settings.focusReminderSoundEnabled === true;
+    focusReminderIntervalMinutes = settings.focusReminderIntervalMinutes;
     weeklySchedule = normalizeSchedule(settings.weeklySchedule);
     focusGoal = settings.focusGoal;
   });
@@ -85,6 +88,9 @@ const Settings = (() => {
     if (changes.keepPipOpen) keepPipOpen = changes.keepPipOpen.newValue === true;
     if (changes.focusReminderSoundEnabled) {
       focusReminderSoundEnabled = changes.focusReminderSoundEnabled.newValue === true;
+    }
+    if (changes.focusReminderIntervalMinutes) {
+      focusReminderIntervalMinutes = changes.focusReminderIntervalMinutes.newValue ?? 1;
     }
     if (changes.weeklySchedule) weeklySchedule = normalizeSchedule(changes.weeklySchedule.newValue);
     if (changes.focusGoal) focusGoal = changes.focusGoal.newValue ?? { enabled: false, hours: 4 };
@@ -104,6 +110,10 @@ const Settings = (() => {
 
     shouldPlayFocusReminder() {
       return focusReminderSoundEnabled;
+    },
+
+    getFocusReminderIntervalMinutes() {
+      return focusReminderIntervalMinutes;
     },
 
     getWeeklySchedule() {
@@ -216,6 +226,14 @@ const Settings = (() => {
     async setFocusReminderSoundEnabled(enabled) {
       await chrome.storage.local.set({ focusReminderSoundEnabled: enabled });
       focusReminderSoundEnabled = enabled;
+    },
+
+    async setFocusReminderIntervalMinutes(minutes) {
+      if (!Number.isInteger(minutes) || minutes < 1 || !Number.isFinite(minutes * 60000)) {
+        throw new Error('Reminder interval must be a whole number of minutes, at least 1.');
+      }
+      await chrome.storage.local.set({ focusReminderIntervalMinutes: minutes });
+      focusReminderIntervalMinutes = minutes;
     },
 
     async setFocusGoal({ enabled, hours }) {

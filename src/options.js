@@ -2,6 +2,7 @@ const controls = document.getElementById('settings-controls');
 const autoPipInput = document.getElementById('auto-pip');
 const keepPipOpenInput = document.getElementById('keep-pip-open');
 const focusReminderSoundInput = document.getElementById('focus-reminder-sound');
+const focusReminderIntervalInput = document.getElementById('focus-reminder-interval');
 const focusGoalEnabled = document.getElementById('focus-goal-enabled');
 const focusGoalHours = document.getElementById('focus-goal-hours');
 const copySource = document.getElementById('copy-source');
@@ -274,6 +275,28 @@ focusReminderSoundInput.addEventListener('change', async () => {
     setStatus('Unable to save settings.');
   } finally {
     focusReminderSoundInput.disabled = false;
+    focusReminderIntervalInput.disabled = !focusReminderSoundInput.checked;
+  }
+});
+
+focusReminderIntervalInput.addEventListener('change', async () => {
+  const minutes = focusReminderIntervalInput.valueAsNumber;
+  if (!Number.isInteger(minutes) || minutes < 1 || !Number.isFinite(minutes * 60000)) {
+    setStatus('Reminder interval must be a whole number of minutes, at least 1.');
+    return;
+  }
+
+  focusReminderIntervalInput.disabled = true;
+  setStatus('Saving…');
+  try {
+    await Settings.setFocusReminderIntervalMinutes(minutes);
+    setStatus('Saved');
+  } catch (error) {
+    console.error('Unable to save focus reminder interval', error);
+    focusReminderIntervalInput.value = String(Settings.getFocusReminderIntervalMinutes());
+    setStatus('Unable to save focus reminder interval.');
+  } finally {
+    focusReminderIntervalInput.disabled = !focusReminderSoundInput.checked;
   }
 });
 
@@ -314,6 +337,8 @@ Settings.ready
     autoPipInput.checked = Settings.shouldOpenPip();
     keepPipOpenInput.checked = Settings.shouldKeepPipOpen();
     focusReminderSoundInput.checked = Settings.shouldPlayFocusReminder();
+    focusReminderIntervalInput.value = String(Settings.getFocusReminderIntervalMinutes());
+    focusReminderIntervalInput.disabled = !focusReminderSoundInput.checked;
     const goal = Settings.getFocusGoal();
     focusGoalEnabled.checked = goal.enabled;
     focusGoalHours.value = String(goal.hours);

@@ -101,7 +101,7 @@ Settings open in a separate tab and save automatically. The sections follow this
 
 Enable **Open PiP automatically when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
 
-Enable **Keep PiP open while the timer is paused** to keep both progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window. If paused and behind an enabled focus goal during scheduled work hours, the dot and focus percentage pulse gently in amber. There are no reminders during breaks or outside work hours, and reduced-motion preferences disable the animation.
+Enable **Keep PiP open while the timer is paused** to keep both progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window. If paused and behind an enabled focus goal during scheduled work hours, the entire background pulses amber on a 2-second cycle, along with the dot and focus percentage. There are no reminders while focusing, during breaks, or outside work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead.
 
 Both PiP options are off by default. Keeping PiP open does not automatically reopen it after you close it manually.
 
@@ -115,9 +115,9 @@ On days without work hours, goal progress still appears, without a pace comparis
 
 #### Focus reminders
 
-Enable **Play a focus reminder every 5 minutes** for a quiet chime. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
+Enable **Play a focus reminder sound** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 
-The first chime comes after five qualifying minutes, then repeats approximately every five minutes without accumulating missed reminders. Resuming focus, getting back on pace, disabling sound, or entering a break resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
+Set **Minutes between sound reminders** to any whole number of minutes of at least 1; the default is **1 minute**. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
 
 #### Work schedule
 

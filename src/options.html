@@ -28,7 +28,7 @@
           <span class="options__setting-copy">
             <span class="options__setting-title">Keep PiP open while the timer is paused</span>
             <span class="options__setting-description">
-              Keep your day and focus progress visible without tracking time. Resume from PiP. A gentle amber pulse reminds you when paused and behind your focus goal, only during scheduled work hours.
+              Keep your day and focus progress visible without tracking time. Resume from PiP. The background pulses amber every 2 seconds when paused and behind your focus goal, only during scheduled work hours. With reduced motion, it stays amber.
             </span>
           </span>
         </label>
@@ -59,11 +59,15 @@
         <label class="options__setting">
           <input id="focus-reminder-sound" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Play a focus reminder every 5 minutes</span>
+            <span class="options__setting-title">Play a focus reminder sound</span>
             <span class="options__setting-description">
-              With PiP open, play a gentle sound after 5 minutes paused and behind your focus goal, then repeat every 5 minutes. Reminders stop during breaks, outside work hours, or when you resume focusing.
+              With PiP open, play a prominent two-burst alert while paused and behind your focus goal. Reminders stop during breaks, outside work hours, or when you resume focusing.
             </span>
           </span>
+        </label>
+        <label class="options__goal-hours">
+          <span>Minutes between sound reminders (1 by default)</span>
+          <input id="focus-reminder-interval" type="number" min="1" step="1" value="1" required disabled>
         </label>
       </section>
 

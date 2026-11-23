@@ -36,13 +36,17 @@ const PiP = (() => {
       box-shadow: none;
       animation: none;
     }
+    body[data-focus-reminder="true"] {
+      background: #67430d;
+      animation: focus-reminder-background 2s ease-in-out infinite;
+    }
     body[data-focus-reminder="true"] .dot {
       background: #fbbf24;
       box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.4);
-      animation: focus-reminder 3s ease-in-out infinite;
+      animation: focus-reminder 2s ease-in-out infinite;
     }
     body[data-focus-reminder="true"] .focus-label {
-      animation: focus-reminder 3s ease-in-out infinite;
+      animation: focus-reminder 2s ease-in-out infinite;
     }
     .time {
       font-family: monospace;
@@ -151,8 +155,12 @@ const PiP = (() => {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.45; }
     }
+    @keyframes focus-reminder-background {
+      0%, 100% { background-color: #1a1f2e; }
+      50% { background-color: #78520e; }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .dot, body[data-focus-reminder="true"] .dot,
+      .dot, body[data-focus-reminder="true"], body[data-focus-reminder="true"] .dot,
       body[data-focus-reminder="true"] .focus-label { animation: none; }
       .progress-fill { transition: none; }
     }
@@ -222,6 +230,7 @@ const PiP = (() => {
       let segmentKey = null;
       let segmentElements = [];
       let nextReminderAt = null;
+      let reminderIntervalMinutes = null;
 
       const progressLabel = doc.createElement('span');
       progressLabel.className = 'progress-label';
@@ -307,10 +316,12 @@ const PiP = (() => {
         doc.body.setAttribute('data-focus-reminder', String(remind));
         dot.title = running ? 'Focusing' : remind ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
         if (remind && Settings.shouldPlayFocusReminder()) {
-          if (nextReminderAt === null) {
-            nextReminderAt = now.getTime() + 5 * 60000;
+          const minutes = Settings.getFocusReminderIntervalMinutes();
+          if (nextReminderAt === null || reminderIntervalMinutes !== minutes) {
+            reminderIntervalMinutes = minutes;
+            nextReminderAt = now.getTime() + minutes * 60000;
           } else if (now.getTime() >= nextReminderAt) {
-            nextReminderAt = now.getTime() + 5 * 60000;
+            nextReminderAt = now.getTime() + minutes * 60000;
             Sounds.remind().catch(error => console.error('Unable to play focus reminder', error));
           }
         } else {
