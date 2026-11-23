@@ -41,7 +41,10 @@ async function createHarness(keepPipOpen = true) {
       const listeners = new Map();
       const window = {
         closed: false,
-        document: { body: new Element(), head: new Element(), createElement: () => new Element() },
+        document: {
+          body: new Element(), head: new Element(),
+          createElement: () => new Element(), createElementNS: () => new Element(),
+        },
         addEventListener(name, callback) { listeners.set(name, callback); },
         close() { this.closed = true; listeners.get('pagehide')?.(); },
       };
@@ -110,17 +113,21 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
   const { body } = window.document;
   const button = body.children.find(el => el.className === 'pause-btn');
   const time = body.children.find(el => el.className === 'time');
+  const mascot = body.children.find(el => el.className === 'mascot');
   const stack = body.children.find(el => el.className === 'progress-stack');
   const dayLabel = stack.children.find(el => el.className === 'progress').children[1];
   const click = () => button.listeners.get('click')();
 
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
+  assert.equal(mascot.title, 'Focusing');
+  assert.equal(mascot.children[0].attributes.get('aria-hidden'), 'true');
   assert.equal(dayLabel.textContent, '25.00%');
   h.setTime(11, 1);
   click();
   assert.equal(h.pip.isOpen(), true);
   assert.equal(h.timer._intervals.size, 0);
   assert.equal(body.attributes.get('data-timer-running'), 'false');
+  assert.equal(mascot.title, 'Paused - behind focus goal. Resume focus.');
   assert.equal(time.textContent, 'Paused');
   assert.equal(button.title, 'Resume timer');
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
@@ -145,6 +152,7 @@ test('persistent PiP pauses without tracking focus, reminds only during work hou
   click();
   assert.equal(h.storage.isRunning(h.storage.load('first')), true);
   assert.equal(body.attributes.get('data-timer-running'), 'true');
+  assert.equal(mascot.title, 'Focusing');
   assert.equal(body.attributes.get('data-focus-reminder'), 'false');
   assert.equal(button.title, 'Pause timer');
   assert.equal(time.textContent, '0s');
@@ -267,7 +275,7 @@ test('pace indicators can be hidden independently without disabling reminders', 
   await h.pip.open('first');
   h.timer.stop('first');
   const body = h.windows[0].document.body;
-  const dot = body.children.find(el => el.className === 'dot');
+  const mascot = body.children.find(el => el.className === 'mascot');
   const stack = body.children.find(el => el.className === 'progress-stack');
   const focus = stack.children.find(el => el.className === 'focus-progress');
   const [track] = focus.children;
@@ -279,7 +287,7 @@ test('pace indicators can be hidden independently without disabling reminders', 
   assert.equal(marker.hidden, true);
   assert.equal(focus.title, 'Focus 0m / 4h');
   assert.equal(track.attributes.get('aria-valuetext'), '0.00% of focus goal. Focus 0m / 4h');
-  assert.equal(dot.title, 'Paused');
+  assert.equal(mascot.title, 'Paused');
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
   await h.settings.setFocusReminderVisualEnabled(false);
   h.tick();

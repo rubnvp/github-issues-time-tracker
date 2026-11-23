@@ -43,6 +43,7 @@ class FakePipWindow {
       head: new FakeElement(),
       body: new FakeElement(),
       createElement: () => new FakeElement(),
+      createElementNS: () => new FakeElement(),
     };
   }
 

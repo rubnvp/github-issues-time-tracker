@@ -25,27 +25,39 @@ const PiP = (() => {
     body[data-timer-running="false"]:not([data-focus-reminder="true"]) {
       background: #2b3142;
     }
-    .dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #6366f1;
+    .mascot {
+      width: 34px;
+      height: 34px;
       flex-shrink: 0;
-      box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.6);
-      animation: pulse 4.5s ease-in-out infinite;
     }
-    body[data-timer-running="false"] .dot {
-      background: #64748b;
-      box-shadow: none;
-      animation: none;
+    .mascot svg { width: 100%; height: 100%; overflow: visible; }
+    .mascot-body { fill: #a5a9ed; transition: fill .7s ease; }
+    .mascot-face-awake, .mascot-face-rest, .mascot-laptop, .mascot-arms-working,
+    .mascot-arms-rest { transition: opacity .65s ease; }
+    .mascot-face-rest, .mascot-arms-rest { opacity: 0; }
+    .mascot-character {
+      transform-origin: 50px 85px;
+      animation: mascot-breathe 5s ease-in-out infinite;
     }
+    .mascot-leaf {
+      transform-origin: 50px 18px;
+      animation: mascot-leaf 5s ease-in-out infinite;
+    }
+    .mascot-arms-working {
+      transform-origin: 50px 71px;
+      animation: mascot-typing 2.8s ease-in-out infinite;
+    }
+    body[data-timer-running="false"] .mascot-body { fill: #9daac4; }
+    body[data-timer-running="false"] .mascot-face-awake,
+    body[data-timer-running="false"] .mascot-arms-working { opacity: 0; }
+    body[data-timer-running="false"] .mascot-face-rest,
+    body[data-timer-running="false"] .mascot-arms-rest { opacity: 1; }
+    body[data-timer-running="false"] .mascot-laptop { opacity: .48; }
     body[data-focus-reminder="true"] {
       background: #67430d;
       animation: focus-reminder-background 2s ease-in-out infinite;
     }
-    body[data-focus-reminder="true"] .dot {
-      background: #fbbf24;
-      box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.4);
+    body[data-focus-reminder="true"] .mascot {
       animation: focus-reminder 2s ease-in-out infinite;
     }
     body[data-focus-reminder="true"] .focus-label {
@@ -168,9 +180,18 @@ const PiP = (() => {
     @media (max-width: 480px) {
       .title { display: none; }
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px 2px rgba(99,102,241,0.6); }
-      50%       { opacity: 0.7; transform: scale(0.8); box-shadow: 0 0 4px 1px rgba(99,102,241,0.3); }
+    @keyframes mascot-breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.015, .985); }
+    }
+    @keyframes mascot-leaf {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(4deg); }
+    }
+    @keyframes mascot-typing {
+      0%, 100% { transform: translateY(0); }
+      20%, 60% { transform: translateY(-1.3px); }
+      40%, 80% { transform: translateY(.5px); }
     }
     @keyframes focus-reminder {
       0%, 100% { opacity: 1; }
@@ -186,14 +207,60 @@ const PiP = (() => {
       100% { background-position: 250% 0, 250% 0; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .dot, body[data-focus-reminder="true"], body[data-focus-reminder="true"] .dot,
+      .mascot-character, .mascot-leaf, .mascot-arms-working,
+      body[data-focus-reminder="true"], body[data-focus-reminder="true"] .mascot,
       body[data-focus-reminder="true"] .focus-label { animation: none; }
       body[data-timer-running="true"] .focus-fill::after { display: none; animation: none; }
-      .progress-fill { transition: none; }
+      .progress-fill, .mascot-body, .mascot-face-awake, .mascot-face-rest,
+      .mascot-laptop, .mascot-arms-working, .mascot-arms-rest { transition: none; }
     }
   `;
 
   let openRequestId = 0;
+
+  function createMascot(doc) {
+    const namespace = 'http://www.w3.org/2000/svg';
+    function element(tag, attributes = {}, children = []) {
+      const node = doc.createElementNS(namespace, tag);
+      Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
+      node.append(...children);
+      return node;
+    }
+    const arms = () => [
+      element('path', { d: 'M29 65 C24 68 26 75 35 76 L42 75 L40 70 L34 71Z' }),
+      element('path', { d: 'M71 65 C76 68 74 75 65 76 L58 75 L60 70 L66 71Z' }),
+    ];
+    const svg = element('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true' }, [
+      element('g', { class: 'mascot-character' }, [
+        element('g', { class: 'mascot-leaf' }, [
+          element('path', { d: 'M50 24 C50 17 51 12 55 8', fill: 'none', stroke: '#80c9ab', 'stroke-width': '2.8', 'stroke-linecap': 'round' }),
+          element('path', { d: 'M52 17 C44 17 42 13 42 8 C49 8 53 11 52 17Z', fill: '#80c9ab' }),
+          element('path', { d: 'M53 13 C54 6 59 4 64 5 C63 11 59 14 53 13Z', fill: '#a2e3bf' }),
+        ]),
+        element('path', { class: 'mascot-body', d: 'M23 66 C21 43 31 23 50 23 C69 23 79 43 77 66 C76 80 66 88 50 88 C34 88 24 80 23 66Z' }),
+        element('ellipse', { cx: '50', cy: '72', rx: '18', ry: '12', fill: '#dddfff', opacity: '.27' }),
+        element('g', { class: 'mascot-face-awake', fill: '#303952' }, [
+          element('ellipse', { cx: '42', cy: '52', rx: '2.4', ry: '3.1' }),
+          element('ellipse', { cx: '58', cy: '52', rx: '2.4', ry: '3.1' }),
+          element('path', { d: 'M47 58 Q50 60.5 53 58', fill: 'none', stroke: '#303952', 'stroke-width': '1.8', 'stroke-linecap': 'round' }),
+        ]),
+        element('g', { class: 'mascot-face-rest', fill: 'none', stroke: '#303952', 'stroke-width': '2', 'stroke-linecap': 'round' }, [
+          element('path', { d: 'M39 52 Q42 55 45 52 M55 52 Q58 55 61 52 M47 59 Q50 61 53 59' }),
+        ]),
+        element('g', { class: 'mascot-arms-working', fill: '#858acb' }, arms()),
+        element('g', { class: 'mascot-arms-rest', fill: '#858acb' }, arms()),
+        element('g', { class: 'mascot-laptop' }, [
+          element('path', { d: 'M34 65 Q33 63 36 63 H64 Q67 63 66 65 L64 78 H36Z', fill: '#465176', stroke: '#c1c8f2', 'stroke-width': '1.4' }),
+          element('path', { d: 'M32 79 H68', stroke: '#c1c8f2', 'stroke-width': '2.5', 'stroke-linecap': 'round' }),
+          element('circle', { cx: '50', cy: '71', r: '1.5', fill: '#a5a9ed' }),
+        ]),
+      ]),
+    ]);
+    const mascot = doc.createElement('div');
+    mascot.className = 'mascot';
+    mascot.appendChild(svg);
+    return mascot;
+  }
 
   function formatFocusDuration(ms) {
     const minutes = Math.floor(ms / 60000);
@@ -231,8 +298,7 @@ const PiP = (() => {
       style.textContent = CSS;
       doc.head.appendChild(style);
 
-      const dot = doc.createElement('div');
-      dot.className = 'dot';
+      const mascot = createMascot(doc);
 
       const timeEl = doc.createElement('span');
       timeEl.className = 'time';
@@ -298,7 +364,7 @@ const PiP = (() => {
         else Timer.start(activeBoardCardId);
       });
 
-      doc.body.appendChild(dot);
+      doc.body.appendChild(mascot);
       doc.body.appendChild(timeEl);
       doc.body.appendChild(titleEl);
       doc.body.appendChild(progressStack);
@@ -348,7 +414,7 @@ const PiP = (() => {
         const remind = !running && focus !== null && focus.differenceMs !== null &&
           focus.differenceMs < 0 && Settings.isWorkTime(now);
         doc.body.setAttribute('data-focus-reminder', String(remind && Settings.shouldShowFocusReminder()));
-        dot.title = running ? 'Focusing' :
+        mascot.title = running ? 'Focusing' :
           remind && Settings.shouldShowBehindPace() ? 'Paused - behind focus goal. Resume focus.' : 'Paused';
         if (remind && Settings.shouldPlayFocusReminder()) {
           const minutes = Settings.getFocusReminderIntervalMinutes();

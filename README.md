@@ -2,6 +2,10 @@
 
 A Chrome extension to help you stay focused on one issue at a time and easily track the time you invest in each one — directly from your **GitHub Projects board**, no external tools, no context switching.
 
+![A small sprout companion working at a laptop](docs/mascot-preview.png)
+
+Meet your little focus companion: a sprout that works alongside you in Picture-in-Picture and rests when you pause.
+
 ![Screenshot](docs/screenshot.png)
 
 ---
@@ -57,7 +61,7 @@ The original title is restored when the timer stops.
 
 Click **⧉** in the floating bar to open an always-on-top mini window that floats above everything — even other apps. The extension requests a full-width, low-height window, but Chrome may limit its dimensions.
 
-- Shows a slow-pulsing dot + live timer
+- Shows a sprout companion and live timer; the sprout works while focusing and rests when paused
 - Shows the issue title and a pause/resume button
 - Displays a proportional daily timeline with colored work intervals, dark breaks, and a white current-time marker; the percentage counts only scheduled work hours
 - Optionally shows a second focus-goal bar with a percentage aligned with the day's percentage; hover for focus hours, the daily target, and, if enabled, pace comparison
@@ -135,7 +139,7 @@ Turn off both indicators and reminders to show only focus and day progress witho
 
 #### Focus reminders
 
-In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. This setting is off by default.
+In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the sprout and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. This setting is off by default.
 
 Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 
