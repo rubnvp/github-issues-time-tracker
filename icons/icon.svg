@@ -1,24 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-  <!-- Background rounded square -->
-  <rect width="48" height="48" rx="10" fill="#1a1f2e"/>
-
-  <!-- Clock circle -->
-  <circle cx="24" cy="26" r="14" fill="none" stroke="#58a6ff" stroke-width="2.2"/>
-
-  <!-- Clock tick marks -->
-  <line x1="24" y1="14" x2="24" y2="16.5" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round"/>
-  <line x1="24" y1="35.5" x2="24" y2="38" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round"/>
-  <line x1="12" y1="26" x2="14.5" y2="26" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round"/>
-  <line x1="33.5" y1="26" x2="36" y2="26" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round"/>
-
-  <!-- Clock hands -->
-  <line x1="24" y1="26" x2="24" y2="19" stroke="#e6edf3" stroke-width="2" stroke-linecap="round"/>
-  <line x1="24" y1="26" x2="29" y2="29" stroke="#3fb950" stroke-width="2" stroke-linecap="round"/>
-
-  <!-- Center dot -->
-  <circle cx="24" cy="26" r="1.8" fill="#e6edf3"/>
-
-  <!-- Play triangle (top-left badge) -->
-  <circle cx="13" cy="11" r="7" fill="#3fb950"/>
-  <polygon points="11,8 11,14 17,11" fill="#1a1f2e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="21" fill="#1a1f2e"/>
+  <g transform="translate(-5 -3) scale(1.1)">
+    <path d="M50 24 C50 17 51 12 55 8" fill="none" stroke="#80c9ab" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M52 17 C44 17 42 13 42 8 C49 8 53 11 52 17Z" fill="#80c9ab"/>
+    <path d="M53 13 C54 6 59 4 64 5 C63 11 59 14 53 13Z" fill="#a2e3bf"/>
+    <path d="M23 66 C21 43 31 23 50 23 C69 23 79 43 77 66 C76 80 66 88 50 88 C34 88 24 80 23 66Z" fill="#a5a9ed"/>
+    <ellipse cx="42" cy="52" rx="3.8" ry="4.3" fill="#303952"/>
+    <ellipse cx="58" cy="52" rx="3.8" ry="4.3" fill="#303952"/>
+    <path d="M45 60 Q50 64 55 60 Q50 68 45 60Z" fill="#303952"/>
+  </g>
 </svg>
