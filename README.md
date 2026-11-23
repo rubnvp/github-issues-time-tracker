@@ -109,7 +109,9 @@ Both PiP options are off by default. Keeping PiP open does not automatically reo
 
 Enable **Show focus goal progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
 
-A second thin bar shows goal completion as a percentage and a white expected-pace marker: green means on pace or ahead, amber means behind. Hover over the focus bar or percentage for focus hours, the goal, and the pace difference. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. Breaks pause the expected pace.
+A second thin bar shows goal completion as a percentage and a white expected-pace marker. While focusing, the bar and percentage stay green, even when behind, with a subtle left-to-right charging shimmer as positive reinforcement. Reduced-motion preferences disable the shimmer. When paused, green means on pace or ahead, amber means behind, and a neutral color means there is no schedule to compare against. The animation never changes the actual percentage or expected-pace marker.
+
+Hover over the focus bar or percentage for focus hours, the goal, and the pace difference, including while focusing. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. Breaks pause the expected pace.
 
 On days without work hours, goal progress still appears, without a pace comparison. The feature is off by default and updates in an already-open PiP when settings change.
 

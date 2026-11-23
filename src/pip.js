@@ -119,7 +119,11 @@ const PiP = (() => {
       flex-shrink: 0;
     }
     .focus-track { height: 5px; }
-    .focus-fill { background: #94a3b8; }
+    .focus-fill {
+      position: relative;
+      overflow: hidden;
+      background: #94a3b8;
+    }
     .focus-progress[data-pace="ahead"] .focus-fill { background: #34d399; }
     .focus-progress[data-pace="behind"] .focus-fill { background: #fbbf24; }
     .focus-label {
@@ -128,6 +132,17 @@ const PiP = (() => {
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
     .focus-progress[data-pace="behind"] .focus-label { color: #fbbf24; }
+    body[data-timer-running="true"] .focus-progress .focus-fill { background: #34d399; }
+    body[data-timer-running="true"] .focus-progress .focus-label { color: #34d399; }
+    body[data-timer-running="true"] .focus-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.28) 50%, transparent 80%);
+      transform: translateX(-100%);
+      animation: focus-charge 3s ease-in-out infinite;
+      pointer-events: none;
+    }
     .pause-btn {
       width: 22px;
       height: 22px;
@@ -159,9 +174,14 @@ const PiP = (() => {
       0%, 100% { background-color: #1a1f2e; }
       50% { background-color: #78520e; }
     }
+    @keyframes focus-charge {
+      0% { transform: translateX(-100%); }
+      75%, 100% { transform: translateX(100%); }
+    }
     @media (prefers-reduced-motion: reduce) {
       .dot, body[data-focus-reminder="true"], body[data-focus-reminder="true"] .dot,
       body[data-focus-reminder="true"] .focus-label { animation: none; }
+      body[data-timer-running="true"] .focus-fill::after { display: none; animation: none; }
       .progress-fill { transition: none; }
     }
   `;
