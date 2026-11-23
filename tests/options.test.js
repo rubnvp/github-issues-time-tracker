@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source = await readFile(new URL('../src/options.js', import.meta.url), 'utf8');
 
-async function createOptions(comparisonEnabled) {
+async function createOptions() {
   const elements = new Map();
   function element() {
     return {
@@ -23,7 +23,6 @@ async function createOptions(comparisonEnabled) {
     },
     createElement: element,
   };
-  let enabled = comparisonEnabled;
   let ahead = true;
   let behind = true;
   let failSave = false;
@@ -33,7 +32,6 @@ async function createOptions(comparisonEnabled) {
     ready: Promise.resolve(),
     shouldOpenPip: () => false,
     shouldKeepPipOpen: () => false,
-    shouldCompareFocusPace: () => enabled,
     shouldShowAheadPace: () => ahead,
     shouldShowBehindPace: () => behind,
     shouldShowFocusReminder: () => true,
@@ -42,10 +40,6 @@ async function createOptions(comparisonEnabled) {
     getFocusGoal: () => ({ enabled: true, hours: 4 }),
     getWeeklySchedule: () => ({}),
     getScheduleTotals: () => ({ dailyMinutes: {}, weeklyMinutes: 0 }),
-    async setFocusPaceComparisonEnabled(value) {
-      if (failSave) throw new Error('storage error');
-      enabled = value;
-    },
     async setFocusPaceAheadEnabled(value) {
       if (failSave) throw new Error('storage error');
       ahead = value;
@@ -61,10 +55,6 @@ async function createOptions(comparisonEnabled) {
   return {
     get: id => elements.get(id),
     failSave() { failSave = true; },
-    externalChange(value) {
-      enabled = value;
-      onChanged({ focusPaceComparisonEnabled: { newValue: value } }, 'local');
-    },
     externalBehindChange(value) {
       behind = value;
       onChanged({ focusPaceBehindEnabled: { newValue: value } }, 'local');
@@ -72,39 +62,8 @@ async function createOptions(comparisonEnabled) {
   };
 }
 
-test('pace controls reflect saved and external changes without changing reminder choices', async () => {
-  const options = await createOptions(false);
-  const comparison = options.get('focus-pace-comparison');
-  const reminders = options.get('focus-reminder-controls');
-  const paceControls = options.get('focus-pace-controls');
-  const notice = options.get('focus-reminders-disabled');
-  assert.equal(comparison.checked, false);
-  assert.equal(reminders.disabled, true);
-  assert.equal(paceControls.disabled, true);
-  assert.equal(notice.hidden, false);
-  assert.equal(options.get('focus-reminder-visual').checked, true);
-  assert.equal(options.get('focus-reminder-sound').checked, true);
-
-  comparison.checked = true;
-  await comparison.listeners.change();
-  assert.equal(reminders.disabled, false);
-  assert.equal(paceControls.disabled, false);
-  assert.equal(notice.hidden, true);
-  options.externalChange(false);
-  assert.equal(comparison.checked, false);
-  assert.equal(reminders.disabled, true);
-  assert.equal(options.get('focus-reminder-sound').checked, true);
-
-  options.failSave();
-  comparison.checked = true;
-  await comparison.listeners.change();
-  assert.equal(comparison.checked, false);
-  assert.equal(reminders.disabled, true);
-  assert.equal(options.get('save-status').textContent, 'Unable to save focus pace setting.');
-});
-
 test('settings sections show only their own controls without changing preferences', async () => {
-  const options = await createOptions(true);
+  const options = await createOptions();
   const ids = ['pip-section', 'focus-goal-section', 'work-schedule-section',
     'focus-comparison-section', 'focus-reminders-section'];
   const visibility = () => ids.map(id => !options.get(id).hidden);
@@ -114,14 +73,15 @@ test('settings sections show only their own controls without changing preference
   assert.deepEqual(visibility(), [false, true, true, false, false]);
   choose('pace');
   assert.deepEqual(visibility(), [false, false, false, true, true]);
-  assert.equal(options.get('focus-pace-comparison').checked, true);
+  assert.equal(options.get('focus-pace-ahead').checked, true);
+  assert.equal(options.get('focus-pace-behind').checked, true);
   assert.equal(options.get('focus-reminder-sound').checked, true);
   choose('general');
   assert.deepEqual(visibility(), [true, false, false, false, false]);
 });
 
 test('pace indicator choices are independent, saved, and restored on failure', async () => {
-  const options = await createOptions(true);
+  const options = await createOptions();
   const ahead = options.get('focus-pace-ahead');
   const behind = options.get('focus-pace-behind');
   assert.equal(ahead.checked, true);
@@ -132,8 +92,6 @@ test('pace indicator choices are independent, saved, and restored on failure', a
   assert.equal(behind.checked, true);
   options.externalBehindChange(false);
   assert.equal(behind.checked, false);
-  options.externalChange(false);
-  options.externalChange(true);
   assert.equal(ahead.checked, false);
   assert.equal(behind.checked, false);
   options.failSave();

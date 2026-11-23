@@ -105,7 +105,7 @@ Choose a card to view one group of settings:
 - **Workday:** the daily focus goal and work schedule.
 - **Pace:** pace comparison and focus reminders.
 
-Switching sections only changes what's visible in Settings; enabled features continue working. Settings and recorded sessions are preserved. Previously saved options that were inactive because of a lower usage level are active again. Automatic PiP and both reminder types are off by default for new installations.
+Switching sections only changes what's visible in Settings; enabled features continue working. Automatic PiP and both reminder types are off by default.
 
 #### Picture-in-Picture
 
@@ -119,7 +119,7 @@ Both PiP options are off by default. Keeping PiP open does not automatically reo
 
 Enable **Show focus progress in PiP** to see today's focus against a single daily goal (2 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
 
-A second thin bar shows goal completion as a percentage. While focusing, the bar and percentage stay green, even when behind. Two clearly visible light-green sweeps move to the right in a 3-second cycle, following the motion of [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16). Reduced-motion preferences disable the animation. With pace comparison disabled, paused focus progress is a softer green. The animation stays inside the filled portion and never changes the actual percentage or expected-pace marker.
+A second thin bar shows goal completion as a percentage. While focusing, the bar and percentage stay green, even when behind. Two clearly visible light-green sweeps move to the right in a 3-second cycle, following the motion of [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16). Reduced-motion preferences disable the animation. When the current pace indicator is disabled, paused focus progress is a softer green. The animation stays inside the filled portion and never changes the actual percentage or expected-pace marker.
 
 Both percentages show two decimal places and refresh every second. Rounding may leave displayed values unchanged on consecutive refreshes. The focus percentage reflects recorded focus time, not simulated progress; pausing stops its increase. The day percentage counts only elapsed scheduled work time, excluding schedule gaps; pausing the focus timer does not stop day progress.
 
@@ -127,17 +127,17 @@ Hover over the focus bar or percentage for focus hours and the goal, plus the pa
 
 #### Focus pace
 
-Enable **Compare with a steady pace** to compare focus against your work schedule. It assumes focus is spread evenly over scheduled work time, not breaks. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. The white marker shows this expected pace; when paused, green means on pace or ahead and amber means behind.
+Pace compares focus against your work schedule, assuming focus is spread evenly over scheduled work time, not breaks. Set an enabled focus goal and work hours in Workday. For example, halfway through an 8-hour scheduled day, a 4-hour focus goal expects 2 hours of focus. The white marker shows this expected pace; when paused, green means on pace or ahead and amber means behind.
 
 Choose separately whether to show the indicator **when on track or ahead** and **when behind**. Both are on by default. Turning either off hides the marker, pace details and comparison colors for that state; paused focus progress is shown in a softer green instead. The visual and sound reminders remain independently configurable and may still alert you when behind, even if the behind indicator is hidden.
 
-Comparison is off by default for new installations; existing installations keep their previous behavior. When disabled, the focus bar, percentage, and day progress remain visible, but the pace marker, pace details, amber state, and focus reminders are suppressed. Reminder preferences are preserved and become active again when comparison is enabled.
+Turn off both indicators and reminders to show only focus and day progress without pace feedback.
 
 #### Focus reminders
 
-In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours with pace comparison enabled. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. New installations have this setting off by default; existing installations retain the previous enabled behavior.
+In Pace, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. This setting is off by default.
 
-Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, pace comparison is enabled, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
+Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 
 Set **Sound interval (minutes)** to any whole number of minutes of at least 1; the default is **1 minute**. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
 

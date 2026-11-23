@@ -14,12 +14,6 @@ let tickInterval = null;
 let activeTimer = null;  // { boardCardId, title, tabId, startTime }
 let lastKnownTabId = null; // last tab that sent us any content-script message
 
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason !== 'install') return;
-  chrome.storage.local.set({ focusReminderVisualEnabled: false, focusPaceComparisonEnabled: false })
-    .catch(error => console.error('Unable to initialize reminder settings', error));
-});
-
 function formatBadge(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const totalMinutes = Math.floor(totalSeconds / 60);

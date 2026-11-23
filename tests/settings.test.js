@@ -213,26 +213,24 @@ test('focus goal persists fractional hours, reacts to settings changes, and reje
   assert.equal(settings.getFocusProgress(3600000), null);
 });
 
-test('pace comparison can be disabled without changing the focus goal or workday progress', async () => {
+test('pace uses the workday schedule without an extra comparison setting', async () => {
   const { settings, data, notifyChanged } = createSettings({
     focusGoal: { enabled: true, hours: 4 },
     weeklySchedule: { monday: [{ start: '09:00', end: '17:00' }] },
+    focusPaceComparisonEnabled: false,
   });
   await settings.ready;
   const now = new Date(2026, 0, 5, 11);
-  assert.equal(settings.shouldCompareFocusPace(), true);
   assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
-  await settings.setFocusPaceComparisonEnabled(false);
-  assert.equal(data.focusPaceComparisonEnabled, false);
   const focus = settings.getFocusProgress(3600000, now);
   assert.equal(focus.progress, 0.25);
-  assert.equal(focus.comparisonEnabled, false);
-  assert.equal(focus.expectedProgress, null);
-  assert.equal(focus.differenceMs, null);
+  assert.equal(focus.expectedProgress, 0.25);
+  assert.equal(focus.differenceMs, 0);
   assert.equal(settings.getDailyProgress(now), 0.25);
   assert.equal(settings.getDailyTimeline(now).position, 0.25);
-  notifyChanged({ focusPaceComparisonEnabled: { newValue: true } });
+  notifyChanged({ focusPaceComparisonEnabled: { newValue: false } });
   assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
+  assert.equal(data.focusPaceComparisonEnabled, false);
 });
 
 test('pace indicator preferences default on, persist independently, and follow external changes', async () => {
@@ -268,25 +266,14 @@ test('work-time reminders exclude breaks, workday end, and unscheduled days', as
   assert.equal(settings.isWorkTime(new Date(2026, 0, 6, 10)), false);
 });
 
-test('previously inactive features use their saved settings regardless of the old usage level', async () => {
-  for (const usageProfile of ['basic', 'support', 'tracking']) {
-    const { settings, data, notifyChanged } = createSettings({
-      usageProfile,
-      focusGoal: { enabled: true, hours: 4 },
-      focusReminderSoundEnabled: true,
-      weeklySchedule: { monday: [{ start: '09:00', end: '17:00' }] },
-    });
-    await settings.ready;
-    const now = new Date(2026, 0, 5, 11);
-    assert.equal(settings.getDailyProgress(now), 0.25);
-    assert.equal(settings.getFocusProgress(0, now).differenceMs, -3600000);
-    assert.equal(settings.isWorkTime(now), true);
-    assert.equal(settings.shouldPlayFocusReminder(), true);
-    notifyChanged({ usageProfile: { newValue: 'basic' } });
-    assert.equal(settings.getDailyProgress(now), 0.25);
-    assert.equal(data.weeklySchedule.monday[0].start, '09:00');
-    assert.equal(data.focusGoal.hours, 4);
-  }
+test('visual reminders are opt-in', async () => {
+  const { settings, notifyChanged } = createSettings();
+  await settings.ready;
+  assert.equal(settings.shouldShowFocusReminder(), false);
+  await settings.setFocusReminderVisualEnabled(true);
+  assert.equal(settings.shouldShowFocusReminder(), true);
+  notifyChanged({ focusReminderVisualEnabled: { newValue: undefined } });
+  assert.equal(settings.shouldShowFocusReminder(), false);
 });
 
 test('reminder interval persists, follows live changes, and rejects invalid minutes', async () => {

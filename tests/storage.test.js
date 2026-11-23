@@ -45,3 +45,8 @@ test('daily focus resets at local midnight even while a session continues', () =
   assert.equal(storage.getDailyFocusMs(new Date(2026, 0, 6, 0)), 0);
   assert.equal(storage.getDailyFocusMs(new Date(2026, 0, 6, 0, 30)), 1800000);
 });
+
+test('invalid timer state is not silently replaced with empty sessions', () => {
+  const storage = createStorage({ 'gitt:issue': { totalMs: 1000 } });
+  assert.throws(() => storage.load('issue'), /Invalid timer state/);
+});

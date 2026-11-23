@@ -21,14 +21,14 @@ class Element {
   addEventListener(name, callback) { this.listeners.set(name, callback); }
 }
 
-async function createHarness(keepPipOpen = true, usageProfile = 'tracking') {
+async function createHarness(keepPipOpen = true) {
   let now = new Date(2026, 0, 5, 11).getTime();
   let nextInterval = 0;
   const intervals = new Map();
   const localData = new Map();
   const extensionData = {
     keepPipOpen,
-    usageProfile,
+    focusReminderVisualEnabled: true,
     focusGoal: { enabled: true, hours: 4 },
     weeklySchedule: {
       monday: [{ start: '09:00', end: '12:00' }, { start: '13:00', end: '18:00' }],
@@ -204,22 +204,6 @@ test('focus percentage uses two decimals across goals and freezes when paused', 
   assert.equal(label.textContent, '0.11%');
 });
 
-test('saved focus progress, schedule, and reminders work with a previously basic usage level', async () => {
-  const h = await createHarness(true, 'basic');
-  await h.settings.setFocusReminderSoundEnabled(true);
-  h.timer.start('first');
-  await h.pip.open('first');
-  h.timer.stop('first');
-  const body = h.windows[0].document.body;
-  const stack = body.children.find(el => el.className === 'progress-stack');
-  assert.equal(stack.children.find(el => el.className === 'progress').hidden, false);
-  assert.equal(stack.children.find(el => el.className === 'focus-progress').hidden, false);
-  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
-  h.setTime(11, 1);
-  h.tick();
-  assert.equal(h.reminders, 1);
-});
-
 test('visual reminder can be disabled independently of the optional sound', async () => {
   const h = await createHarness();
   await h.settings.setFocusReminderVisualEnabled(false);
@@ -237,9 +221,12 @@ test('visual reminder can be disabled independently of the optional sound', asyn
   assert.equal(body.attributes.get('data-focus-reminder'), 'true');
 });
 
-test('disabling pace comparison hides it and stops reminders without hiding progress', async () => {
+test('disabling both indicators and reminders leaves progress visible', async () => {
   const h = await createHarness();
-  await h.settings.setFocusReminderSoundEnabled(true);
+  await h.settings.setFocusPaceAheadEnabled(false);
+  await h.settings.setFocusPaceBehindEnabled(false);
+  await h.settings.setFocusReminderVisualEnabled(false);
+  await h.settings.setFocusReminderSoundEnabled(false);
   h.timer.start('first');
   await h.pip.open('first');
   h.timer.stop('first');
@@ -248,12 +235,7 @@ test('disabling pace comparison hides it and stops reminders without hiding prog
   const day = stack.children.find(el => el.className === 'progress');
   const focus = stack.children.find(el => el.className === 'focus-progress');
   const [track, label] = focus.children;
-  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
-  assert.equal(focus.attributes.get('data-pace'), 'behind');
-  assert.equal(track.children[1].hidden, false);
-
   h.setTime(11, 0, 30);
-  await h.settings.setFocusPaceComparisonEnabled(false);
   h.tick();
   assert.equal(day.hidden, false);
   assert.equal(day.children[1].textContent, '25.10%');
@@ -276,17 +258,6 @@ test('disabling pace comparison hides it and stops reminders without hiding prog
   h.tick();
   assert.equal(body.attributes.get('data-timer-running'), 'false');
 
-  await h.settings.setFocusPaceComparisonEnabled(true);
-  h.tick();
-  assert.equal(focus.attributes.get('data-pace'), 'behind');
-  assert.equal(track.children[1].hidden, false);
-  assert.equal(body.attributes.get('data-focus-reminder'), 'true');
-  h.setTime(11, 5, 59);
-  h.tick();
-  assert.equal(h.reminders, 0);
-  h.setTime(11, 6);
-  h.tick();
-  assert.equal(h.reminders, 1);
 });
 
 test('pace indicators can be hidden independently without disabling reminders', async () => {

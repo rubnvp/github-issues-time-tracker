@@ -314,8 +314,8 @@ const PiP = (() => {
         const percent = (focus.progress * 100).toFixed(2);
         focusFill.style.width = `${focus.progress * 100}%`;
         focusTrack.setAttribute('aria-valuenow', String(percent));
-        let pace = focus.comparisonEnabled === false ? null : 'No schedule';
-        let state = focus.comparisonEnabled === false ? 'uncompared' : 'neutral';
+        let pace = 'No schedule';
+        let state = 'neutral';
         let showPace = false;
         if (focus.differenceMs !== null) {
           const ahead = focus.differenceMs >= 0;

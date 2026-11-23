@@ -15,8 +15,7 @@ const Settings = (() => {
   let autoPipEnabled = false;
   let keepPipOpen = false;
   let focusReminderSoundEnabled = false;
-  let focusReminderVisualEnabled = true;
-  let focusPaceComparisonEnabled = true;
+  let focusReminderVisualEnabled = false;
   let focusPaceAheadEnabled = true;
   let focusPaceBehindEnabled = true;
   let focusReminderIntervalMinutes = 1;
@@ -74,8 +73,7 @@ const Settings = (() => {
     autoPipEnabled: false,
     keepPipOpen: false,
     focusReminderSoundEnabled: false,
-    focusReminderVisualEnabled: true,
-    focusPaceComparisonEnabled: true,
+    focusReminderVisualEnabled: false,
     focusPaceAheadEnabled: true,
     focusPaceBehindEnabled: true,
     focusReminderIntervalMinutes: 1,
@@ -86,7 +84,6 @@ const Settings = (() => {
     keepPipOpen = settings.keepPipOpen === true;
     focusReminderSoundEnabled = settings.focusReminderSoundEnabled === true;
     focusReminderVisualEnabled = settings.focusReminderVisualEnabled === true;
-    focusPaceComparisonEnabled = settings.focusPaceComparisonEnabled === true;
     focusPaceAheadEnabled = settings.focusPaceAheadEnabled === true;
     focusPaceBehindEnabled = settings.focusPaceBehindEnabled === true;
     focusReminderIntervalMinutes = settings.focusReminderIntervalMinutes;
@@ -102,10 +99,7 @@ const Settings = (() => {
       focusReminderSoundEnabled = changes.focusReminderSoundEnabled.newValue === true;
     }
     if (changes.focusReminderVisualEnabled) {
-      focusReminderVisualEnabled = changes.focusReminderVisualEnabled.newValue !== false;
-    }
-    if (changes.focusPaceComparisonEnabled) {
-      focusPaceComparisonEnabled = changes.focusPaceComparisonEnabled.newValue !== false;
+      focusReminderVisualEnabled = changes.focusReminderVisualEnabled.newValue === true;
     }
     if (changes.focusPaceAheadEnabled) {
       focusPaceAheadEnabled = changes.focusPaceAheadEnabled.newValue !== false;
@@ -140,10 +134,6 @@ const Settings = (() => {
       return focusReminderVisualEnabled;
     },
 
-    shouldCompareFocusPace() {
-      return focusPaceComparisonEnabled;
-    },
-
     shouldShowAheadPace() {
       return focusPaceAheadEnabled;
     },
@@ -168,12 +158,11 @@ const Settings = (() => {
       if (!focusGoal.enabled) return null;
 
       const goalMs = focusGoal.hours * 3600000;
-      const expectedProgress = focusPaceComparisonEnabled ? this.getDailyProgress(date) : null;
+      const expectedProgress = this.getDailyProgress(date);
       return {
         focusMs,
         goalMs,
         progress: Math.min(1, focusMs / goalMs),
-        comparisonEnabled: focusPaceComparisonEnabled,
         expectedProgress,
         differenceMs: expectedProgress === null ? null : focusMs - goalMs * expectedProgress,
       };
@@ -272,11 +261,6 @@ const Settings = (() => {
     async setFocusReminderVisualEnabled(enabled) {
       await chrome.storage.local.set({ focusReminderVisualEnabled: enabled });
       focusReminderVisualEnabled = enabled;
-    },
-
-    async setFocusPaceComparisonEnabled(enabled) {
-      await chrome.storage.local.set({ focusPaceComparisonEnabled: enabled });
-      focusPaceComparisonEnabled = enabled;
     },
 
     async setFocusPaceAheadEnabled(enabled) {

@@ -87,17 +87,8 @@
 
       <section id="focus-comparison-section" class="options__section" hidden>
         <h2>Focus pace</h2>
-        <label class="options__setting">
-          <input id="focus-pace-comparison" type="checkbox">
-          <span class="options__setting-copy">
-            <span class="options__setting-title">Compare with a steady pace</span>
-            <span class="options__setting-description">
-              Compare focus with an even pace across work hours. Requires an enabled focus goal and work hours in Workday.
-            </span>
-          </span>
-        </label>
-        <p id="focus-pace-disabled" class="options__goal-help" hidden>Enable pace comparison to choose indicators. Your choices are saved.</p>
-        <fieldset id="focus-pace-controls" class="options__controls options__dependent options__pace-controls" aria-label="Pace indicator options">
+        <p class="options__description">Pace assumes focus is spread evenly across work hours. Enable a focus goal and set work hours in Workday to compare.</p>
+        <fieldset class="options__controls" aria-label="Pace indicator options">
           <label class="options__setting">
             <input id="focus-pace-ahead" type="checkbox">
             <span class="options__setting-copy">
@@ -117,9 +108,8 @@
 
       <section id="focus-reminders-section" class="options__section" hidden>
         <h2>Focus reminders</h2>
-        <p class="options__description">Reminders work independently of the indicators. They require an open PiP, a focus goal and pace comparison, and activate when paused and behind during work hours.</p>
-        <p id="focus-reminders-disabled" class="options__description" hidden>Enable pace comparison to use reminders. Your reminder settings are saved.</p>
-        <fieldset id="focus-reminder-controls" class="options__controls options__dependent" aria-label="Focus reminder options">
+        <p class="options__description">Reminders work independently of the indicators. They require an open PiP and a focus goal, and activate when paused and behind during work hours.</p>
+        <fieldset class="options__controls" aria-label="Focus reminder options">
           <label class="options__setting">
             <input id="focus-reminder-visual" type="checkbox">
             <span class="options__setting-copy">

@@ -35,14 +35,6 @@ body {
   border: 0;
 }
 
-.options__dependent:disabled {
-  opacity: 0.6;
-}
-
-.options__pace-controls {
-  margin-top: 10px;
-}
-
 .options__section {
   margin: 0 0 28px;
 }
