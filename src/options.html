@@ -32,37 +32,6 @@
             </span>
           </span>
         </label>
-        <label class="options__setting">
-          <input id="focus-reminder-sound" type="checkbox">
-          <span class="options__setting-copy">
-            <span class="options__setting-title">Play a focus reminder every 5 minutes</span>
-            <span class="options__setting-description">
-              With PiP open, play a gentle sound after 5 minutes paused and behind your focus goal, then repeat every 5 minutes. Reminders stop during breaks, outside work hours, or when you resume focusing.
-            </span>
-          </span>
-        </label>
-      </section>
-
-      <section class="options__section">
-        <h2>Daily progress bar</h2>
-        <p class="options__description">
-          Set local work hours for each day, using multiple intervals for breaks. PiP shows work intervals in color and breaks in dark, with a marker for the current time. The percentage counts only scheduled work hours and pauses during gaps, independently of time spent focusing.
-        </p>
-
-        <div class="options__copy">
-          <label>
-            <span>Copy schedule from</span>
-            <select id="copy-source"></select>
-          </label>
-          <label>
-            <span>Copy to</span>
-            <select id="copy-target"></select>
-          </label>
-          <button id="copy-schedule" type="button" disabled>Copy schedule</button>
-        </div>
-
-        <div id="weekly-schedule" class="options__days"></div>
-        <p id="weekly-total" class="options__weekly-total" role="status"></p>
       </section>
 
       <section class="options__section">
@@ -83,6 +52,41 @@
         <p class="options__goal-help">
           Green means on pace or ahead; amber means behind. The white mark shows the expected progress, which pauses during breaks. Without a work schedule, only goal progress is shown.
         </p>
+      </section>
+
+      <section class="options__section">
+        <h2>Focus reminders</h2>
+        <label class="options__setting">
+          <input id="focus-reminder-sound" type="checkbox">
+          <span class="options__setting-copy">
+            <span class="options__setting-title">Play a focus reminder every 5 minutes</span>
+            <span class="options__setting-description">
+              With PiP open, play a gentle sound after 5 minutes paused and behind your focus goal, then repeat every 5 minutes. Reminders stop during breaks, outside work hours, or when you resume focusing.
+            </span>
+          </span>
+        </label>
+      </section>
+
+      <section class="options__section">
+        <h2>Work schedule</h2>
+        <p class="options__description">
+          Set local work hours for each day, using multiple intervals for breaks. PiP shows work intervals in color and breaks in dark, with a marker for the current time. The percentage counts only scheduled work hours and pauses during gaps, independently of time spent focusing.
+        </p>
+
+        <div class="options__copy">
+          <label>
+            <span>Copy schedule from</span>
+            <select id="copy-source"></select>
+          </label>
+          <label>
+            <span>Copy to</span>
+            <select id="copy-target"></select>
+          </label>
+          <button id="copy-schedule" type="button" disabled>Copy schedule</button>
+        </div>
+
+        <p id="weekly-total" class="options__weekly-total" role="status"></p>
+        <div id="weekly-schedule" class="options__days"></div>
       </section>
     </fieldset>
 

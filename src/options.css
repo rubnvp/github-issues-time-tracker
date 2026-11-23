@@ -218,7 +218,7 @@ body {
 }
 
 .options__weekly-total {
-  margin: 16px 0 0;
+  margin: 0 0 14px;
   font-size: 14px;
   font-weight: 600;
   color: #a5b4fc;
