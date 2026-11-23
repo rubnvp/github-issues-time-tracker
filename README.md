@@ -61,7 +61,7 @@ Click **⧉** in the floating bar to open an always-on-top mini window that floa
 - Shows the issue title and a pause/resume button
 - Displays a proportional daily timeline with colored work intervals, dark breaks, and a white current-time marker; the percentage counts only scheduled work hours
 - Optionally shows a second focus-goal bar with a percentage aligned with the day's percentage; hover for focus hours, the daily target, and time ahead of or behind the expected pace
-- Closes when the timer is stopped unless **Keep PiP open while the timer is paused** is enabled
+- Closes when the timer is stopped unless **Keep PiP open when paused** is enabled
 
 > Requires Chrome 116+ and must be opened via a direct click (browser security requirement).
 
@@ -111,15 +111,15 @@ Lowering the level hides and deactivates its higher-level features without delet
 
 #### Picture-in-Picture
 
-Enable **Open PiP automatically when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
+Enable **Open PiP when starting a timer** to open PiP when clicking a card's play button, without using the floating bar button.
 
-Enable **Keep PiP open while the timer is paused** to keep the available progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window.
+Enable **Keep PiP open when paused** to keep the available progress bars updating without recording focus time. PiP displays "Paused" and a play button to resume the last issue; starting another issue updates the same window.
 
 Both PiP options are off by default. Keeping PiP open does not automatically reopen it after you close it manually.
 
 #### Daily focus goal
 
-Enable **Show focus goal progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
+Enable **Show focus progress in PiP** to compare today's focus with a single daily goal (4 hours by default, configurable and the same every day). All recorded focus across issues counts, including time outside work hours; sessions crossing midnight contribute only their portion within today.
 
 A second thin bar shows goal completion as a percentage and a white expected-pace marker. While focusing, the bar and percentage stay green, even when behind. Two clearly visible light-green sweeps move to the right in a 3-second cycle, following the motion of [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16). Reduced-motion preferences disable the animation. When paused, green means on pace or ahead, amber means behind, and a neutral color means there is no schedule to compare against. The animation stays inside the filled portion and never changes the actual percentage or expected-pace marker.
 
@@ -131,11 +131,11 @@ On days without work hours, goal progress still appears, without a pace comparis
 
 #### Focus reminders
 
-In Tracking, **Show a visual focus reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. New installations have this setting off by default; existing installations retain the previous enabled behavior.
+In Tracking, **Visual reminder** pulses the PiP background amber on a 2-second cycle, along with the dot and focus percentage, when paused and behind an enabled focus goal during scheduled work hours. Reduced-motion preferences disable the animations and keep the reminder background a steady amber instead. New installations have this setting off by default; existing installations retain the previous enabled behavior.
 
-Enable **Play a focus reminder sound** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
+Enable **Sound reminder** for a prominent alert: two bursts of three alternating tones, lasting about 1.6 seconds in total. The reminder uses a louder, brighter tone than the timer's start/stop sounds to help it stand out over other audio; actual audibility depends on your device volume and other media. Sound is off by default and requires all of the following: PiP is open, the timer is paused, an enabled focus goal is behind the expected pace, and the current time falls within a scheduled work interval.
 
-Set **Minutes between sound reminders** to any whole number of minutes of at least 1; the default is **1 minute**. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
+Set **Sound interval (minutes)** to any whole number of minutes of at least 1; the default is **1 minute**. The first chime comes after that interval under qualifying conditions, then repeats at approximately the same cadence without accumulating missed reminders. Changing the interval in an open PiP restarts the wait with the new value. Resuming focus, getting back on pace, disabling sound, or entering a break also resets the wait. Closing PiP stops its reminders. Browser throttling or computer sleep may delay sounds.
 
 #### Work schedule
 

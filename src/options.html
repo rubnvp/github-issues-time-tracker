@@ -9,12 +9,12 @@
 <body>
   <main class="options">
     <h1>Settings</h1>
-    <p class="options__intro">Customize how GitHub Issues Time Tracker behaves.</p>
+    <p class="options__intro">Choose how you track your time.</p>
 
     <fieldset id="settings-controls" class="options__controls" disabled>
       <section class="options__section">
         <h2 id="usage-level-heading">Usage level</h2>
-        <p class="options__description">Choose how much support you want. Higher levels include the features below them.</p>
+        <p class="options__description">Each level includes the features of the previous one.</p>
         <fieldset id="usage-profile" class="options__profiles" aria-labelledby="usage-level-heading">
           <label class="options__profile">
             <input type="radio" name="usage-profile" value="basic">
@@ -38,7 +38,7 @@
             </span>
           </label>
         </fieldset>
-        <p class="options__goal-help">Changing levels preserves your settings and recorded time. Options from higher levels are inactive until you return to them. Automatic PiP and reminders remain optional.</p>
+        <p class="options__goal-help">Higher-level features pause when you switch to a lower level. Your settings and recorded time are kept.</p>
       </section>
 
       <section class="options__section">
@@ -46,18 +46,18 @@
         <label class="options__setting">
           <input id="auto-pip" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Open PiP automatically when starting a timer</span>
+            <span class="options__setting-title">Open PiP when starting a timer</span>
             <span class="options__setting-description">
-              Open the Picture-in-Picture window when you click Play on a card.
+              Opens when you press Play on a card.
             </span>
           </span>
         </label>
         <label class="options__setting">
           <input id="keep-pip-open" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Keep PiP open while the timer is paused</span>
+            <span class="options__setting-title">Keep PiP open when paused</span>
             <span class="options__setting-description">
-              Keep PiP visible without tracking time and resume from it.
+              Keep progress visible and resume from PiP. Paused time is not tracked.
             </span>
           </span>
         </label>
@@ -68,46 +68,47 @@
         <label class="options__setting">
           <input id="focus-goal-enabled" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Show focus goal progress in PiP</span>
+            <span class="options__setting-title">Show focus progress in PiP</span>
             <span class="options__setting-description">
-              Count all focus recorded today. In Tracking, compare it with the expected pace of your scheduled day.
+              Count all focus time recorded today.
             </span>
           </span>
         </label>
         <label class="options__goal-hours">
-          <span>Focus hours per day (same goal every day)</span>
+          <span>Daily focus goal (hours)</span>
           <input id="focus-goal-hours" type="number" min="0" step="any" value="4" required disabled>
         </label>
         <p class="options__goal-help">
-          While focusing, the bar is green with two light-green sweeps moving to the right. The percentage shows two decimal places based on recorded focus time. Reduced-motion preferences disable the animation.
+          The goal is the same every day. Reduced-motion settings disable the bar animation.
         </p>
         <p id="focus-pace-help" class="options__goal-help" hidden>
-          When paused, green means on pace or ahead; amber means behind. The white mark shows expected progress, which pauses during breaks. Without a work schedule, only goal progress is shown.
+          With work hours set, the white marker shows your expected pace. When paused, green means on track; amber means behind.
         </p>
       </section>
 
       <section id="focus-reminders-section" class="options__section" hidden>
         <h2>Focus reminders</h2>
+        <p class="options__description">Reminders need an open PiP and an enabled focus goal. They activate when you're paused and behind pace during work hours, not during breaks.</p>
         <label class="options__setting">
           <input id="focus-reminder-visual" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Show a visual focus reminder</span>
+            <span class="options__setting-title">Visual reminder</span>
             <span class="options__setting-description">
-              With PiP open, pulse its background amber when paused and behind your focus goal during work hours. With reduced motion, the background stays amber.
+              Pulse the PiP background amber. With reduced motion, it stays amber.
             </span>
           </span>
         </label>
         <label class="options__setting">
           <input id="focus-reminder-sound" type="checkbox">
           <span class="options__setting-copy">
-            <span class="options__setting-title">Play a focus reminder sound</span>
+            <span class="options__setting-title">Sound reminder</span>
             <span class="options__setting-description">
-              With PiP open, play a prominent two-burst alert while paused and behind your focus goal. Reminders stop during breaks, outside work hours, or when you resume focusing.
+              Play a sound after the set interval, then repeat.
             </span>
           </span>
         </label>
         <label class="options__goal-hours">
-          <span>Minutes between sound reminders (1 by default)</span>
+          <span>Sound interval (minutes)</span>
           <input id="focus-reminder-interval" type="number" min="1" step="1" value="1" required disabled>
         </label>
       </section>
@@ -115,7 +116,7 @@
       <section id="work-schedule-section" class="options__section" hidden>
         <h2>Work schedule</h2>
         <p class="options__description">
-          Set local work hours for each day, using multiple intervals for breaks. PiP shows work intervals in color and breaks in dark, with a marker for the current time. The percentage counts only scheduled work hours and pauses during gaps, independently of time spent focusing.
+          Set work hours for each day in your local time. Add intervals to leave breaks; split overnight shifts across days. PiP shows the day's progress, excluding breaks and independently of focus time.
         </p>
 
         <div class="options__copy">
