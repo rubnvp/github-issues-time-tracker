@@ -199,7 +199,7 @@ test('focus goal compares all daily focus against workday pace and freezes expec
   assert.equal(settings.getFocusProgress(0, new Date(2026, 0, 5, 8)).expectedProgress, 0);
   assert.equal(settings.getFocusProgress(0, new Date(2026, 0, 5, 19)).expectedProgress, 1);
   const exceeded = settings.getFocusProgress(5 * 3600000, new Date(2026, 0, 5, 19));
-  assert.equal(exceeded.progress, 1);
+  assert.equal(exceeded.progress, 1.25);
   assert.equal(exceeded.focusMs, 5 * 3600000);
   assert.equal(exceeded.differenceMs, 3600000);
   const unscheduled = settings.getFocusProgress(3600000, new Date(2026, 0, 6, 12));

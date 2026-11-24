@@ -166,6 +166,8 @@ const PiP = (() => {
     .focus-progress[data-pace="uncompared"] .focus-fill { background: #a7e4c9; }
     .focus-label {
       grid-column: 2;
+      width: auto;
+      min-width: 7ch;
       color: #cbd5e1;
     }
     .focus-progress[data-pace="ahead"] .focus-label { color: #34d399; }
@@ -437,8 +439,9 @@ const PiP = (() => {
         focusEl.hidden = focus === null;
         if (focusEl.hidden) return null;
         const percent = (focus.progress * 100).toFixed(2);
-        focusFill.style.width = `${focus.progress * 100}%`;
-        focusTrack.setAttribute('aria-valuenow', String(percent));
+        const barPercent = Math.min(100, focus.progress * 100);
+        focusFill.style.width = `${barPercent}%`;
+        focusTrack.setAttribute('aria-valuenow', String(Math.min(100, Number(percent))));
         let pace = 'No schedule';
         let state = 'neutral';
         let showPace = false;

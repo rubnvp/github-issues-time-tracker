@@ -50,7 +50,7 @@ Both options are off by default.
 
 ### Workday
 
-- **Daily focus goal:** opt in to show focus progress in PiP. The default goal is 2 hours, configurable and the same every day. All recorded focus counts, including time outside work hours; sessions crossing midnight contribute only today's portion.
+- **Daily focus goal:** opt in to show focus progress in PiP. The percentage can exceed 100% when you surpass your goal. The default goal is 2 hours, configurable and the same every day. All recorded focus counts, including time outside work hours; sessions crossing midnight contribute only today's portion.
 - **Work schedule:** set local work intervals and breaks for each day. **Copy Monday to all other days** replaces Tuesday through Sunday, including weekends; adjust individual days afterwards. Split overnight shifts across days.
 
 Daily and weekly totals exclude breaks. Without a schedule for the current day, the workday bar and pace comparison are unavailable, but focus progress still appears. The focus-bar sweep is based on [CSS Loaders' progress example 16](https://css-loaders.com/progress/#l16).

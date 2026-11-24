@@ -181,7 +181,7 @@ test('focus progress updates pace, honors disabling, and works without a work sc
       getFocusProgress: (ms) => ({
         focusMs: ms,
         goalMs: 14400000,
-        progress: Math.min(1, ms / 14400000),
+        progress: ms / 14400000,
         expectedProgress,
         differenceMs: expectedProgress === null ? null : ms - 14400000 * expectedProgress,
       }),
@@ -219,14 +219,16 @@ test('focus progress updates pace, honors disabling, and works without a work sc
   focusMs = 18000000;
   tick();
   assert.equal(fill.style.width, '100%');
-  assert.equal(label.textContent, '100.00%');
+  assert.equal(label.textContent, '125.00%');
+  assert.equal(track.attributes.get('aria-valuenow'), '100');
+  assert.match(track.attributes.get('aria-valuetext'), /^125\.00% of focus goal/);
   assert.match(focusRow.title, /Focus 5h \/ 4h/);
 
   expectedProgress = null;
   tick();
   assert.equal(marker.hidden, true);
   assert.equal(focusRow.attributes.get('data-pace'), 'neutral');
-  assert.equal(label.textContent, '100.00%');
+  assert.equal(label.textContent, '125.00%');
   assert.match(focusRow.title, /No schedule/);
 
   enabled = false;

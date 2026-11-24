@@ -163,7 +163,7 @@ const Settings = (() => {
       return {
         focusMs,
         goalMs,
-        progress: Math.min(1, focusMs / goalMs),
+        progress: focusMs / goalMs,
         expectedProgress,
         differenceMs: expectedProgress === null ? null : focusMs - goalMs * expectedProgress,
       };

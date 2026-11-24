@@ -230,6 +230,26 @@ test('focus percentage uses two decimals across goals and freezes when paused', 
   assert.equal(label.textContent, '0.11%');
 });
 
+test('focus percentage displays progress beyond the goal while the bar stays full', async () => {
+  const h = await createHarness();
+  await h.settings.setFocusGoal({ enabled: true, hours: 1 });
+  h.timer.start('first');
+  await h.pip.open('first');
+  const stack = h.windows[0].document.body.children.find(el => el.className === 'progress-stack');
+  const [track, label] = stack.children.find(el => el.className === 'focus-progress').children;
+
+  h.setTime(12, 12, 1);
+  h.tick();
+  assert.equal(label.textContent, '120.03%');
+  assert.equal(track.children[0].style.width, '100%');
+  assert.equal(track.attributes.get('aria-valuenow'), '100');
+  assert.match(track.attributes.get('aria-valuetext'), /^120\.03% of focus goal/);
+  h.timer.stop('first');
+  h.setTime(12, 30);
+  h.tick();
+  assert.equal(label.textContent, '120.03%');
+});
+
 test('visual reminder can be disabled independently of the optional sound', async () => {
   const h = await createHarness();
   await h.settings.setFocusReminderIntervalMinutes(1);
