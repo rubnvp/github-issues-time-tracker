@@ -84,3 +84,99 @@ test('purpose anchor editor opens below the controls and saves or removes the no
   });
   assert.equal(h.state.why, null);
 });
+
+function createCardHarness() {
+  const observers = [];
+  const card = {
+    id: 'first',
+    nodes: [],
+    fieldsReady: false,
+    titleReady: true,
+    contains(node) { return this.nodes.includes(node); },
+    querySelector(selector) {
+      return this.nodes.find((node) => node.selector === selector) || null;
+    },
+  };
+  const node = (selector) => ({
+    selector,
+    remove() { card.nodes = card.nodes.filter((item) => item !== this); },
+  });
+  const anchor = {
+    insertAdjacentElement(_position, element) {
+      element.remove();
+      card.nodes.push(element);
+    },
+  };
+  const context = vm.createContext({
+    GitHubAdapter: {
+      getCardId: (element) => element.id,
+      getFieldsAnchor: () => card.fieldsReady ? anchor : null,
+      getIssueTitleElement: () => card.titleReady ? anchor : null,
+    },
+    Storage: { load: () => ({}), isRunning: () => false },
+    MutationObserver: class {
+      constructor(callback) { this.callback = callback; observers.push(this); }
+      observe() {}
+      disconnect() { this.disconnected = true; }
+    },
+  });
+  vm.runInContext(source, context);
+  const injector = vm.runInContext('Injector', context);
+  const widgets = [];
+  injector._buildWidget = (id) => {
+    const widget = {
+      id,
+      wrapper: node('[data-time-tracker]'),
+      render() {},
+      dispose() { widget.disposed = true; },
+    };
+    widgets.push(widget);
+    return widget;
+  };
+  injector._buildWhyNote = () => ({
+    wrapper: node('[data-time-tracker-why]'),
+    render() {},
+  });
+  return { card, injector, observers, widgets };
+}
+
+test('repeated injection before fields load mounts only one widget', () => {
+  const { card, injector, observers, widgets } = createCardHarness();
+  injector.injectCard(card);
+  injector.injectCard(card);
+  injector.injectCard(card);
+  assert.equal(widgets.length, 1);
+  assert.equal(observers.length, 1);
+
+  card.fieldsReady = true;
+  observers[0].callback();
+  assert.equal(card.nodes.filter((item) => item.selector === '[data-time-tracker]').length, 1);
+});
+
+test('reinjection before the card observer reuses the removed widget', () => {
+  const { card, injector, observers, widgets } = createCardHarness();
+  card.fieldsReady = true;
+  injector.injectCard(card);
+  widgets[0].wrapper.remove();
+
+  injector.injectCard(card);
+  observers[0].callback();
+
+  assert.equal(widgets.length, 1);
+  assert.equal(card.nodes.filter((item) => item.selector === '[data-time-tracker]').length, 1);
+  assert.equal(card.nodes.includes(widgets[0].wrapper), true);
+});
+
+test('a recycled card replaces its controls when its issue changes', () => {
+  const { card, injector, observers, widgets } = createCardHarness();
+  card.fieldsReady = true;
+  injector.injectCard(card);
+  card.id = 'second';
+  observers[0].callback();
+
+  assert.equal(observers[0].disconnected, true);
+  assert.equal(widgets[0].disposed, true);
+  assert.equal(widgets[1].id, 'second');
+  assert.equal(card.nodes.includes(widgets[0].wrapper), false);
+  assert.equal(card.nodes.filter((item) => item.selector === '[data-time-tracker]').length, 1);
+});

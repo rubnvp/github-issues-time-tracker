@@ -18,6 +18,7 @@ function _formatDate(ts) {
 }
 
 const Injector = {
+  _cards: new WeakMap(),
 
   // ── Issue ref extraction ───────────────────────────────────────────────────
 
@@ -176,7 +177,7 @@ const Injector = {
 
     Timer.registerRenderer(boardCardId, render);
 
-    return { wrapper, render };
+    return { wrapper, render, dispose: () => popover.remove() };
   },
 
   _buildWhyNote(boardCardId) {
@@ -309,19 +310,40 @@ const Injector = {
   // Watch a card for two situations:
   //   1. The fields anchor didn't exist yet at injection time — retry mounting.
   //   2. The widget was removed by a React re-render — re-mount it.
-  _watchCard(card, boardCardId, wrapper, render, whyNote, renderWhy) {
+  _watchCard(card, state) {
     const cardObserver = new MutationObserver(() => {
-      if (!card.contains(wrapper) || !card.contains(whyNote)) {
-        this._mountCardElements(card, boardCardId, wrapper, render, whyNote, renderWhy);
+      if (GitHubAdapter.getCardId(card) !== state.boardCardId) {
+        this.injectCard(card);
+      } else if (!card.contains(state.wrapper) || !card.contains(state.whyNote)) {
+        this._mountCardElements(card, state.boardCardId, state.wrapper, state.render, state.whyNote, state.renderWhy);
       }
     });
 
-    cardObserver.observe(card, { childList: true, subtree: true });
+    cardObserver.observe(card, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-board-card-id'],
+    });
+    return cardObserver;
   },
 
   injectCard(card) {
     const boardCardId = GitHubAdapter.getCardId(card);
+    const previous = this._cards.get(card);
+    if (previous && previous.boardCardId !== boardCardId) {
+      previous.observer.disconnect();
+      previous.wrapper?.remove();
+      previous.whyNote?.remove();
+      previous.dispose();
+      this._cards.delete(card);
+    }
     if (!boardCardId) return;
+
+    if (previous && previous.boardCardId === boardCardId) {
+      this._mountCardElements(card, boardCardId, previous.wrapper, previous.render, previous.whyNote, previous.renderWhy);
+      return;
+    }
 
     const existingWidget = card.querySelector('[data-time-tracker]');
     const existingWhy = card.querySelector('[data-time-tracker-why]');
@@ -333,12 +355,17 @@ const Injector = {
     const render = widget?.render || (() => {});
     const whyNote = why?.wrapper || existingWhy;
     const renderWhy = why?.render || (() => {});
+    const state = {
+      boardCardId, wrapper, render, whyNote, renderWhy,
+      dispose: widget?.dispose || (() => {}),
+    };
+    this._cards.set(card, state);
 
     // Attempt initial mount (may fail if fields anchor not yet in DOM)
     this._mountCardElements(card, boardCardId, wrapper, render, whyNote, renderWhy);
 
     // Always watch the card so we can re-mount if the widget disappears
-    this._watchCard(card, boardCardId, wrapper, render, whyNote, renderWhy);
+    state.observer = this._watchCard(card, state);
   },
 
   injectAllCards() {
